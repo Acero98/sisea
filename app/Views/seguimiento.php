@@ -5,14 +5,28 @@ $date = function ($value) {
     $date = DateTime::createFromFormat('Ymd', $value);
     return $date ? $date->format('d/m/Y') : $value;
 };
+$ordenes = $result['ordenes'] ?? [];
+$cotizaciones = $result['cotizaciones'] ?? [];
+$certificaciones = $result['certificaciones'] ?? [];
+$avance = $result['avance'] ?? [];
+$resumenDocumental = $result['resumen_documental'] ?? ['comprobantes' => 0, 'devengados' => 0, 'pagos' => 0];
 $isService = !empty($result['orden_servicio']);
-$isWarehouse = !empty($result) && ($result['pedido']['TIPO_PED'] ?? '') === 'E';
+$isWarehouse = !empty($result) && !empty($result['pedido']['ES_RETIRO_ALMACEN']);
 $isCancelled = !empty($result) && ($result['pedido']['EST_PEDIDO'] ?? '') === 'A';
-$orderLabel = $isService ? 'Orden de servicio' : 'Orden de compra';
+$orderLabel = count($ordenes) > 1 ? 'Órdenes emitidas' : ($isService ? 'Orden de servicio' : 'Orden de compra');
 $stages = $isWarehouse
-    ? [['Pedido', !empty($result['pedido'])], ['Atención de almacén', !empty($result['retiros_almacen'])], ['Retiro de almacén', !empty($result['retiros_almacen'])]]
-    : [['Pedido', !empty($result['pedido'])], ['Cotización', !empty($result['cotizacion'])], ['Certificación', !empty($result['certificacion'])], [$orderLabel, !empty($result['orden_compra']) || $isService], ['Factura o boleta', !empty($result['comprobante'])], ['Registro contable', !empty($result['contable'])], ['Pago', !empty($result['pago'])]];
-$final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['retiros_almacen']) ? 'Retiro de almacén registrado' : 'Pendiente de atención de almacén') : ($result && $result['pago'] ? 'Pago registrado' : ($result && $result['comprobante'] ? 'Factura o boleta registrada' : ($result && ($result['orden_compra'] || $result['orden_servicio']) ? $orderLabel . ' emitida' : 'En proceso'))));
+    ? [['label' => 'Pedido', 'estado' => 'complete', 'cantidad' => '1/1', 'nota' => ''], ['label' => 'Atención de almacén', 'estado' => !empty($result['retiros_almacen']) ? 'complete' : 'pending', 'cantidad' => !empty($result['retiros_almacen']) ? '1/1' : '0/1', 'nota' => ''], ['label' => 'Retiro de almacén', 'estado' => !empty($result['retiros_almacen']) ? 'complete' : 'pending', 'cantidad' => !empty($result['retiros_almacen']) ? '1/1' : '0/1', 'nota' => '']]
+    : [
+        ['label' => 'Pedido', 'estado' => $isCancelled ? 'issue' : 'complete', 'cantidad' => '1/1', 'nota' => $isCancelled ? 'Pedido anulado' : ''],
+        array_merge(['label' => 'Cotización'], $avance['cotizaciones'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+        array_merge(['label' => 'Certificación'], $avance['certificaciones'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+        array_merge(['label' => $orderLabel], $avance['ordenes'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+        array_merge(['label' => 'Factura o boleta'], $avance['comprobantes'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+        array_merge(['label' => 'Devengado'], $avance['devengados'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+        array_merge(['label' => 'Pago'], $avance['pagos'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
+    ];
+$estadoFinal = $avance['pagos']['estado'] ?? 'pending';
+$final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['retiros_almacen']) ? 'Retiro de almacén registrado' : 'Pendiente de atención de almacén') : ($estadoFinal === 'complete' ? 'Proceso completado' : ($estadoFinal === 'issue' ? 'Proceso con incidencias' : ($estadoFinal === 'partial' ? 'Avance parcial' : 'En proceso'))));
 ?>
 <!doctype html>
 <html lang="es">
@@ -44,7 +58,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
             <p>Busca por pedido; próximamente por orden, certificación y comprobante.</p>
             <form><input type="hidden" name="r" value="seguimiento">
                 <div class="types"><span class="selected">Todo</span><span>Pedido</span><span>Nota de pedido</span><span>Cotización</span><span>Certificación</span><span>Orden de compra</span><span>Orden de servicio</span><span>Factura o boleta</span></div>
-                <div class="search-line"><input name="q" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button></div>
+                <div class="search-line"><input name="q" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
             </form>
         </section>
         <?php if ($term !== '' && !$error && !$result): ?><section class="empty">
@@ -53,14 +67,14 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
             </section><?php endif; ?><?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
         <?php if ($result): ?><section class="status-card">
                 <div class="status-pill">▣ <?= e($final) ?></div>
-                <div><b><?= $isCancelled ? 'Avalon registra el pedido como anulado' : ($result['pago'] ? 'El proceso tiene pago registrado' : 'Estado calculado con los documentos encontrados') ?></b>
+                <div><b><?= $isCancelled ? 'Avalon registra el pedido como anulado' : ($resumenDocumental['comprobantes'] > 0 ? $resumenDocumental['comprobantes'] . ' comprobante(s), ' . $resumenDocumental['devengados'] . ' devengado(s) y ' . $resumenDocumental['pagos'] . ' pago(s) encontrados' : 'Estado calculado con los documentos encontrados') ?></b>
                     <p>La ruta diferencia órdenes de compra y órdenes de servicio.</p>
                 </div>
             </section>
             <section class="card">
                 <h2>Ruta del proceso</h2>
                 <p class="route-note"><?= $isWarehouse ? 'Ruta de existencia: se sigue el movimiento de salida registrado por Almacén.' : 'Ruta de adquisición: se sigue la documentación vinculada a la compra o al servicio.' ?></p>
-                <div class="timeline"><?php foreach ($stages as $stage): ?><div class="stage <?= $stage[1] ? 'done' : '' ?>"><i><?= $stage[1] ? '✓' : '○' ?></i><span><?= e($stage[0]) ?></span></div><?php endforeach; ?></div>
+                <div class="timeline"><?php foreach ($stages as $stage): ?><div class="stage <?= e($stage['estado']) ?>" title="<?= e($stage['nota']) ?>"><small class="stage-count"><?= e($stage['cantidad']) ?></small><i><?= $stage['estado'] === 'complete' ? '✓' : ($stage['estado'] === 'partial' ? '!' : ($stage['estado'] === 'issue' ? '×' : '○')) ?></i><span><?= e($stage['label']) ?></span><?php if ($stage['nota'] !== ''): ?><em><?= e($stage['nota']) ?></em><?php endif; ?></div><?php endforeach; ?></div>
             </section>
             <div class="grid">
                 <section class="card">
@@ -88,6 +102,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                 <th>Documento</th>
                                 <th>Número / referencia</th>
                                 <th>Fecha</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,35 +110,51 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                 <td>Pedido</td>
                                 <td><?= e($result['pedido']['NRO_PEDIDO']) ?></td>
                                 <td><?= e($date($result['pedido']['FEC_EMISIO'])) ?></td>
-                            </tr><?php if ($result['cotizacion']): ?><tr>
-                                    <td>Cotización / expediente</td>
-                                    <td><?= e($result['cotizacion']['NRO_EXPE']) ?></td>
-                                    <td><?= e($date($result['cotizacion']['FEC_COTIZA'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['certificacion']): ?><tr>
-                                    <td>Certificación</td>
-                                    <td><?= e($result['certificacion']['CODCER']) ?></td>
-                                    <td><?= e($date($result['certificacion']['FECHA'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['orden_compra']): ?><tr>
-                                    <td>Orden de compra</td>
-                                    <td><?= e($result['orden_compra']['NRO_ORDCMP']) ?></td>
-                                    <td><?= e($date($result['orden_compra']['FEC_EMISIO'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['orden_servicio']): ?><tr>
-                                    <td>Orden de servicio</td>
-                                    <td><?= e($result['orden_servicio']['NRO_SERVIC']) ?></td>
-                                    <td><?= e($date($result['orden_servicio']['FEC_EMISIO'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['comprobante']): ?><tr>
-                                    <td>Factura o boleta</td>
-                                    <td><?= e($result['comprobante']['DOCSER'] . '-' . $result['comprobante']['DOCNRO']) ?></td>
-                                    <td><?= e($date($result['comprobante']['FECCOMP'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['contable']): ?><tr>
-                                    <td>Registro contable</td>
-                                    <td><?= e($result['contable']['DOC1']) ?></td>
-                                    <td><?= e($date($result['contable']['FECT'])) ?></td>
-                                </tr><?php endif; ?><?php if ($result['pago']): ?><tr>
-                                    <td>Pago</td>
-                                    <td><?= e($result['pago']['CMPBTE'] . ' ' . $result['pago']['DOC1']) ?></td>
-                                    <td><?= e($date($result['pago']['FCONTABLE'])) ?></td>
-                                </tr><?php endif; ?>
+                                <td><?= e($result['pedido']['ESTADO_LABEL']) ?></td>
+                            </tr><?php foreach ($cotizaciones as $cotizacion): ?><tr>
+                                    <td><b>Cotización / expediente</b></td>
+                                    <td><b><?= e($cotizacion['NRO_EXPE']) ?></b></td>
+                                    <td><?= e($date($cotizacion['FEC_COTIZA'])) ?></td>
+                                    <td><?= e('Código Avalon: ' . ($cotizacion['ESTADO'] ?: '—')) ?></td>
+                                </tr><?php foreach ($cotizacion['CERTIFICACIONES'] as $certificacion): ?><tr>
+                                    <td>↳ Certificación</td>
+                                    <td><?= e($certificacion['CODCER']) ?></td>
+                                    <td><?= e($date($certificacion['FECHA'])) ?></td>
+                                    <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                                </tr><?php endforeach; ?><?php foreach ($cotizacion['ORDENES'] as $orden): ?><tr>
+                                    <td>↳ <b><?= e($orden['TIPO']) ?></b></td>
+                                    <td><b><?= e($orden['NUMERO']) ?></b></td>
+                                    <td><?= e($date($orden['FECHA'])) ?></td>
+                                    <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                                </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
+                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>Pendiente</td>
+                                </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
+                                    <td>　↳ Factura o boleta</td>
+                                    <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
+                                    <td><?= e($date($comprobante['FECCOMP'])) ?></td>
+                                    <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                                </tr><?php endforeach; ?><?php foreach ($orden['DEVENGADOS'] as $devengado): ?><tr>
+                                    <td>　↳ Devengado</td>
+                                    <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
+                                    <td><?= e($date($devengado['FECT'])) ?></td>
+                                    <td>Registrado</td>
+                                </tr><?php endforeach; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
+                                    <td>　　　↳ Pago</td>
+                                    <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
+                                    <td><?= e($date($pago['FCONTABLE'])) ?></td>
+                                    <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                                </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
+                            <?php if (!$cotizaciones): ?><?php foreach ($certificaciones as $certificacion): ?><tr>
+                                <td>Certificación</td>
+                                <td><?= e($certificacion['CODCER']) ?></td>
+                                <td><?= e($date($certificacion['FECHA'])) ?></td>
+                                <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                            </tr><?php endforeach; ?><?php foreach ($ordenes as $orden): ?><tr>
+                                <td><b><?= e($orden['TIPO']) ?></b></td>
+                                <td><b><?= e($orden['NUMERO']) ?></b></td>
+                                <td><?= e($date($orden['FECHA'])) ?></td>
+                                <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                            </tr><?php endforeach; ?><?php endif; ?>
                         </tbody>
                     </table>
                 </section>
@@ -138,6 +169,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                         <thead>
                             <tr>
                                 <th>Movimiento</th>
+                                <th>Ítem / recurso retirado</th>
                                 <th>Fecha</th>
                                 <th>Almacén</th>
                                 <th>Cantidad retirada</th>
@@ -147,6 +179,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                         </thead>
                         <tbody><?php foreach ($result['retiros_almacen'] as $movimiento): ?><tr>
                                     <td><?= e($movimiento['IDMOVIM']) ?></td>
+                                    <td><?= e(($movimiento['SEC_ITEMMO'] ?: '—') . ' · ' . $movimiento['RECURSO']) ?></td>
                                     <td><?= e($date($movimiento['FECHA'])) ?></td>
                                     <td><?= e($movimiento['NUMALM'] ?: '—') ?></td>
                                     <td><?= e($movimiento['CANTIDAD']) ?></td>

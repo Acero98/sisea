@@ -38,6 +38,25 @@ final class DbfReader
         } finally { fclose($handle); }
     }
 
+    /** Busca texto contenido en un campo sin materializar todos los registros de la tabla. */
+    public function findContains(string $file, array $fields, string $matchField, string $value): array
+    {
+        $fields = array_values(array_unique([...$fields, $matchField]));
+        $handle = @fopen($file, 'rb');
+        if (!$handle) throw new RuntimeException('No se pudo leer una tabla de Avalon. Verifique la ruta y los permisos de lectura.');
+        try {
+            [$records, $start, $length, $definition] = $this->definition($handle, $fields);
+            $match = $definition[$matchField]; $rows = []; fseek($handle, $start);
+            for ($i = 0; $i < $records; $i++) {
+                $record = $this->read($handle, $length);
+                if ($record[0] === '*') continue;
+                $candidate = $this->decode(substr($record, $match[0], $match[1]), $match[2], $file);
+                if (stripos($candidate, $value) !== false) $rows[] = $this->record($record, $definition, $file);
+            }
+            return $rows;
+        } finally { fclose($handle); }
+    }
+
     private function definition($handle, array $fields): array
     {
         $header = $this->read($handle, 32);
