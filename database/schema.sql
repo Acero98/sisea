@@ -1,0 +1,22 @@
+CREATE DATABASE IF NOT EXISTS avalon_seguimiento CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE avalon_seguimiento;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    usuario VARCHAR(60) NOT NULL UNIQUE,
+    nombre VARCHAR(160) NOT NULL,
+    clave_hash VARCHAR(255) NOT NULL,
+    rol ENUM('ADMIN','CONSULTA') NOT NULL DEFAULT 'CONSULTA',
+    activo TINYINT(1) NOT NULL DEFAULT 1,
+    creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS consultas (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT UNSIGNED NOT NULL,
+    termino VARCHAR(100) NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_consultas_usuario_fecha (usuario_id, creado_en),
+    CONSTRAINT fk_consultas_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB;
