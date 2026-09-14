@@ -34,7 +34,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20260914">
     <title>Seguimiento · Avalon</title>
 </head>
 
@@ -55,10 +55,11 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
         <?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
         <section class="search-card">
             <h2>Encuentra un documento</h2>
-            <p>Busca por pedido; próximamente por orden, certificación y comprobante.</p>
+            <p>Busca por pedido, orden de compra u orden de servicio.</p>
             <form><input type="hidden" name="r" value="seguimiento">
-                <div class="types"><span class="selected">Todo</span><span>Pedido</span><span>Nota de pedido</span><span>Cotización</span><span>Certificación</span><span>Orden de compra</span><span>Orden de servicio</span><span>Factura o boleta</span></div>
-                <div class="search-line"><input name="q" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
+                <input type="hidden" name="tipo" id="tipo-busqueda" value="<?= e($tipo) ?>">
+                <div class="types"><button type="button" class="<?= $tipo === 'todo' ? 'selected' : '' ?>" data-tipo="todo">Todo</button><button type="button" class="<?= $tipo === 'pedido' ? 'selected' : '' ?>" data-tipo="pedido">Pedido</button><button type="button" class="<?= $tipo === 'orden_compra' ? 'selected' : '' ?>" data-tipo="orden_compra">Orden de compra</button><button type="button" class="<?= $tipo === 'orden_servicio' ? 'selected' : '' ?>" data-tipo="orden_servicio">Orden de servicio</button></div>
+                <div class="search-line"><input name="q" aria-label="Número de documento" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
             </form>
         </section>
         <?php if ($term !== '' && !$error && !$result): ?><section class="empty">
@@ -96,7 +97,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                 </section>
                 <section class="card">
                     <h2>Documentos vinculados</h2>
-                    <table>
+                    <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                         <thead>
                             <tr>
                                 <th>Documento</th>
@@ -133,17 +134,22 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                     <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($comprobante['FECCOMP'])) ?></td>
                                     <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
-                                </tr><?php endforeach; ?><?php foreach ($orden['DEVENGADOS'] as $devengado): ?><tr>
-                                    <td>　↳ Devengado</td>
+                                </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
+                                    <td>　　　↳ Devengado</td>
                                     <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                     <td><?= e($date($devengado['FECT'])) ?></td>
                                     <td>Registrado</td>
-                                </tr><?php endforeach; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
+                                </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
                                     <td>　　　↳ Pago</td>
                                     <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($pago['FCONTABLE'])) ?></td>
                                     <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
-                                </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
+                                </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
+                                    <td>　↳ Devengado sin comprobante asociado</td>
+                                    <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
+                                    <td><?= e($date($devengado['FECT'])) ?></td>
+                                    <td>Registrado</td>
+                                </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
                             <?php if (!$cotizaciones): ?><?php foreach ($certificaciones as $certificacion): ?><tr>
                                 <td>Certificación</td>
                                 <td><?= e($certificacion['CODCER']) ?></td>
@@ -154,9 +160,31 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                 <td><b><?= e($orden['NUMERO']) ?></b></td>
                                 <td><?= e($date($orden['FECHA'])) ?></td>
                                 <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
-                            </tr><?php endforeach; ?><?php endif; ?>
+                            </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
+                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>Pendiente</td>
+                            </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
+                                <td>↳ Factura o boleta</td>
+                                <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
+                                <td><?= e($date($comprobante['FECCOMP'])) ?></td>
+                                <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                            </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
+                                <td>　↳ Devengado</td>
+                                <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
+                                <td><?= e($date($devengado['FECT'])) ?></td>
+                                <td>Registrado</td>
+                            </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
+                                <td>　↳ Pago</td>
+                                <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
+                                <td><?= e($date($pago['FCONTABLE'])) ?></td>
+                                <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                            </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
+                                <td>↳ Devengado sin comprobante asociado</td>
+                                <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
+                                <td><?= e($date($devengado['FECT'])) ?></td>
+                                <td>Registrado</td>
+                            </tr><?php endforeach; ?><?php endforeach; ?><?php endif; ?>
                         </tbody>
-                    </table>
+                    </table></div>
                 </section>
             </div>
             <section class="card sustentacion">
@@ -165,7 +193,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
             </section>
             <?php if ($isWarehouse): ?><section class="card">
                     <h2>Movimientos de retiro de almacén</h2>
-                    <table>
+                    <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                         <thead>
                             <tr>
                                 <th>Movimiento</th>
@@ -186,11 +214,11 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                     <td><?= e($movimiento['IDTRANSAC'] . ' · tipo ' . $movimiento['TIPO_MOV']) ?></td>
                                     <td><?= e($movimiento['ESTMOV'] ?: 'Sin código de estado') ?></td>
                                 </tr><?php endforeach; ?></tbody>
-                    </table>
+                    </table></div>
                 </section><?php endif; ?>
             <section class="card">
                 <h2>Detalle solicitado</h2>
-                <table>
+                <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                     <thead>
                         <tr>
                             <th>Recurso</th>
@@ -209,7 +237,7 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                                 <td><?= e($item['COSTO_ABC']) ?></td>
                                 <td><?= e($item['ACTIVIDAD_PRESUPUESTAL']) ?></td>
                             </tr><?php endforeach; ?></tbody>
-                </table>
+                </table></div>
             </section>
             <?php endif; ?>
         <section class="recent">
@@ -232,6 +260,11 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
                 localStorage.setItem(key, collapsed ? '1' : '0');
                 apply(collapsed);
             });
+            const tipoInput = document.getElementById('tipo-busqueda');
+            document.querySelectorAll('[data-tipo]').forEach((option) => option.addEventListener('click', () => {
+                tipoInput.value = option.dataset.tipo;
+                document.querySelectorAll('[data-tipo]').forEach((item) => item.classList.toggle('selected', item === option));
+            }));
         })();
     </script>
 </body>
