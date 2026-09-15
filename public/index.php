@@ -10,10 +10,11 @@ session_save_path($sessionPath);
 session_name('avalon_seguimiento');
 session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
 $route = $_GET['r'] ?? (usuario() ? 'seguimiento' : 'login');
-$routes = ['login' => ['AuthController', 'login'], 'auth' => ['AuthController', 'auth'], 'logout' => ['AuthController', 'logout'], 'seguimiento' => ['SeguimientoController', 'index']];
+$routes = ['login' => ['AuthController', 'login'], 'auth' => ['AuthController', 'auth'], 'logout' => ['AuthController', 'logout'], 'seguimiento' => ['SeguimientoController', 'index'], 'notas' => ['NotasController', 'index'], 'sincronizar_seguimiento' => ['NotasController', 'sincronizar'], 'usuarios' => ['UsuariosController', 'index'], 'sincronizar_usuarios' => ['UsuariosController', 'sincronizar'], 'guardar_usuario' => ['UsuariosController', 'guardar']];
 if (!isset($routes[$route])) {
     http_response_code(404);
     exit('Ruta no encontrada');
 }
 [$controller, $method] = $routes[$route];
 (new $controller())->$method();
+

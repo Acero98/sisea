@@ -5,7 +5,7 @@ final class SeguimientoModel
 {
     private DbfReader $reader;
     public function __construct() { $this->reader = new DbfReader(); }
-    public function buscar(string $term, string $tipo = 'todo'): ?array
+    public function buscar(string $term, string $tipo = 'todo', array $acceso = []): ?array
     {
         $term = mb_strtoupper(trim($term)); if ($term === '') return null;
         $tipo = in_array($tipo, ['todo', 'pedido', 'orden_compra', 'orden_servicio'], true) ? $tipo : 'todo';
@@ -19,6 +19,7 @@ final class SeguimientoModel
         }
         $header = $headers[0] ?? null;
         if (!$header) return null;
+        if (!$this->puedeVerPedido($header, $acceso)) return null;
         $pedido = $header['NRO_PEDIDO'];
         $header['ES_RETIRO_ALMACEN'] = $header['PRIORIDAD'] === '4';
         $details = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40007.DBF', ['NRO_PEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','CAN_ORDENA','CENCOS','COD_PROY','CODACTIVID'], 'NRO_PEDIDO', $pedido);
@@ -183,6 +184,13 @@ final class SeguimientoModel
             }
         }
         return null;
+    }
+    private function puedeVerPedido(array $pedido, array $acceso): bool
+    {
+        if (($acceso['rol'] ?? '') === 'ADMIN' || ($acceso['alcance'] ?? '') === 'GLOBAL') return true;
+        $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
+        if ($unidad === '' || $unidad === '0000') return false;
+        return trim((string)$pedido['CODUNIORG']) === $unidad;
     }
     private function pedidoEnTexto(string $texto): ?string
     {

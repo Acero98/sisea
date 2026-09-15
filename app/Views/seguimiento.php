@@ -28,30 +28,13 @@ $stages = $isWarehouse
 $estadoFinal = $avance['pagos']['estado'] ?? 'pending';
 $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['retiros_almacen']) ? 'Retiro de almacén registrado' : 'Pendiente de atención de almacén') : ($estadoFinal === 'complete' ? 'Proceso completado' : ($estadoFinal === 'issue' ? 'Proceso con incidencias' : ($estadoFinal === 'partial' ? 'Avance parcial' : 'En proceso'))));
 ?>
-<!doctype html>
-<html lang="es">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20260914">
-    <title>Seguimiento · Avalon</title>
-</head>
-
-<body>
-    <aside class="sidebar">
-        <div class="logo">◈ <b>AVALON</b><small>Seguimiento</small></div>
-        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Contraer menú" aria-expanded="true">☰</button>
-        <nav><a class="active" href="<?= e(url('seguimiento')) ?>">⌕ <span>Seguimiento</span></a><a href="#">▤ <span>Consultas recientes</span></a><a href="#">⚙ <span>Configuración</span></a></nav>
-        <div class="sidebar-user"><b><?= e(usuario()['nombre']) ?></b><small><?= e(usuario()['rol']) ?></small><a href="<?= e(url('logout')) ?>">↪ <span>Cerrar sesión</span></a></div>
-    </aside>
-    <main class="main">
-        <header>
-            <div><span class="crumb">Logística / Seguimiento documental</span>
-                <h1>Seguimiento documental</h1>
-                <p>Consulta el avance de un pedido y sus documentos vinculados.</p>
-            </div><span class="read-only">◉ Fuente Avalon · solo lectura</span>
-        </header>
+<?php
+$pageTitle = 'Seguimiento documental';
+$pageDescription = 'Consulta el avance de un pedido y sus documentos vinculados.';
+$breadcrumb = 'Logística / Seguimiento documental';
+$activeNav = 'seguimiento';
+require APP_ROOT . '/app/Views/partials/header.php';
+?>
         <?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
         <section class="search-card">
             <h2>Encuentra un documento</h2>
@@ -242,31 +225,10 @@ $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['reti
             <?php endif; ?>
         <section class="recent">
             <h2>Búsquedas recientes</h2><?php if ($recent): ?><ul><?php foreach ($recent as $item): ?><li><b><?= e($item['termino']) ?></b><span><?= e($item['tipo']) ?> · <?= e($item['creado_en']) ?></span></li><?php endforeach; ?></ul><?php else: ?><p>Aún no hay consultas registradas.</p><?php endif; ?>
-        </section>
-    </main>
-    <script>
-        (() => {
-            const button = document.getElementById('menu-toggle');
-            const key = 'avalon-menu-contraido';
-            const apply = (collapsed) => {
-                document.body.classList.toggle('menu-contraido', collapsed);
-                button.setAttribute('aria-expanded', String(!collapsed));
-                button.setAttribute('aria-label', collapsed ? 'Ampliar menú' : 'Contraer menú');
-                button.textContent = collapsed ? '›' : '☰';
-            };
-            apply(localStorage.getItem(key) === '1');
-            button.addEventListener('click', () => {
-                const collapsed = !document.body.classList.contains('menu-contraido');
-                localStorage.setItem(key, collapsed ? '1' : '0');
-                apply(collapsed);
-            });
-            const tipoInput = document.getElementById('tipo-busqueda');
-            document.querySelectorAll('[data-tipo]').forEach((option) => option.addEventListener('click', () => {
-                tipoInput.value = option.dataset.tipo;
-                document.querySelectorAll('[data-tipo]').forEach((item) => item.classList.toggle('selected', item === option));
-            }));
-        })();
-    </script>
-</body>
-
-</html>
+        </section><script>
+(function () {
+    var tipoInput = document.getElementById('tipo-busqueda');
+    document.querySelectorAll('[data-tipo]').forEach(function (option) { option.addEventListener('click', function () { tipoInput.value = option.dataset.tipo; document.querySelectorAll('[data-tipo]').forEach(function (item) { item.classList.toggle('selected', item === option); }); }); });
+}());
+</script>
+<?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>
