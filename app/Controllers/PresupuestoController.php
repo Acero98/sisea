@@ -1,0 +1,9 @@
+<?php
+declare(strict_types=1);
+final class PresupuestoController
+{
+ private function unidad(): string { requiereLogin(); $user=usuario()??[]; $admin=($user['rol']??'')==='ADMIN'; $unidad=trim((string)($admin?($_REQUEST['unidad']??($user['unidad_organica']??'')):($user['unidad_organica']??''))); if($unidad==='0000')$unidad=''; return preg_match('/^\d{4}$/',$unidad)?$unidad:''; }
+ public function index():void{requiereLogin();if((usuario()['rol']??'')!=='ADMIN'){http_response_code(403);exit('El módulo de Presupuesto está disponible solo para administradores.');}$unidad=$this->unidad();$esAdmin=true;$tipo=(string)($_GET['tipo']??'todos');$filtro=['actividad'=>trim((string)($_GET['actividad']??'')),'cuenta'=>trim((string)($_GET['cuenta']??'')),'tipo'=>in_array($tipo,['todos','operativo','inversion'],true)?$tipo:'todos'];$global=$unidad==='';$consultar=(($_GET['consultar']??'')==='1')&&($unidad!==''||($global&&($filtro['actividad']!==''||$filtro['cuenta']!=='')));$datos=$consultar?(new PresupuestoModel())->consultar($unidad,$filtro,$global):null;require APP_ROOT.'/app/Views/presupuesto.php';}
+ public function responsabilidades():void{if((usuario()['rol']??'')!=='ADMIN'){http_response_code(403);exit('Solo un administrador puede configurar responsabilidades presupuestales.');}$unidad=$this->unidad();$esAdmin=true;$fuentes=$unidad!==''?(new PresupuestoModel())->configuracion($unidad):[];require APP_ROOT.'/app/Views/presupuesto_responsabilidades.php';}
+ public function guardarResponsabilidades():void{if((usuario()['rol']??'')!=='ADMIN'){http_response_code(403);exit('Acceso no autorizado.');}validarCsrf();$unidad=$this->unidad();(new PresupuestoModel())->guardarConfiguracion($unidad,(array)($_POST['clasificacion']??[]));flash('ok','Responsabilidades presupuestales actualizadas.');header('Location: '.url('presupuesto_responsabilidades'));exit;}
+}

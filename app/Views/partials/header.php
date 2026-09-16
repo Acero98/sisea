@@ -10,7 +10,7 @@ $currentUser = usuario() ?? [];
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20260914b">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20260916f">
     <?php if (!empty($useDataTables)): ?><link rel="stylesheet" href="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.css"><?php endif; ?>
     <title><?= e($pageTitle) ?> · Avalon</title>
 </head>
@@ -21,6 +21,7 @@ $currentUser = usuario() ?? [];
         <nav>
             <a class="<?= $activeNav === 'seguimiento' ? 'active' : '' ?>" href="<?= e(url('seguimiento')) ?>">⌕ <span>Seguimiento</span></a>
             <a class="<?= $activeNav === 'notas' ? 'active' : '' ?>" href="<?= e(url('notas')) ?>">▤ <span>Mis notas</span></a>
+            <?php if (($currentUser['rol'] ?? '') === 'ADMIN'): ?><a class="<?= $activeNav === 'presupuesto' ? 'active' : '' ?>" href="<?= e(url('presupuesto')) ?>">▥ <span>Presupuesto</span></a><a class="<?= $activeNav === 'presupuesto_responsabilidades' ? 'active' : '' ?>" href="<?= e(url('presupuesto_responsabilidades')) ?>">⚙ <span>Responsabilidades</span></a><?php endif; ?>
             <?php if (($currentUser['rol'] ?? '') === 'ADMIN'): ?><a class="<?= $activeNav === 'usuarios' ? 'active' : '' ?>" href="<?= e(url('usuarios')) ?>">👥 <span>Usuarios</span></a><?php endif; ?>
         </nav>
         <div class="sidebar-user"><b><?= e($currentUser['nombre'] ?? '') ?></b><small><?= e($currentUser['perfil_nombre'] ?? $currentUser['rol'] ?? '') ?></small><a href="<?= e(url('logout')) ?>">↪ <span>Cerrar sesión</span></a></div>
@@ -30,3 +31,10 @@ $currentUser = usuario() ?? [];
             <div><span class="crumb"><?= e($breadcrumb) ?></span><h1><?= e($pageTitle) ?></h1><?php if ($pageDescription !== ''): ?><p><?= e($pageDescription) ?></p><?php endif; ?></div>
             <span class="read-only">◉ Fuente Avalon · solo lectura</span>
         </header>
+
+
+
+
+
+
+
