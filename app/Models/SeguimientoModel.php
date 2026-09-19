@@ -22,7 +22,7 @@ final class SeguimientoModel
         if (!$this->puedeVerPedido($header, $acceso)) return null;
         $pedido = $header['NRO_PEDIDO'];
         $header['ES_RETIRO_ALMACEN'] = $header['PRIORIDAD'] === '4';
-        $details = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40007.DBF', ['NRO_PEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','CAN_ORDENA','CENCOS','COD_PROY','CODACTIVID'], 'NRO_PEDIDO', $pedido);
+        $details = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40007.DBF', ['NRO_PEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','CAN_ORDENA','CENCOS','COD_PROY','CODACTIVID','CTA_CON'], 'NRO_PEDIDO', $pedido);
         foreach ($details as &$detail) {
             $sourceFile = $detail['TIPOFAMI'] === 'S' ? '/sum40003.DBF' : '/sum40004.DBF';
             $codeField = $detail['TIPOFAMI'] === 'S' ? 'SEC_SERV' : 'SEC_BIEN';
@@ -34,6 +34,8 @@ final class SeguimientoModel
             $centro = $detail['CENCOS'] !== '' ? $this->reader->findExact('C:/Avalon/contab/data/cct0004.DBF', ['CCTA','DESC'], 'CCTA', $detail['CENCOS']) : [];
             $detail['CENTRO_COSTO'] = $centro ? trim($centro[0]['CCTA'] . ' · ' . $centro[0]['DESC']) : ($detail['CENCOS'] ?: 'No registrado');
             $detail['COSTO_ABC'] = $detail['CODACTIVID'] ?: 'No registrado';
+            $cuenta = $detail['CTA_CON'] !== '' ? $this->reader->findExact(AVALON_PLANIF_DATA . '/tab_recu.dbf', ['COD_CCP1','DESCRIP'], 'COD_CCP1', $detail['CTA_CON']) : [];
+            $detail['CUENTA_CONTABLE'] = $cuenta ? trim($cuenta[0]['COD_CCP1'] . ' · ' . $cuenta[0]['DESCRIP']) : ($detail['CTA_CON'] ?: 'No registrada');
             $actividad = $detail['COD_PROY'] !== '' ? $this->reader->findExact(AVALON_PLANIF_DATA . '/mae_proy.dbf', ['COD_PROY','DESC_PROY'], 'COD_PROY', $detail['COD_PROY']) : [];
             $detail['ACTIVIDAD_PRESUPUESTAL'] = $actividad ? trim($actividad[0]['COD_PROY'] . ' · ' . $actividad[0]['DESC_PROY']) : ($detail['COD_PROY'] ?: 'No registrada');
         }
@@ -240,5 +242,5 @@ final class SeguimientoModel
         if (!is_dir($directory)) mkdir($directory, 0775, true);
         @file_put_contents($this->cacheFile($term), json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
-    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v22-' . sha1($term) . '.json'; }
+    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v23-' . sha1($term) . '.json'; }
 }

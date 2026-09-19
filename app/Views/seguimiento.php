@@ -207,6 +207,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                             <th>Recurso</th>
                             <th>Unidad</th>
                             <th>Cantidad</th>
+                            <th>Cuenta contable</th>
                             <th>Centro de costo</th>
                             <th>Costos ABC</th>
                             <th>Actividad presupuestal</th>
@@ -216,6 +217,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td><?= e($item['DESC_MAT']) ?></td>
                                 <td><?= e($item['UNIMED']) ?></td>
                                 <td><?= e($item['CAN_ORDENA']) ?></td>
+                                <td><?= e($item['CUENTA_CONTABLE']) ?></td>
                                 <td><?= e($item['CENTRO_COSTO']) ?></td>
                                 <td><?= e($item['COSTO_ABC']) ?></td>
                                 <td><?= e($item['ACTIVIDAD_PRESUPUESTAL']) ?></td>
