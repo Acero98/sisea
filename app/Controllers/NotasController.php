@@ -124,17 +124,12 @@ final class NotasController
             exit('El alcance de actualización solicitado no es válido.');
         }
 
-        $lock = 'avalon-seguimiento-sincronizacion';
-
-        $stmt = db()->prepare(
-            'SELECT GET_LOCK(:lock_name, 0)'
-        );
-
-        $stmt->execute([
-            'lock_name' => $lock,
-        ]);
-
-        if ((int) $stmt->fetchColumn() !== 1) {
+        /* La lectura de Avalon puede tardar. No conservar bloqueado el archivo
+         * de sesión mientras se ejecuta para permitir otras pestañas. */
+        liberarSesion();
+        $control = new SincronizacionControlService();
+        if (!$control->iniciar($acceso, $tipo, ucfirst($descripcion))) {
+            reanudarSesion();
             flash(
                 'error',
                 'Ya hay una actualización en proceso. Espere unos minutos e inténtelo nuevamente.'
@@ -152,26 +147,22 @@ final class NotasController
 
         try {
             $cantidad = (new SeguimientoSnapshotService())
-                ->sincronizar($filtro);
-
+                ->sincronizar($filtro, (int)($acceso['id'] ?? 0) ?: null);
+            $mensajeResultado = $cantidad . ' registros correspondientes a ' . $descripcion . ' fueron actualizados desde Avalon.';
+            $control->finalizar(true, $mensajeResultado);
+            reanudarSesion();
             flash(
                 'ok',
-                $cantidad . ' registros correspondientes a '
-                    . $descripcion
-                    . ' fueron actualizados desde Avalon.'
+                $mensajeResultado
             );
         } catch (Throwable $e) {
+            $control->finalizar(false, $e->getMessage());
+            reanudarSesion();
             flash(
                 'error',
                 'No se pudo actualizar el seguimiento: '
                     . $e->getMessage()
             );
-        } finally {
-            db()->prepare(
-                'SELECT RELEASE_LOCK(:lock_name)'
-            )->execute([
-                'lock_name' => $lock,
-            ]);
         }
 
         header(
@@ -182,6 +173,20 @@ final class NotasController
         );
 
         exit;
+    }
+    public function exportar(): void
+    {
+        requiereLogin();
+        $acceso = $this->acceso();
+        $vista = (string)($_GET['vista'] ?? 'unidad');
+        $alcance = $vista === 'mis' && trim((string)($acceso['avalon_codigo'] ?? '')) !== '' ? 'mis' : 'unidad';
+        $filas = (new NotasModel())->exportar($acceso, $alcance, trim((string)($_GET['q'] ?? '')));
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="notas-' . $alcance . '-' . date('Ymd-His') . '.csv"');
+        $out = fopen('php://output', 'wb'); fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, ['Nota','Fecha de emisión','Unidad orgánica','Nombre de unidad','Glosa / sustentación','Tipo','Prioridad','Última etapa','Estado Logística','Código usuario','Registrado por'], ';');
+        foreach ($filas as $fila) fputcsv($out, [$fila['nro_pedido'],$fila['fecha_emision'],$fila['unidad_organica'],$fila['unidad_nombre'],$fila['sustentacion'],$fila['tipo_pedido'],$fila['prioridad'],$fila['etapa'],$fila['estado_logistica'],$fila['usuario_codigo'],$fila['usuario_nombre']], ';');
+        fclose($out); exit;
     }
 
     private function errorAlcance(

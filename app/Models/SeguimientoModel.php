@@ -8,13 +8,15 @@ final class SeguimientoModel
     public function buscar(string $term, string $tipo = 'todo', array $acceso = []): ?array
     {
         $term = mb_strtoupper(trim($term)); if ($term === '') return null;
-        $tipo = in_array($tipo, ['todo', 'pedido', 'orden_compra', 'orden_servicio'], true) ? $tipo : 'todo';
+        $tipo = in_array($tipo, ['todo', 'pedido', 'cotizacion', 'certificacion', 'orden_compra', 'orden_servicio', 'comprobante', 'devengado', 'pago'], true) ? $tipo : 'todo';
         $cacheKey = $tipo . '-' . $term;
         $cached = $this->cache($cacheKey);
         if ($cached !== null) return $cached;
-        $headers = in_array($tipo, ['orden_compra', 'orden_servicio'], true) ? [] : $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $term);
+        $documentoBuscado = null;
+        $headers = in_array($tipo, ['todo', 'pedido'], true) ? $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $term) : [];
         if (!$headers && $tipo !== 'pedido') {
-            $pedidoResuelto = $this->pedidoDesdeOrden($term, $tipo);
+            $documentoBuscado = $this->documentoDesdeCopiaLocal($term, $tipo);
+            $pedidoResuelto = ($documentoBuscado['nro_pedido'] ?? null) ?? $this->pedidoDesdeOrden($term, $tipo);
             if ($pedidoResuelto !== null) $headers = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $pedidoResuelto);
         }
         $header = $headers[0] ?? null;
@@ -139,11 +141,13 @@ final class SeguimientoModel
         $comprobantesAnulados = 0;
         $pagosAnulados = 0;
         $cantidadPagosValidos = 0;
+        $cantidadDevengadosValidos = 0;
         foreach ($ordenesValidas as $orden) {
             $comprobantesOrden = array_values(array_filter($orden['COMPROBANTES'], fn(array $comprobante): bool => !$this->isAnulado($comprobante['ESTADO'] ?? '')));
             $comprobantesAnulados += count($orden['COMPROBANTES']) - count($comprobantesOrden);
             if ($comprobantesOrden) $ordenesConComprobante++;
             if ($comprobantesOrden && $orden['DEVENGADOS']) $ordenesConDevengado++;
+            $cantidadDevengadosValidos += count($orden['DEVENGADOS']);
             foreach ($comprobantesOrden as $comprobante) {
                 $pagosValidos = array_filter($comprobante['PAGOS'], fn(array $pago): bool => !$this->isAnulado($pago['ESTADO'] ?? ''));
                 $pagosAnulados += count($comprobante['PAGOS']) - count($pagosValidos);
@@ -159,6 +163,57 @@ final class SeguimientoModel
             'devengados' => $this->etapaAvance($ordenesConDevengado, $ordenesConComprobante, 0),
             'pagos' => $this->etapaAvance($cantidadPagosValidos, $cantidadPagosValidos + $pagosAnulados, $pagosAnulados),
         ];
+        $resumenDocumental = ['comprobantes' => count($comprobantesValidos), 'devengados' => $cantidadDevengadosValidos, 'pagos' => $cantidadPagosValidos];
+
+        $documentosAnulados = [];
+        foreach ($cotizaciones as $item) if ($this->isAnulado($item['ESTADO'] ?? '')) $documentosAnulados[] = ['tipo' => 'Cotización', 'numero' => $item['NRO_EXPE'], 'estado' => $item['ESTADO']];
+        foreach ($certificaciones as $item) if ($this->isAnulado($item['ESTADO'] ?? '')) $documentosAnulados[] = ['tipo' => 'Certificación', 'numero' => $item['CODCER'], 'estado' => $item['ESTADO']];
+
+        $ordenesVisibles = [];
+        foreach ($ordenes as $orden) {
+            if ($this->isAnulado($orden['ESTADO'] ?? '')) {
+                $documentosAnulados[] = ['tipo' => $orden['TIPO'], 'numero' => $orden['NUMERO'], 'estado' => $orden['ESTADO']];
+                continue;
+            }
+            $comprobantesVisibles = [];
+            foreach ($orden['COMPROBANTES'] as $comprobanteOrden) {
+                if ($this->isAnulado($comprobanteOrden['ESTADO'] ?? '')) {
+                    $documentosAnulados[] = ['tipo' => 'Factura o boleta', 'numero' => $comprobanteOrden['DOCSER'] . '-' . $comprobanteOrden['DOCNRO'], 'estado' => $comprobanteOrden['ESTADO']];
+                    continue;
+                }
+                $pagosVisibles = [];
+                foreach ($comprobanteOrden['PAGOS'] as $pagoOrden) {
+                    if ($this->isAnulado($pagoOrden['ESTADO'] ?? '')) {
+                        $documentosAnulados[] = ['tipo' => 'Pago', 'numero' => trim($pagoOrden['CMPBTE'] . ' ' . $pagoOrden['DOC1']), 'estado' => $pagoOrden['ESTADO']];
+                        continue;
+                    }
+                    $pagosVisibles[] = $pagoOrden;
+                }
+                $comprobanteOrden['PAGOS'] = $pagosVisibles;
+                $comprobantesVisibles[] = $comprobanteOrden;
+            }
+            $orden['COMPROBANTES'] = $comprobantesVisibles;
+            $ordenesVisibles[] = $orden;
+        }
+        $ordenes = $ordenesVisibles;
+        $ordenesPorClave = [];
+        foreach ($ordenes as $orden) $ordenesPorClave[$orden['TIPO'] . '|' . $orden['NUMERO']] = $orden;
+
+        $cotizacionesVisibles = [];
+        foreach ($cotizaciones as $cotizacion) {
+            if ($this->isAnulado($cotizacion['ESTADO'] ?? '')) continue;
+            $cotizacion['CERTIFICACIONES'] = array_values(array_filter($cotizacion['CERTIFICACIONES'], fn(array $item): bool => !$this->isAnulado($item['ESTADO'] ?? '')));
+            $ordenesCotizacion = [];
+            foreach ($cotizacion['ORDENES'] as $orden) {
+                $clave = $orden['TIPO'] . '|' . $orden['NUMERO'];
+                if (isset($ordenesPorClave[$clave])) $ordenesCotizacion[] = $ordenesPorClave[$clave];
+            }
+            $cotizacion['ORDENES'] = $ordenesCotizacion;
+            $cotizacionesVisibles[] = $cotizacion;
+        }
+        $cotizaciones = $cotizacionesVisibles;
+        $certificaciones = array_values(array_filter($certificaciones, fn(array $item): bool => !$this->isAnulado($item['ESTADO'] ?? '')));
+
         $comprobante = $ordenes[0]['COMPROBANTES'][0] ?? null;
         $contable = $ordenes[0]['DEVENGADOS'][0] ?? null;
         $pago = $comprobante['PAGOS'][0] ?? null;
@@ -167,7 +222,7 @@ final class SeguimientoModel
         $header['ESTADO_LABEL'] = $this->labelEstado($header['EST_PEDIDO']);
         $unidad = $header['CODUNIORG'] !== '' ? $this->reader->findExact(AVALON_PLANIF_DATA . '/unidad.dbf', ['COD_UNIDAD','DES_UNIDAD'], 'COD_UNIDAD', $header['CODUNIORG']) : [];
         $header['UNIDAD_LABEL'] = $unidad ? trim($unidad[0]['COD_UNIDAD'] . ' · ' . $unidad[0]['DES_UNIDAD']) : ($header['CODUNIORG'] ?: 'Sin código en el origen');
-        $result = ['pedido' => $header, 'detalle' => $details, 'retiros_almacen' => $retirosAlmacen, 'cotizaciones' => $cotizaciones, 'certificaciones' => array_values($certificaciones), 'ordenes' => $ordenes, 'resumen_documental' => $resumenDocumental, 'avance' => $avance, 'orden_compra' => $ordenCompraRows[0] ?? null, 'orden_servicio' => $ordenServicioRows[0] ?? null, 'comprobante' => $comprobante, 'contable' => $contable, 'pago' => $pago];
+        $result = ['pedido' => $header, 'detalle' => $details, 'retiros_almacen' => $retirosAlmacen, 'cotizaciones' => $cotizaciones, 'certificaciones' => array_values($certificaciones), 'ordenes' => $ordenes, 'documentos_anulados' => $documentosAnulados, 'documento_buscado' => $documentoBuscado, 'resumen_documental' => $resumenDocumental, 'avance' => $avance, 'orden_compra' => $ordenCompraRows[0] ?? null, 'orden_servicio' => $ordenServicioRows[0] ?? null, 'comprobante' => $comprobante, 'contable' => $contable, 'pago' => $pago];
         $this->saveCache($cacheKey, $result);
         return $result;
     }
@@ -186,6 +241,31 @@ final class SeguimientoModel
             }
         }
         return null;
+    }
+    /** Resuelve documentos ya sincronizados sin recorrer archivos DBF de Avalon. */
+    private function documentoDesdeCopiaLocal(string $numero, string $tipo): ?array
+    {
+        $tipos = [
+            'cotizacion' => ['cotizacion'],
+            'certificacion' => ['certificacion'],
+            'orden_compra' => ['orden_compra'],
+            'orden_servicio' => ['orden_servicio'],
+            'comprobante' => ['comprobante', 'comprobante_interno'],
+            'devengado' => ['devengado'],
+            'pago' => ['pago'],
+            'todo' => ['cotizacion', 'certificacion', 'orden_compra', 'orden_servicio', 'comprobante', 'comprobante_interno', 'devengado', 'pago'],
+        ][$tipo] ?? [];
+        if (!$tipos) return null;
+        try {
+            $marks = implode(',', array_fill(0, count($tipos), '?'));
+            $sql = 'SELECT nro_pedido,tipo,numero,estado,fecha FROM seguimiento_documentos WHERE (numero = ? OR (tipo = \'pago\' AND numero LIKE ?)) AND tipo IN (' . $marks . ') ORDER BY sincronizado_en DESC LIMIT 1';
+            $stmt = db()->prepare($sql);
+            $stmt->execute(array_merge([$numero, '% ' . (ltrim($numero, '0') ?: '0')], $tipos));
+            $documento = $stmt->fetch();
+            return is_array($documento) ? $documento : null;
+        } catch (PDOException $exception) {
+            return null;
+        }
     }
     private function puedeVerPedido(array $pedido, array $acceso): bool
     {
@@ -242,5 +322,5 @@ final class SeguimientoModel
         if (!is_dir($directory)) mkdir($directory, 0775, true);
         @file_put_contents($this->cacheFile($term), json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
-    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v23-' . sha1($term) . '.json'; }
+    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v25-' . sha1($term) . '.json'; }
 }

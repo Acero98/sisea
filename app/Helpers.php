@@ -6,6 +6,23 @@ function url(string $route = '', array $params = []): string { return APP_URL . 
 function csrf(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(24)); return $_SESSION['csrf']; }
 function validarCsrf(): void { if (!hash_equals(csrf(), (string)($_POST['csrf'] ?? ''))) throw new DomainException('La sesión del formulario venció. Actualice la página e inténtelo nuevamente.'); }
 function usuario(): ?array { return $_SESSION['usuario'] ?? null; }
-function requiereLogin(): void { if (!usuario()) { header('Location: ' . url('login')); exit; } }
+function requiereLogin(): void {
+    $actual=usuario();
+    if (!$actual) { header('Location: ' . url('login')); exit; }
+    $token=(string)($actual['sesion_token'] ?? '');
+    if ($token === '') {
+        $token=bin2hex(random_bytes(32));
+        (new AuthModel())->registrarSesion((int)$actual['id'],$token);
+        $_SESSION['usuario']['sesion_token']=$token;
+        return;
+    }
+    if (!(new AuthModel())->sesionVigente((int)$actual['id'],$token)) {
+        setcookie('sisea_motivo_salida','sesion_reemplazada',time()+120,APP_URL,'',false,true);
+        $_SESSION=[]; session_destroy();
+        header('Location: '.url('login',['motivo'=>'sesion_reemplazada'])); exit;
+    }
+}
 function flash(string $type, string $message): void { $_SESSION['flash'] = compact('type', 'message'); }
 function takeFlash(): ?array { $flash = $_SESSION['flash'] ?? null; unset($_SESSION['flash']); return $flash; }
+function liberarSesion(): void { if (session_status() === PHP_SESSION_ACTIVE) session_write_close(); }
+function reanudarSesion(): void { if (session_status() !== PHP_SESSION_ACTIVE) session_start(); }

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 define('APP_ROOT', dirname(__DIR__));
-define('APP_URL', '/avalon/public/');
+define('APP_URL', '/sisea/public/');
 define('AVALON_LOGISTICA_DATA', getenv('AVALON_LOGISTICA_DATA') ?: 'C:/Avalon/Logistica/data');
 define('AVALON_PLANIF_DATA', getenv('AVALON_PLANIF_DATA') ?: 'C:/Avalon/Planif/data');
 date_default_timezone_set('America/Lima');

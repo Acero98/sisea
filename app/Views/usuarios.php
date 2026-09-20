@@ -11,7 +11,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
 <section class="card">
     <h2>Sincronizar desde Avalon</h2>
     <p>Importa usuario, perfil, zona, localidad, unidad orgánica, almacén, supervisor y estado activo.</p>
-    <form method="post" action="<?= e(url('sincronizar_usuarios')) ?>"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><button>Sincronizar usuarios activos y perfiles</button></form>
+    <form data-sync-form method="post" action="<?= e(url('sincronizar_usuarios')) ?>"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><button data-sync-button>Sincronizar usuarios activos y perfiles</button></form>
 </section>
 <section class="card">
     <h2>Cuentas del portal</h2>

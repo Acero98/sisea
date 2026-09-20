@@ -1,5 +1,5 @@
 <?php
-$flash = takeFlash();
+$flash = $flash ?? takeFlash();
 $date = function ($value) {
     if (!$value || $value === '00000000') return '—';
     $date = DateTime::createFromFormat('Ymd', $value);
@@ -10,6 +10,10 @@ $cotizaciones = $result['cotizaciones'] ?? [];
 $certificaciones = $result['certificaciones'] ?? [];
 $avance = $result['avance'] ?? [];
 $resumenDocumental = $result['resumen_documental'] ?? ['comprobantes' => 0, 'devengados' => 0, 'pagos' => 0];
+$documentoBuscado = $result['documento_buscado'] ?? null;
+$documentosAnulados = $result['documentos_anulados'] ?? [];
+$busquedaAnulada = is_array($documentoBuscado) && strtoupper(trim((string)($documentoBuscado['estado'] ?? ''))) === 'A';
+$tiposBusqueda = ['todo' => 'documento', 'pedido' => 'pedido', 'cotizacion' => 'cotización', 'certificacion' => 'certificación', 'orden_compra' => 'orden de compra', 'orden_servicio' => 'orden de servicio', 'comprobante' => 'factura o boleta', 'devengado' => 'devengado', 'pago' => 'pago'];
 $isService = !empty($result['orden_servicio']);
 $isWarehouse = !empty($result) && !empty($result['pedido']['ES_RETIRO_ALMACEN']);
 $isCancelled = !empty($result) && ($result['pedido']['EST_PEDIDO'] ?? '') === 'A';
@@ -38,23 +42,44 @@ require APP_ROOT . '/app/Views/partials/header.php';
         <?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
         <section class="search-card">
             <h2>Encuentra un documento</h2>
-            <p>Busca por pedido, orden de compra u orden de servicio.</p>
+            <p>Busca por pedido o por cualquier documento vinculado ya sincronizado.</p>
             <form><input type="hidden" name="r" value="seguimiento">
                 <input type="hidden" name="tipo" id="tipo-busqueda" value="<?= e($tipo) ?>">
-                <div class="types"><button type="button" class="<?= $tipo === 'todo' ? 'selected' : '' ?>" data-tipo="todo">Todo</button><button type="button" class="<?= $tipo === 'pedido' ? 'selected' : '' ?>" data-tipo="pedido">Pedido</button><button type="button" class="<?= $tipo === 'orden_compra' ? 'selected' : '' ?>" data-tipo="orden_compra">Orden de compra</button><button type="button" class="<?= $tipo === 'orden_servicio' ? 'selected' : '' ?>" data-tipo="orden_servicio">Orden de servicio</button></div>
+                <div class="types"><button type="button" class="<?= $tipo === 'todo' ? 'selected' : '' ?>" data-tipo="todo">Todo</button><button type="button" class="<?= $tipo === 'pedido' ? 'selected' : '' ?>" data-tipo="pedido">Pedido</button><button type="button" class="<?= $tipo === 'cotizacion' ? 'selected' : '' ?>" data-tipo="cotizacion">Cotización</button><button type="button" class="<?= $tipo === 'certificacion' ? 'selected' : '' ?>" data-tipo="certificacion">Certificación</button><button type="button" class="<?= $tipo === 'orden_compra' ? 'selected' : '' ?>" data-tipo="orden_compra">Orden de compra</button><button type="button" class="<?= $tipo === 'orden_servicio' ? 'selected' : '' ?>" data-tipo="orden_servicio">Orden de servicio</button><button type="button" class="<?= $tipo === 'comprobante' ? 'selected' : '' ?>" data-tipo="comprobante">Factura o boleta</button><button type="button" class="<?= $tipo === 'devengado' ? 'selected' : '' ?>" data-tipo="devengado">Devengado</button><button type="button" class="<?= $tipo === 'pago' ? 'selected' : '' ?>" data-tipo="pago">Pago</button></div>
                 <div class="search-line"><input name="q" aria-label="Número de documento" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
             </form>
         </section>
         <?php if ($term !== '' && !$error && !$result): ?><section class="empty">
-                <h2>No se encontró el pedido <?= e($term) ?></h2>
-                <p>Verifique el número o consulte un pedido existente de Logística.</p>
+                <h2>No se encontró <?= e($tiposBusqueda[$tipo] ?? 'el documento') ?> <?= e($term) ?></h2>
+                <p>Verifique el número o actualice primero las notas correspondientes desde Avalon.</p>
             </section><?php endif; ?><?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-        <?php if ($result): ?><section class="status-card">
+        <?php if ($result): ?>
+            <?php if ($busquedaAnulada): ?><div class="alert error"><b>Documento anulado en Avalon.</b> <?= e(ucfirst($tiposBusqueda[$documentoBuscado['tipo']] ?? $documentoBuscado['tipo'])) ?> <?= e($documentoBuscado['numero']) ?> no forma parte de la ruta vigente del pedido <?= e($result['pedido']['NRO_PEDIDO']) ?>.</div><?php endif; ?>
+            <?php if ($isCancelled): ?><div class="alert error"><b>Nota de pedido anulada.</b> Esta nota no debe considerarse como un proceso vigente.</div><?php endif; ?>
+            <?php if (!$busquedaAnulada && !$isCancelled && count($documentosAnulados) > 0): ?><div class="alert error">Se encontraron <?= e((string)count($documentosAnulados)) ?> documento(s) anulado(s). No se muestran en el detalle ni se consideran como avance válido.</div><?php endif; ?>
+            <section class="status-card">
                 <div class="status-pill">▣ <?= e($final) ?></div>
                 <div><b><?= $isCancelled ? 'Avalon registra el pedido como anulado' : ($resumenDocumental['comprobantes'] > 0 ? $resumenDocumental['comprobantes'] . ' comprobante(s), ' . $resumenDocumental['devengados'] . ' devengado(s) y ' . $resumenDocumental['pagos'] . ' pago(s) encontrados' : 'Estado calculado con los documentos encontrados') ?></b>
                     <p>La ruta diferencia órdenes de compra y órdenes de servicio.</p>
                 </div>
+                <?php if (!empty($esAdministrador)): ?><button type="button" id="mostrar-historial" class="history-button">Historial de cambios</button><?php endif; ?>
             </section>
+            <?php if (!empty($esAdministrador)): ?><section class="card" id="historial-cambios" hidden>
+                <h2>Historial de cambios</h2>
+                <p>Últimos cambios detectados durante las sincronizaciones con Avalon.</p>
+                <?php if ($historial): ?><div class="table-scroll"><table>
+                    <thead><tr><th>Fecha</th><th>Documento</th><th>Cambio</th><th>Campo</th><th>Antes</th><th>Después</th><th>Actualizado por</th></tr></thead>
+                    <tbody><?php foreach ($historial as $cambio): ?><tr>
+                        <td><?= e($cambio['creado_en']) ?></td>
+                        <td><?= e(ucfirst(str_replace('_', ' ', $cambio['tipo_documento'])) . ($cambio['numero_documento'] ? ' · ' . $cambio['numero_documento'] : '')) ?></td>
+                        <td><span class="history-event history-<?= e(strtolower($cambio['evento'])) ?>"><?= e(ucfirst(strtolower($cambio['evento']))) ?></span></td>
+                        <td><?= e($cambio['campo'] ?: 'Documento') ?></td>
+                        <td><?= e($cambio['valor_anterior'] ?? '—') ?></td>
+                        <td><?= e($cambio['valor_nuevo'] ?? '—') ?></td>
+                        <td><?= e($cambio['actualizado_por']) ?></td>
+                    </tr><?php endforeach; ?></tbody>
+                </table></div><?php else: ?><p>Aún no se han detectado cambios para esta nota desde que se activó el historial.</p><?php endif; ?>
+            </section><?php endif; ?>
             <section class="card">
                 <h2>Ruta del proceso</h2>
                 <p class="route-note"><?= $isWarehouse ? 'Ruta de existencia: se sigue el movimiento de salida registrado por Almacén.' : 'Ruta de adquisición: se sigue la documentación vinculada a la compra o al servicio.' ?></p>
@@ -231,6 +256,9 @@ require APP_ROOT . '/app/Views/partials/header.php';
 (function () {
     var tipoInput = document.getElementById('tipo-busqueda');
     document.querySelectorAll('[data-tipo]').forEach(function (option) { option.addEventListener('click', function () { tipoInput.value = option.dataset.tipo; document.querySelectorAll('[data-tipo]').forEach(function (item) { item.classList.toggle('selected', item === option); }); }); });
+    var historyButton = document.getElementById('mostrar-historial');
+    var historyPanel = document.getElementById('historial-cambios');
+    if (historyButton && historyPanel) historyButton.addEventListener('click', function () { historyPanel.hidden = !historyPanel.hidden; historyButton.textContent = historyPanel.hidden ? 'Historial de cambios' : 'Ocultar historial'; });
 }());
 </script>
 <?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>

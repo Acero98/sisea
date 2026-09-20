@@ -9,7 +9,7 @@ final class SeguimientoSnapshotService
     {
         $this->reader = new DbfReader();
     }
-    public function sincronizar(array $filtro = []): int
+    public function sincronizar(array $filtro = [], ?int $usuarioId = null): int
     {
         $this->instalar();
         $pdo = db();
@@ -24,58 +24,76 @@ final class SeguimientoSnapshotService
             $expedientes = [];
             $ordenes = [];
             $comprobantes = [];
+            $documentos = [];
             foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO', 'CODUNIORG', 'USR_COD', 'USRCODIGO', 'USRNOMBRE', 'EST_PEDIDO', 'FEC_EMISIO', 'FEC_ULTACT', 'USRDATE', 'PRIORIDAD', 'TIPO_PED', 'COMENTARIO', 'DOCCERTI']) as $r) {
                 $n = $r['NRO_PEDIDO'];
                 if ($n === '') continue;
                 if (!$this->incluye($r, $filtro)) continue;
-                $nivel = $r['EST_PEDIDO'] === 'A' ? 0 : ($r['PRIORIDAD'] === '4' ? 2 : ($r['DOCCERTI'] !== '' ? 3 : 1));
-                $etapa = $r['EST_PEDIDO'] === 'A' ? 'Pedido anulado' : ($r['PRIORIDAD'] === '4' ? 'Pendiente de retiro de almacén' : ($r['DOCCERTI'] !== '' ? 'Certificación' : 'Pedido'));
-                $notas[$n] = ['nro_pedido' => $n, 'unidad_organica' => $r['CODUNIORG'], 'unidad_nombre' => $unidades[$r['CODUNIORG']] ?? null, 'usuario_codigo' => $r['USRCODIGO'] ?: $r['USR_COD'], 'usuario_nombre' => $r['USRNOMBRE'], 'estado_logistica' => $r['EST_PEDIDO'], 'fecha_emision' => $this->fecha($r['FEC_EMISIO']), 'fecha_registro' => $this->fecha($r['FEC_ULTACT'] ?: $r['USRDATE']), 'tipo_pedido' => $r['TIPO_PED'], 'prioridad' => $r['PRIORIDAD'], 'sustentacion' => trim($r['COMENTARIO']), 'etapa' => $etapa, 'etapa_nivel' => $nivel];
+                $nivel = $r['EST_PEDIDO'] === 'A' ? 0 : ($r['PRIORIDAD'] === '4' ? 2 : 1);
+                $etapa = $r['EST_PEDIDO'] === 'A' ? 'Pedido anulado' : ($r['PRIORIDAD'] === '4' ? 'Pendiente de retiro de almacén' : 'Pedido');
+                $notas[$n] = ['nro_pedido' => $n, 'unidad_organica' => $r['CODUNIORG'], 'unidad_nombre' => $unidades[$r['CODUNIORG']] ?? null, 'usuario_codigo' => $r['USRCODIGO'] ?: $r['USR_COD'], 'usuario_nombre' => $r['USRNOMBRE'], 'estado_logistica' => $r['EST_PEDIDO'], 'fecha_emision' => $this->fecha($r['FEC_EMISIO']), 'fecha_registro' => $this->fecha($r['FEC_ULTACT'] ?: $r['USRDATE']), 'tipo_pedido' => $r['TIPO_PED'], 'prioridad' => $r['PRIORIDAD'], 'sustentacion' => trim($r['COMENTARIO']), 'etapa' => $etapa, 'etapa_nivel' => $nivel, 'DOCCERTI' => $r['DOCCERTI']];
             }
-            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40025.DBF', ['NRO_EXPE', 'REFERENCIA', 'ESTADO']) as $r) {
+            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40025.DBF', ['NRO_EXPE', 'REFERENCIA', 'ESTADO', 'FEC_COTIZA']) as $r) {
                 $n = $this->pedido($r['REFERENCIA']);
-                if ($n && isset($notas[$n]) && !$this->anulado($r['ESTADO'])) {
+                if ($n && isset($notas[$n])) {
                     $expedientes[$r['NRO_EXPE']] = $n;
-                    $this->etapa($notas, $n, 'Cotización', 2);
+                    $this->documento($documentos, $n, 'cotizacion', $r['NRO_EXPE'], $r['ESTADO'], $this->fecha($r['FEC_COTIZA']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $n, 'Cotización', 2);
                 }
             }
-            $certDirectos = [];
-            foreach ($notas as $n => $nota) if (($nota['etapa_nivel'] ?? 0) > 0 && $nota['etapa'] === 'Certificación') $certDirectos[$nota['nro_pedido']] = $n;
-            foreach ($this->reader->rows(AVALON_PLANIF_DATA . '/cabcertifica.DBF', ['CODCER', 'PROCESO', 'ESTADO']) as $r) {
-                if ($this->anulado($r['ESTADO'])) continue;
-                preg_match_all('/\\b\\d{7}\\b/', $r['PROCESO'], $matches);
-                foreach (array_unique($matches[0]) as $e) if (isset($expedientes[$e])) $this->etapa($notas, $expedientes[$e], 'Certificación', 3);
+            $certificadosDirectos = [];
+            foreach ($notas as $n => $nota) if (trim($nota['DOCCERTI'] ?? '') !== '') $certificadosDirectos[trim($nota['DOCCERTI'])] = (string)$n;
+            foreach ($this->reader->rows(AVALON_PLANIF_DATA . '/cabcertifica.DBF', ['CODCER', 'PROCESO', 'ESTADO', 'FECHA']) as $r) {
+                if (isset($certificadosDirectos[$r['CODCER']])) {
+                    $n = $certificadosDirectos[$r['CODCER']];
+                    $this->documento($documentos, $n, 'certificacion', $r['CODCER'], $r['ESTADO'], $this->fecha($r['FECHA']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $n, 'Certificación', 3);
+                }
+                preg_match_all('/(?<!\\d)\\d{7}(?!\\d)/', $r['PROCESO'], $matches);
+                foreach (array_unique($matches[0]) as $e) if (isset($expedientes[$e])) {
+                    $this->documento($documentos, $expedientes[$e], 'certificacion', $r['CODCER'], $r['ESTADO'], $this->fecha($r['FECHA']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $expedientes[$e], 'Certificación', 3);
+                }
             }
-            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40015.DBF', ['NRO_ORDCMP', 'NRO_EXPE', 'REFER', 'EST_ORDCMP']) as $r) {
-                if ($this->anulado($r['EST_ORDCMP'])) continue;
+            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40015.DBF', ['NRO_ORDCMP', 'NRO_EXPE', 'REFER', 'EST_ORDCMP', 'FEC_EMISIO']) as $r) {
                 $n = $expedientes[$r['NRO_EXPE']] ?? $this->pedido($r['REFER']);
                 if ($n && isset($notas[$n])) {
                     $ordenes['OC' . $r['NRO_ORDCMP']] = $n;
-                    $this->etapa($notas, $n, 'Orden de compra', 4);
+                    $this->documento($documentos, $n, 'orden_compra', $r['NRO_ORDCMP'], $r['EST_ORDCMP'], $this->fecha($r['FEC_EMISIO']));
+                    if (!$this->anulado($r['EST_ORDCMP'])) $this->etapa($notas, $n, 'Orden de compra', 4);
                 }
             }
-            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40017.DBF', ['NRO_SERVIC', 'NRO_EXPE', 'REFER', 'ESTADO']) as $r) {
-                if ($this->anulado($r['ESTADO'])) continue;
+            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40017.DBF', ['NRO_SERVIC', 'NRO_EXPE', 'REFER', 'ESTADO', 'FEC_EMISIO']) as $r) {
                 $n = $expedientes[$r['NRO_EXPE']] ?? $this->pedido($r['REFER']);
                 if ($n && isset($notas[$n])) {
                     $ordenes['OS' . $r['NRO_SERVIC']] = $n;
-                    $this->etapa($notas, $n, 'Orden de servicio', 4);
+                    $this->documento($documentos, $n, 'orden_servicio', $r['NRO_SERVIC'], $r['ESTADO'], $this->fecha($r['FEC_EMISIO']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $n, 'Orden de servicio', 4);
                 }
             }
-            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40030.DBF', ['COMPROB', 'NRO_SERVIC', 'NRO_ORDCMP', 'ESTADO']) as $r) {
-                if ($this->anulado($r['ESTADO'])) continue;
+            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40030.DBF', ['COMPROB', 'NRO_SERVIC', 'NRO_ORDCMP', 'DOCSER', 'DOCNRO', 'ESTADO', 'FECCOMP']) as $r) {
                 $n = $ordenes['OC' . $r['NRO_ORDCMP']] ?? $ordenes['OS' . $r['NRO_SERVIC']] ?? null;
                 if ($n) {
                     $comprobantes[$r['COMPROB']] = $n;
-                    $this->etapa($notas, $n, 'Factura o boleta', 5);
+                    $numeroVisible = trim($r['DOCSER'] . ($r['DOCSER'] !== '' && $r['DOCNRO'] !== '' ? '-' : '') . $r['DOCNRO']);
+                    $this->documento($documentos, $n, 'comprobante', $numeroVisible !== '' ? $numeroVisible : $r['COMPROB'], $r['ESTADO'], $this->fecha($r['FECCOMP']));
+                    $this->documento($documentos, $n, 'comprobante_interno', $r['COMPROB'], $r['ESTADO'], $this->fecha($r['FECCOMP']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $n, 'Factura o boleta', 5);
                 }
             }
-            foreach ($this->reader->rows('C:/Avalon/contab/data/FCON0024.DBF', ['OCOS']) as $r) {
+            foreach ($this->reader->rows('C:/Avalon/contab/data/FCON0024.DBF', ['OCOS', 'FCONTABLE', 'DOC1', 'FECT']) as $r) {
                 $o = strtoupper(preg_replace('/\s+/', '', $r['OCOS']));
-                if (isset($ordenes[$o])) $this->etapa($notas, $ordenes[$o], 'Devengado', 6);
+                if (isset($ordenes[$o])) {
+                    $this->documento($documentos, $ordenes[$o], 'devengado', $r['DOC1'], '', $this->fecha($r['FECT']));
+                    $this->etapa($notas, $ordenes[$o], 'Devengado', 6);
+                }
             }
-            foreach ($this->reader->rows('C:/Avalon/Finanzas/data/rfin0019.DBF', ['COMPROB', 'ESTADO']) as $r) {
-                if (isset($comprobantes[$r['COMPROB']]) && !$this->anulado($r['ESTADO'])) $this->etapa($notas, $comprobantes[$r['COMPROB']], 'Pago', 7);
+            foreach ($this->reader->rows('C:/Avalon/Finanzas/data/rfin0019.DBF', ['COMPROB', 'FCONTABLE', 'CMPBTE', 'DOC1', 'ESTADO']) as $r) {
+                if (isset($comprobantes[$r['COMPROB']])) {
+                    $pago = trim($r['CMPBTE'] . ' ' . (ltrim($r['DOC1'], '0') ?: '0'));
+                    $this->documento($documentos, $comprobantes[$r['COMPROB']], 'pago', $pago, $r['ESTADO'], $this->fecha($r['FCONTABLE']));
+                    if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $comprobantes[$r['COMPROB']], 'Pago', 7);
+                }
             }
             foreach ($this->reader->rows(AVALON_LOGISTICA_DATA . '/sum40008.DBF', ['NRO_PEDIDO', 'ESTMOV']) as $r) {
                 $n = $r['NRO_PEDIDO'];
@@ -86,18 +104,36 @@ final class SeguimientoSnapshotService
             }
             $sql = 'INSERT INTO seguimiento_notas(nro_pedido,unidad_organica,unidad_nombre,usuario_codigo,usuario_nombre,estado_logistica,fecha_emision,fecha_registro,tipo_pedido,prioridad,sustentacion,etapa,etapa_nivel,sincronizado_en) VALUES(:nro_pedido,:unidad_organica,:unidad_nombre,:usuario_codigo,:usuario_nombre,:estado_logistica,:fecha_emision,:fecha_registro,:tipo_pedido,:prioridad,:sustentacion,:etapa,:etapa_nivel,NOW()) ON DUPLICATE KEY UPDATE unidad_organica=VALUES(unidad_organica),unidad_nombre=VALUES(unidad_nombre),usuario_codigo=VALUES(usuario_codigo),usuario_nombre=VALUES(usuario_nombre),estado_logistica=VALUES(estado_logistica),fecha_emision=VALUES(fecha_emision),fecha_registro=VALUES(fecha_registro),tipo_pedido=VALUES(tipo_pedido),prioridad=VALUES(prioridad),sustentacion=VALUES(sustentacion),etapa=VALUES(etapa),etapa_nivel=VALUES(etapa_nivel),sincronizado_en=NOW()';
             $stmt = $pdo->prepare($sql);
+            $borrarDocumentos = $pdo->prepare('DELETE FROM seguimiento_documentos WHERE nro_pedido=:nro_pedido');
+            $guardarDocumento = $pdo->prepare('INSERT INTO seguimiento_documentos(nro_pedido,tipo,numero,estado,fecha,sincronizado_en) VALUES(:nro_pedido,:tipo,:numero,:estado,:fecha,NOW()) ON DUPLICATE KEY UPDATE estado=VALUES(estado),fecha=VALUES(fecha),sincronizado_en=NOW()');
+            $consultarNotaAnterior = $pdo->prepare('SELECT unidad_organica,estado_logistica,fecha_emision,fecha_registro,prioridad,sustentacion,etapa FROM seguimiento_notas WHERE nro_pedido=:nro_pedido');
+            $consultarDocumentosAnteriores = $pdo->prepare('SELECT tipo,numero,estado,fecha FROM seguimiento_documentos WHERE nro_pedido=:nro_pedido');
+            $guardarHistorial = $pdo->prepare('INSERT INTO seguimiento_historial(sincronizacion_id,usuario_id,nro_pedido,tipo_documento,numero_documento,evento,campo,valor_anterior,valor_nuevo,creado_en) VALUES(:sincronizacion_id,:usuario_id,:nro_pedido,:tipo_documento,:numero_documento,:evento,:campo,:valor_anterior,:valor_nuevo,NOW())');
+            $documentosPorPedido = [];
+            foreach ($documentos as $documento) $documentosPorPedido[$documento['nro_pedido']][] = $documento;
             $pdo->beginTransaction();
 
             $i = 0;
 
             foreach ($notas as $nota) {
-                $stmt->execute($nota);
+                $consultarNotaAnterior->execute(['nro_pedido' => $nota['nro_pedido']]);
+                $notaAnterior = $consultarNotaAnterior->fetch() ?: null;
+                $consultarDocumentosAnteriores->execute(['nro_pedido' => $nota['nro_pedido']]);
+                $documentosAnteriores = $consultarDocumentosAnteriores->fetchAll();
+                $this->registrarCambiosNota($guardarHistorial, $syncId, $usuarioId, $notaAnterior, $nota);
+                $this->registrarCambiosDocumentos($guardarHistorial, $syncId, $usuarioId, $nota['nro_pedido'], $documentosAnteriores, $documentosPorPedido[$nota['nro_pedido']] ?? [], $notaAnterior !== null);
+                $borrarDocumentos->execute(['nro_pedido' => $nota['nro_pedido']]);
+                $datoNota = $nota;
+                unset($datoNota['DOCCERTI']);
+                $stmt->execute($datoNota);
 
                 if (++$i % 1000 === 0) {
                     $pdo->commit();
                     $pdo->beginTransaction();
                 }
             }
+
+            foreach ($documentos as $documento) $guardarDocumento->execute($documento);
 
             $pdo->commit();
 
@@ -125,7 +161,9 @@ final class SeguimientoSnapshotService
     }
     private function instalar(): void
     {
-        foreach (explode(";", (string)file_get_contents(APP_ROOT . '/database/migrations/003_seguimiento_local.sql')) as $sql) if (trim($sql) !== '') db()->exec($sql);
+        foreach (['003_seguimiento_local.sql', '007_seguimiento_documentos.sql', '008_seguimiento_historial.sql'] as $migration) {
+            foreach (explode(";", (string)file_get_contents(APP_ROOT . '/database/migrations/' . $migration)) as $sql) if (trim($sql) !== '') db()->exec($sql);
+        }
         try {
             db()->exec('ALTER TABLE seguimiento_notas ADD COLUMN sustentacion TEXT NULL AFTER prioridad');
         } catch (PDOException $e) {/* La columna ya existe. */
@@ -198,6 +236,56 @@ final class SeguimientoSnapshotService
         }
 
         return 'Sincronización de solo lectura desde Avalon';
+    }
+    private function registrarCambiosNota(PDOStatement $stmt, int $syncId, ?int $usuarioId, ?array $anterior, array $actual): void
+    {
+        if ($anterior === null) {
+            $this->guardarCambio($stmt, $syncId, $usuarioId, $actual['nro_pedido'], 'pedido', $actual['nro_pedido'], 'AGREGADO', null, null, 'Nota incorporada desde Avalon');
+            return;
+        }
+        $campos = ['unidad_organica' => 'Unidad orgánica', 'estado_logistica' => 'Estado en Logística', 'fecha_emision' => 'Fecha de emisión', 'fecha_registro' => 'Fecha de registro', 'prioridad' => 'Prioridad', 'sustentacion' => 'Sustentación', 'etapa' => 'Última etapa'];
+        foreach ($campos as $campo => $etiqueta) {
+            $antes = (string)($anterior[$campo] ?? '');
+            $despues = (string)($actual[$campo] ?? '');
+            if ($antes === $despues) continue;
+            $evento = $campo === 'estado_logistica' && $despues === 'A' ? 'ANULADO' : ($campo === 'estado_logistica' && $antes === 'A' ? 'REACTIVADO' : 'MODIFICADO');
+            $this->guardarCambio($stmt, $syncId, $usuarioId, $actual['nro_pedido'], 'pedido', $actual['nro_pedido'], $evento, $etiqueta, $antes, $despues);
+        }
+    }
+    private function registrarCambiosDocumentos(PDOStatement $stmt, int $syncId, ?int $usuarioId, string $pedido, array $anteriores, array $actuales, bool $notaExistia): void
+    {
+        $indexar = static function (array $filas): array {
+            $salida = [];
+            foreach ($filas as $fila) $salida[$fila['tipo'] . '|' . $fila['numero']] = $fila;
+            return $salida;
+        };
+        $antes = $indexar($anteriores);
+        $despues = $indexar($actuales);
+        if ($notaExistia) foreach ($despues as $clave => $documento) {
+            if (!isset($antes[$clave])) {
+                $this->guardarCambio($stmt, $syncId, $usuarioId, $pedido, $documento['tipo'], $documento['numero'], 'AGREGADO', null, null, $documento['estado'] ?? 'Documento registrado');
+                continue;
+            }
+            foreach (['estado' => 'Estado', 'fecha' => 'Fecha'] as $campo => $etiqueta) {
+                $valorAnterior = (string)($antes[$clave][$campo] ?? '');
+                $valorNuevo = (string)($documento[$campo] ?? '');
+                if ($valorAnterior === $valorNuevo) continue;
+                $evento = $campo === 'estado' && $valorNuevo === 'A' ? 'ANULADO' : ($campo === 'estado' && $valorAnterior === 'A' ? 'REACTIVADO' : 'MODIFICADO');
+                $this->guardarCambio($stmt, $syncId, $usuarioId, $pedido, $documento['tipo'], $documento['numero'], $evento, $etiqueta, $valorAnterior, $valorNuevo);
+            }
+        }
+        foreach ($antes as $clave => $documento) if (!isset($despues[$clave])) $this->guardarCambio($stmt, $syncId, $usuarioId, $pedido, $documento['tipo'], $documento['numero'], 'RETIRADO', null, $documento['estado'] ?? 'Documento relacionado', null);
+    }
+    private function guardarCambio(PDOStatement $stmt, int $syncId, ?int $usuarioId, string $pedido, string $tipo, ?string $numero, string $evento, ?string $campo, ?string $anterior, ?string $nuevo): void
+    {
+        $stmt->execute(['sincronizacion_id' => $syncId, 'usuario_id' => $usuarioId, 'nro_pedido' => $pedido, 'tipo_documento' => $tipo, 'numero_documento' => $numero, 'evento' => $evento, 'campo' => $campo, 'valor_anterior' => $anterior, 'valor_nuevo' => $nuevo]);
+    }
+    private function documento(array &$documentos, $pedido, string $tipo, string $numero, string $estado, ?string $fecha): void
+    {
+        $pedido = (string)$pedido;
+        $numero = trim($numero);
+        if ($numero === '') return;
+        $documentos[$pedido . '|' . $tipo . '|' . $numero] = ['nro_pedido' => $pedido, 'tipo' => $tipo, 'numero' => $numero, 'estado' => trim($estado) ?: null, 'fecha' => $fecha];
     }
     private function etapa(array &$n, string $pedido, string $etapa, int $nivel): void
     {

@@ -1,4 +1,11 @@
-<?php $flash = takeFlash(); ?>
+<?php
+$flash = takeFlash();
+$sesionReemplazada = (string)($_GET['motivo'] ?? '') === 'sesion_reemplazada'
+    || (string)($_COOKIE['sisea_motivo_salida'] ?? '') === 'sesion_reemplazada';
+if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
+    setcookie('sisea_motivo_salida','',time()-3600,APP_URL,'',false,true);
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -35,7 +42,13 @@
             <span class="access-eyebrow">PORTAL DE CONSULTAS</span>
             <h2 id="access-title">Bienvenido de nuevo</h2>
             <p>Ingresa con tu cuenta para continuar.</p>
-            <?php if ($flash): ?><div class="alert error" role="alert"><?= e($flash['message']) ?></div><?php endif; ?>
+            <?php if ($sesionReemplazada): ?>
+                <div class="alert error" role="alert">
+                    Su sesión se cerró porque esta cuenta inició sesión en otro equipo o navegador.
+                </div>
+            <?php elseif ($flash): ?>
+                <div class="alert error" role="alert"><?= e($flash['message']) ?></div>
+            <?php endif; ?>
             <form method="post" action="<?= e(url('auth')) ?>">
                 <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
                 <label for="usuario">Usuario</label>

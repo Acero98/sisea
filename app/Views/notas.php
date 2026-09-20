@@ -71,6 +71,13 @@ $glosaCorta = static function (string $texto): string {
         : implode(' ', $palabras);
 };
 
+$unidadCorta = static function (string $nombre): string {
+    $palabras = preg_split('/\s+/u', trim($nombre), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    return count($palabras) > 3
+        ? implode(' ', array_slice($palabras, 0, 3)) . '…'
+        : implode(' ', $palabras);
+};
+
 $link = static function (int $pagina) use (
     $alcance,
     $busqueda,
@@ -218,6 +225,8 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
         <button>Buscar</button>
 
+        <a class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda])) ?>">Exportar CSV</a>
+
         <a
             class="clear-search"
             href="<?= e(url('notas', ['vista' => $alcance])) ?>"
@@ -282,7 +291,14 @@ require APP_ROOT . '/app/Views/partials/header.php';
                         </td>
 
                         <td>
-                            <?= e($nota['UNIDAD_LABEL']) ?>
+                            <?php
+                            $codigoUnidad = trim((string)($nota['unidad_organica'] ?? ''));
+                            $nombreUnidad = trim((string)($nota['unidad_nombre'] ?? ''));
+                            $unidadCompleta = trim(($codigoUnidad ?: '—') . ' · ' . ($nombreUnidad ?: 'Unidad no identificada'));
+                            ?>
+                            <span class="unidad-corta" title="<?= e($unidadCompleta) ?>">
+                                <?= e(($codigoUnidad ?: '—') . ' · ' . $unidadCorta($nombreUnidad ?: 'Unidad no identificada')) ?>
+                            </span>
                         </td>
 
                         <td>
@@ -384,6 +400,9 @@ require APP_ROOT . '/app/Views/partials/header.php';
         aria-label="Paginación de notas"
     >
         <?php if ($resultado['pagina'] > 1): ?>
+            <a href="<?= e($link(1)) ?>">« Primero</a>
+        <?php endif; ?>
+        <?php if ($resultado['pagina'] > 1): ?>
             <a href="<?= e($link($resultado['pagina'] - 1)) ?>">
                 ← Anterior
             </a>
@@ -402,6 +421,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             <a href="<?= e($link($resultado['pagina'] + 1)) ?>">
                 Siguiente →
             </a>
+            <a href="<?= e($link($resultado['paginas'])) ?>">Último »</a>
         <?php endif; ?>
     </nav>
 </section>
@@ -419,7 +439,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             </p>
         </div>
 
-        <form
+        <form data-sync-form
             method="post"
             action="<?= e(url('sincronizar_seguimiento')) ?>"
         >
@@ -435,7 +455,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 value="<?= e($tipoActualizacion) ?>"
             >
 
-            <button type="submit">
+            <button type="submit" data-sync-button>
                 ↻ <?= e($textoActualizar) ?>
             </button>
         </form>
