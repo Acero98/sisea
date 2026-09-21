@@ -2,9 +2,7 @@
 
 $flash = takeFlash();
 
-$esAdministradorGlobal =
-    ($acceso['rol'] ?? '') === 'ADMIN'
-    && ($acceso['alcance'] ?? '') === 'GLOBAL';
+$esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
 
 $codigoAvalon = trim(
     (string) ($acceso['avalon_codigo'] ?? '')

@@ -7,13 +7,12 @@ final class NotasController
     public function index(): void
     {
         requiereLogin();
+        if (!tienePermiso('seguimiento')) { http_response_code(403); exit('No tiene acceso a las notas.'); }
 
         $acceso = $this->acceso();
         $vistaSolicitada = (string) ($_GET['vista'] ?? '');
 
-        $esAdministradorGlobal =
-            ($acceso['rol'] ?? '') === 'ADMIN'
-            && ($acceso['alcance'] ?? '') === 'GLOBAL';
+        $esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
 
         $tieneCodigoAvalon =
             trim((string) ($acceso['avalon_codigo'] ?? '')) !== '';
@@ -55,14 +54,13 @@ final class NotasController
     public function sincronizar(): void
     {
         requiereLogin();
+        if (!tienePermiso('seguimiento')) { http_response_code(403); exit('No tiene acceso a las notas.'); }
         validarCsrf();
 
         $acceso = $this->acceso();
         $tipo = (string) ($_POST['alcance'] ?? '');
 
-        $esAdministradorGlobal =
-            ($acceso['rol'] ?? '') === 'ADMIN'
-            && ($acceso['alcance'] ?? '') === 'GLOBAL';
+        $esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
 
         $codigoAvalon = trim(
             (string) ($acceso['avalon_codigo'] ?? '')
@@ -148,7 +146,7 @@ final class NotasController
         try {
             $cantidad = (new SeguimientoSnapshotService())
                 ->sincronizar($filtro, (int)($acceso['id'] ?? 0) ?: null);
-            $mensajeResultado = $cantidad . ' registros correspondientes a ' . $descripcion . ' fueron actualizados desde Avalon.';
+            $mensajeResultado = $cantidad . ' registros correspondientes a ' . $descripcion . ' fueron revisados desde Avalon.';
             $control->finalizar(true, $mensajeResultado);
             reanudarSesion();
             flash(

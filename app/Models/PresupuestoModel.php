@@ -7,7 +7,7 @@ final class PresupuestoModel
 
     public function consultar(string $unidad, array $filtro = [], bool $global = false): array
     {
-        $cache = APP_ROOT . '/storage/cache/presupuesto-v3-' . sha1($unidad . '|' . (int)$global . '|' . json_encode($filtro)) . '.json';
+        $cache = APP_ROOT . '/storage/cache/presupuesto-v5-' . sha1($unidad . '|' . (int)$global . '|' . json_encode($filtro)) . '.json';
         if (is_file($cache) && filemtime($cache) > time() - 300) {
             $saved = json_decode((string) file_get_contents($cache), true);
             if (is_array($saved)) return $saved;
@@ -51,7 +51,7 @@ final class PresupuestoModel
             if (!in_array($clase, $permitidas, true) || !in_array($clase, $porOrigen[$fila['origen']], true)) continue;
             $stmt->execute([$unidad, $fila['actividad'], $fila['unidad_propietaria'], $fila['cuenta'], $clase]);
         }
-        foreach (glob(APP_ROOT . '/storage/cache/presupuesto-v2-*.json') ?: [] as $file) @unlink($file);
+        foreach (glob(APP_ROOT . '/storage/cache/presupuesto-v5-*.json') ?: [] as $file) @unlink($file);
     }
 
     public function clave(string $actividad, string $unidad, string $cuenta): string { return $actividad . '|' . $unidad . '|' . $cuenta; }
@@ -66,13 +66,14 @@ final class PresupuestoModel
 
     private function fuentes(string $unidad, array $catalogo, bool $incluirExcluidas = false, bool $global = false): array
     {
-        $reader = new DbfReader(); $out = [];
+        $reader = new DbfReader(false); $out = []; $unidades=[];
+        foreach($reader->rows(AVALON_PLANIF_DATA.'/unidad.dbf',['COD_UNIDAD','DES_UNIDAD']) as $u)$unidades[trim($u['COD_UNIDAD'])]=trim($u['DES_UNIDAD']);
         foreach ($reader->rows(AVALON_PLANIF_DATA . '/mae_proy.dbf', ['COD_PROY','DESC_PROY','CTA_CTBLE','COD_INV','COD_UNIDAD']) as $fila) {
             $actividad = trim($fila['COD_PROY']); $propietaria = trim($fila['COD_UNIDAD']); $cuenta = trim($fila['CTA_CTBLE']);
             $clave = $this->clave($actividad, $propietaria, $cuenta); $esPropia = !$global && $propietaria === $unidad;
             if (!$global && !$esPropia && !isset($catalogo[$clave])) continue;
             $clase = $catalogo[$clave] ?? 'PROPIA_NO_ADMINISTRADA'; if ($clase === 'EXCLUIDA' && !$incluirExcluidas && !$global) continue;
-            $out[$clave] = ['actividad'=>$actividad, 'actividad_nombre'=>trim($fila['DESC_PROY']), 'actividad_presupuestal'=>'01.01.'.substr($actividad,0,2).'.'.substr($actividad,2,2), 'unidad_propietaria'=>$propietaria, 'cuenta'=>$cuenta, 'cod_inv'=>trim($fila['COD_INV']), 'clasificacion'=>$global?'PROPIA_NO_ADMINISTRADA':$clase, 'origen'=>$esPropia?'PROPIA':'EXTERNA'];
+            $out[$clave] = ['actividad'=>$actividad, 'actividad_nombre'=>trim($fila['DESC_PROY']), 'actividad_presupuestal'=>'01.01.'.substr($actividad,0,2).'.'.substr($actividad,2,2), 'unidad_propietaria'=>$propietaria, 'unidad_nombre'=>$unidades[$propietaria]??'', 'cuenta'=>$cuenta, 'cod_inv'=>trim($fila['COD_INV']), 'clasificacion'=>$global?'PROPIA_NO_ADMINISTRADA':$clase, 'origen'=>$esPropia?'PROPIA':'EXTERNA'];
         }
         return array_values($out);
     }
@@ -81,7 +82,7 @@ final class PresupuestoModel
     {
         $porRecurso=[]; foreach($fuentes as $i=>$fuente)$porRecurso[$fuente['actividad_presupuestal'].'|'.$fuente['cuenta']][]=$i;
         $compromisos=[]; $anio=date('Y');
-        foreach((new DbfReader())->rows(AVALON_PLANIF_DATA.'/con_apru.dbf',['COD_DOC','COD_CCP','COD_CC','COD_INV','NUM_MES','VALOR','FECHA']) as $movimiento){
+        foreach((new DbfReader(false))->rows(AVALON_PLANIF_DATA.'/con_apru.dbf',['COD_DOC','COD_CCP','COD_CC','COD_INV','NUM_MES','VALOR','FECHA']) as $movimiento){
             $fecha=preg_replace('/\D/','',(string)$movimiento['FECHA']); if(substr($fecha,0,4)!==$anio||trim($movimiento['COD_DOC'])==='EX')continue;
             $mes=(int)$movimiento['NUM_MES']; if($mes<1||$mes>12)continue;
             $clave=trim($movimiento['COD_CCP']).'|'.trim($movimiento['COD_CC']).'|'.trim($movimiento['COD_INV']);
@@ -90,7 +91,7 @@ final class PresupuestoModel
         $items=[];$grupos=[];
         foreach(['PROPIA_ADMINISTRADA'=>'Propio administrado por Informática','EXTERNA_ADMINISTRADA'=>'Presupuesto de Gerencias administrado por Informática','PROPIA_NO_ADMINISTRADA'=>'Presupuesto propio no administrado por Informática'] as $id=>$nombre)$grupos[$id]=['nombre'=>$nombre,'items'=>[],'total'=>$this->totalVacio()];
         $mensual=[];$campos=['COD_PRE','ORIGEN','COD_CCP1','DESCRIP','PIA','PRO_TOT'];foreach(array_keys(self::MESES)as$mes){$campos[]='EJE_'.$mes;$campos[]='DEV_'.$mes;}
-        foreach((new DbfReader())->rows(AVALON_PLANIF_DATA.'/tab_recu.dbf',$campos)as$fila){
+        foreach((new DbfReader(false))->rows(AVALON_PLANIF_DATA.'/tab_recu.dbf',$campos)as$fila){
             if(trim($fila['ORIGEN'])!=='O')continue;$indices=$porRecurso[trim($fila['COD_PRE']).'|'.trim($fila['COD_CCP1'])]??[];
             foreach($indices as$i){$item=$fuentes[$i];$ejecucion=$devengado=0.0;$porMes=[];
                 foreach(self::MESES as$mes=>$nombre){$numero=array_search($mes,array_keys(self::MESES),true)+1;$ejec=(float)($compromisos[$item['actividad_presupuestal'].'|'.$item['cuenta'].'|'.$item['cod_inv']][$numero]??0);$dev=(float)$fila['DEV_'.$mes];$porMes[$mes]=$ejec;$ejecucion+=$ejec;$devengado+=$dev;if($item['origen']==='PROPIA'||$item['clasificacion']==='EXTERNA_ADMINISTRADA'){$mensual[$mes]['mes']=$nombre;$mensual[$mes]['ejecucion']=($mensual[$mes]['ejecucion']??0)+$ejec;$mensual[$mes]['devengado']=($mensual[$mes]['devengado']??0)+$dev;}}

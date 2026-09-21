@@ -5,17 +5,17 @@ final class SeguimientoModel
 {
     private DbfReader $reader;
     public function __construct() { $this->reader = new DbfReader(); }
-    public function buscar(string $term, string $tipo = 'todo', array $acceso = []): ?array
+    public function buscar(string $term, string $tipo = 'todo', array $acceso = [], ?string $pedidoSeleccionado = null): ?array
     {
         $term = mb_strtoupper(trim($term)); if ($term === '') return null;
         $tipo = in_array($tipo, ['todo', 'pedido', 'cotizacion', 'certificacion', 'orden_compra', 'orden_servicio', 'comprobante', 'devengado', 'pago'], true) ? $tipo : 'todo';
-        $cacheKey = $tipo . '-' . $term;
+        $cacheKey = $tipo . '-' . $term . '-' . ($pedidoSeleccionado ?? '');
         $cached = $this->cache($cacheKey);
         if ($cached !== null) return $cached;
         $documentoBuscado = null;
         $headers = in_array($tipo, ['todo', 'pedido'], true) ? $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $term) : [];
         if (!$headers && $tipo !== 'pedido') {
-            $documentoBuscado = $this->documentoDesdeCopiaLocal($term, $tipo);
+            $documentoBuscado = $this->documentoDesdeCopiaLocal($term, $tipo, $pedidoSeleccionado);
             $pedidoResuelto = ($documentoBuscado['nro_pedido'] ?? null) ?? $this->pedidoDesdeOrden($term, $tipo);
             if ($pedidoResuelto !== null) $headers = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $pedidoResuelto);
         }
@@ -243,9 +243,51 @@ final class SeguimientoModel
         return null;
     }
     /** Resuelve documentos ya sincronizados sin recorrer archivos DBF de Avalon. */
-    private function documentoDesdeCopiaLocal(string $numero, string $tipo): ?array
+    public function buscarCoincidencias(string $numero, string $tipo, array $acceso): array
     {
-        $tipos = [
+        $tipos = $this->tiposDocumento($tipo);
+        if (!$tipos) return [];
+        $marks = implode(',', array_fill(0, count($tipos), '?'));
+        $sql = 'SELECT d.nro_pedido,d.tipo,d.numero,d.estado,d.fecha,d.proveedor,d.orden_tipo,d.orden_numero,n.unidad_organica,n.unidad_nombre,n.usuario_codigo,n.usuario_nombre,n.estado_logistica FROM seguimiento_documentos d INNER JOIN seguimiento_notas n ON n.nro_pedido=d.nro_pedido WHERE (d.numero=? OR (d.tipo=\'pago\' AND d.numero LIKE ?)) AND d.tipo IN (' . $marks . ')';
+        $params = array_merge([$numero, '% ' . (ltrim($numero, '0') ?: '0')], $tipos);
+        if (($acceso['alcance'] ?? '') !== 'GLOBAL') {
+            $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
+            if ($unidad === '' || $unidad === '0000') return [];
+            $sql .= ' AND n.unidad_organica=?';
+            $params[] = $unidad;
+        }
+        $sql .= ' ORDER BY (UPPER(TRIM(COALESCE(d.estado,\'\')))=\'A\') ASC,d.fecha DESC,d.nro_pedido DESC';
+        $stmt=db()->prepare($sql); $stmt->execute($params);
+        $salida=[];
+        foreach ($stmt->fetchAll() as $fila) {
+            $clave=$fila['nro_pedido'].'|'.$fila['tipo'].'|'.$fila['numero'].'|'.($fila['orden_tipo']??'').'|'.($fila['orden_numero']??'');
+            $salida[$clave]=$fila;
+        }
+        return array_values($salida);
+    }
+
+    private function documentoDesdeCopiaLocal(string $numero, string $tipo, ?string $pedidoSeleccionado = null): ?array
+    {
+        $tipos = $this->tiposDocumento($tipo);
+        if (!$tipos) return null;
+        try {
+            $marks = implode(',', array_fill(0, count($tipos), '?'));
+            $sql = 'SELECT nro_pedido,tipo,numero,estado,fecha FROM seguimiento_documentos WHERE (numero = ? OR (tipo = \'pago\' AND numero LIKE ?)) AND tipo IN (' . $marks . ')';
+            $params = array_merge([$numero, '% ' . (ltrim($numero, '0') ?: '0')], $tipos);
+            if ($pedidoSeleccionado !== null && $pedidoSeleccionado !== '') { $sql .= ' AND nro_pedido=?'; $params[]=$pedidoSeleccionado; }
+            $sql .= ' ORDER BY sincronizado_en DESC LIMIT 1';
+            $stmt = db()->prepare($sql);
+            $stmt->execute($params);
+            $documento = $stmt->fetch();
+            return is_array($documento) ? $documento : null;
+        } catch (PDOException $exception) {
+            return null;
+        }
+    }
+
+    private function tiposDocumento(string $tipo): array
+    {
+        return [
             'cotizacion' => ['cotizacion'],
             'certificacion' => ['certificacion'],
             'orden_compra' => ['orden_compra'],
@@ -255,21 +297,10 @@ final class SeguimientoModel
             'pago' => ['pago'],
             'todo' => ['cotizacion', 'certificacion', 'orden_compra', 'orden_servicio', 'comprobante', 'comprobante_interno', 'devengado', 'pago'],
         ][$tipo] ?? [];
-        if (!$tipos) return null;
-        try {
-            $marks = implode(',', array_fill(0, count($tipos), '?'));
-            $sql = 'SELECT nro_pedido,tipo,numero,estado,fecha FROM seguimiento_documentos WHERE (numero = ? OR (tipo = \'pago\' AND numero LIKE ?)) AND tipo IN (' . $marks . ') ORDER BY sincronizado_en DESC LIMIT 1';
-            $stmt = db()->prepare($sql);
-            $stmt->execute(array_merge([$numero, '% ' . (ltrim($numero, '0') ?: '0')], $tipos));
-            $documento = $stmt->fetch();
-            return is_array($documento) ? $documento : null;
-        } catch (PDOException $exception) {
-            return null;
-        }
     }
     private function puedeVerPedido(array $pedido, array $acceso): bool
     {
-        if (($acceso['rol'] ?? '') === 'ADMIN' || ($acceso['alcance'] ?? '') === 'GLOBAL') return true;
+        if (($acceso['alcance'] ?? '') === 'GLOBAL') return true;
         $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
         if ($unidad === '' || $unidad === '0000') return false;
         return trim((string)$pedido['CODUNIORG']) === $unidad;

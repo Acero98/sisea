@@ -13,6 +13,36 @@
         var panel=document.getElementById('sync-global-status');
         var detail=document.getElementById('sync-global-detail');
         var endpoint=<?= json_encode(url('estado_sincronizacion'), JSON_UNESCAPED_SLASHES) ?>;
+        var waitingTimer=null;
+        function requestStatus(){
+            return fetch(endpoint,{cache:'no-store',credentials:'same-origin'}).then(function(response){
+                if(response.redirected){window.location.href=response.url;throw new Error('redirect');}
+                if(!response.ok)throw new Error('status');
+                return response.json();
+            });
+        }
+        function waitUntilFree(button,original){
+            if(waitingTimer)window.clearTimeout(waitingTimer);
+            waitingTimer=window.setTimeout(function(){
+                requestStatus().then(function(data){
+                    if(data.en_curso){
+                        var who=data.usuario_nombre||'Otro usuario';
+                        var what=data.descripcion||'Información del sistema';
+                        detail.textContent=what+' · iniciada por '+who+(data.iniciado_en?' a las '+data.iniciado_en:'')+'. Verificando nuevamente…';
+                        waitUntilFree(button,original);
+                        return;
+                    }
+                    waitingTimer=null;
+                    panel.hidden=true;
+                    button.disabled=false;
+                    button.textContent=original;
+                }).catch(function(error){
+                    if(error.message==='redirect')return;
+                    detail.textContent='No se pudo verificar el estado. Se intentará nuevamente…';
+                    waitUntilFree(button,original);
+                });
+            },3000);
+        }
         document.querySelectorAll('[data-sync-form]').forEach(function(form){
             form.addEventListener('submit',function(event){
                 event.preventDefault();
@@ -21,20 +51,16 @@
                 var original=button.textContent;
                 button.disabled=true;
                 button.textContent='Verificando disponibilidad…';
-                fetch(endpoint,{cache:'no-store',credentials:'same-origin'})
-                    .then(function(response){
-                        if(response.redirected){window.location.href=response.url;throw new Error('redirect');}
-                        if(!response.ok)throw new Error('status');
-                        return response.json();
-                    })
+                requestStatus()
                     .then(function(data){
                         if(data.en_curso){
                             var who=data.usuario_nombre||'Otro usuario';
                             var what=data.descripcion||'Información del sistema';
                             panel.hidden=false;
-                            detail.textContent=what+' · iniciada por '+who+(data.iniciado_en?' a las '+data.iniciado_en:'')+'. Recargue la sección para verificar nuevamente.';
+                            detail.textContent=what+' · iniciada por '+who+(data.iniciado_en?' a las '+data.iniciado_en:'')+'. Verificando nuevamente…';
                             button.disabled=true;
                             button.textContent='Actualización en proceso';
+                            waitUntilFree(button,original);
                             return;
                         }
                         panel.hidden=false;

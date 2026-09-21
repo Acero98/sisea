@@ -1,65 +1,33 @@
 <?php
-$flash = takeFlash();
-$pageTitle = 'Usuarios y accesos';
-$pageDescription = 'Cuentas vinculadas a Logística de Avalon. Las contraseñas se administran en este portal.';
-$breadcrumb = 'Configuración / Usuarios';
-$activeNav = 'usuarios';
-$useDataTables = true;
-require APP_ROOT . '/app/Views/partials/header.php';
+$flash=takeFlash();$pageTitle='Usuarios y permisos';$pageDescription='Identidad desde Avalon; roles y permisos administrados localmente.';$breadcrumb='Configuración / Usuarios';$activeNav='usuarios';$useDataTables=true;
+$roles=['USUARIO'=>'Usuario','LOGISTICA'=>'Logística','PRESUPUESTO'=>'Presupuesto','CONTABILIDAD'=>'Contabilidad','FINANZAS'=>'Finanzas','ADMINISTRADOR'=>'Administrador'];
+$alcances=['PROPIO'=>'Propio','UNIDAD'=>'Unidad','GLOBAL'=>'Global'];
+require APP_ROOT.'/app/Views/partials/header.php';
 ?>
-<?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
-<section class="card">
-    <h2>Sincronizar desde Avalon</h2>
-    <p>Importa usuario, perfil, zona, localidad, unidad orgánica, almacén, supervisor y estado activo.</p>
-    <form data-sync-form method="post" action="<?= e(url('sincronizar_usuarios')) ?>"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><button data-sync-button>Sincronizar usuarios activos y perfiles</button></form>
-</section>
-<section class="card">
-    <h2>Cuentas del portal</h2>
-    <div class="table-scroll">
-        <table id="tabla-usuarios" class="display">
-            <thead>
-                <tr>
-                    <th>Usuario Avalon</th>
-                    <th>Perfil</th>
-                    <th>Unidad orgánica</th>
-                    <th>Alcance</th>
-                    <th>Acceso</th>
-                </tr>
-            </thead>
-            <tbody><?php foreach ($usuarios as $user): ?><tr>
-                        <td><b><?= e($user['usuario']) ?></b><br><small><?= e($user['avalon_codigo'] ?: 'Cuenta local') ?></small></td>
-                        <td><?= e($user['perfil_nombre'] ?: $user['rol']) ?></td>
-                        <td><?= e(($user['unidad_organica'] ?: '—') . ' · ' . ($user['unidad_nombre'] ?: '')) ?></td>
-                        <td>
-                            <form method="post" action="<?= e(url('guardar_usuario')) ?>"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><input type="hidden" name="id" value="<?= e($user['id']) ?>"><?php if ($user['rol'] === 'ADMIN'): ?><select name="alcance">
-                                        <option value="UNIDAD" <?= $user['alcance'] === 'UNIDAD' ? 'selected' : '' ?>>Solo su unidad</option>
-                                        <option value="GLOBAL" <?= $user['alcance'] === 'GLOBAL' ? 'selected' : '' ?>>Todas las unidades</option>
-                                    </select><?php else: ?><input type="hidden" name="alcance" value="UNIDAD">Solo su unidad<?php endif; ?>
-                        </td>
-                        <td><input type="password" name="clave" placeholder="Nueva contraseña"><label><input type="checkbox" name="activo" <?= $user['activo'] ? 'checked' : '' ?>> Activo</label><button>Guardar</button></form>
-                        </td>
-                    </tr><?php endforeach; ?></tbody>
-        </table>
-    </div>
-</section>
-<script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
-<script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
-<script>
-    $(function() {
-        $('#tabla-usuarios').DataTable({
-            pageLength: 10,
-            language: {
-                search: 'Buscar:',
-                lengthMenu: 'Mostrar _MENU_ usuarios',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
-                infoEmpty: 'No hay usuarios para mostrar',
-                paginate: {
-                    previous: 'Anterior',
-                    next: 'Siguiente'
-                },
-                zeroRecords: 'No se encontraron usuarios'
-            }
-        });
-    });
-</script>
-<?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>
+<?php if($flash):?><div class="alert <?= ($flash['type']??'')==='error'?'error':'' ?>"><?= e($flash['message']) ?></div><?php endif;?>
+<section class="card users-sync-card"><div><h2>Identidad organizacional</h2><p>Usuario, perfil y unidad se leen desde Avalon. Los roles y permisos se administran únicamente en SISEA.</p></div><form data-sync-form method="post" action="<?= e(url('sincronizar_usuarios')) ?>"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><button data-sync-button>↻ Sincronizar identidad</button></form></section>
+<section class="card users-card"><div class="section-heading"><div><h2>Cuentas del portal</h2><p>Consulta el acceso asignado y utiliza Editar para cambiarlo.</p></div><span class="users-count"><?= count($usuarios) ?> cuentas</span></div><div class="table-scroll"><table id="tabla-usuarios" class="display users-table"><thead><tr><th>Usuario</th><th>Unidad orgánica</th><th>Rol</th><th>Permisos</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
+<?php foreach($usuarios as$user):
+$data=['id'=>(int)$user['id'],'usuario'=>$user['usuario'],'codigo'=>$user['avalon_codigo']?:'Cuenta local','unidad'=>$user['unidad_organica']?:'—','unidad_nombre'=>$user['unidad_nombre']?:'Sin unidad asignada','perfil_avalon'=>$user['perfil_nombre']?:'No registrado','rol_acceso'=>$user['rol_acceso']?:'USUARIO','permiso_seguimiento'=>(bool)$user['permiso_seguimiento'],'alcance_seguimiento'=>$user['alcance_seguimiento']?:'UNIDAD','permiso_presupuesto'=>(bool)$user['permiso_presupuesto'],'alcance_presupuesto'=>$user['alcance_presupuesto']?:'UNIDAD','permiso_responsabilidades'=>(bool)$user['permiso_responsabilidades'],'permiso_usuarios'=>(bool)$user['permiso_usuarios'],'activo'=>(bool)$user['activo'],'tiene_clave'=>(bool)$user['tiene_clave']];
+$permisos=[];if($user['permiso_seguimiento'])$permisos[]='Seguimiento: '.($alcances[$user['alcance_seguimiento']]??$user['alcance_seguimiento']);if($user['permiso_presupuesto'])$permisos[]='Presupuesto: '.($alcances[$user['alcance_presupuesto']]??$user['alcance_presupuesto']);if($user['permiso_responsabilidades'])$permisos[]='Responsabilidades';if($user['permiso_usuarios'])$permisos[]='Usuarios';?>
+<tr><td><strong><?= e($user['usuario']) ?></strong><small class="cell-subtitle"><?= e($user['avalon_codigo']?:'Cuenta local') ?> · <?= $user['tiene_clave']?'Con contraseña':'Sin contraseña' ?></small></td><td><span class="unit-code"><?= e($user['unidad_organica']?:'—') ?></span><small class="cell-subtitle"><?= e($user['unidad_nombre']?:'Sin unidad asignada') ?></small></td><td><span class="role-badge role-<?= strtolower(e($user['rol_acceso']?:'usuario')) ?>"><?= e($roles[$user['rol_acceso']]??$user['rol_acceso']) ?></span></td><td><div class="permission-summary"><?php if($permisos):foreach($permisos as$p):?><span><?= e($p) ?></span><?php endforeach;else:?><em>Sin permisos</em><?php endif;?></div></td><td><span class="account-state <?= $user['activo']?'is-active':'is-inactive' ?>"><?= $user['activo']?'Activo':'Inactivo' ?></span></td><td><button type="button" class="edit-user-button" data-user="<?= e(json_encode($data,JSON_UNESCAPED_UNICODE)) ?>">✎ Editar</button></td></tr>
+<?php endforeach;?></tbody></table></div></section>
+<div class="access-modal" id="access-modal" hidden><div class="access-modal-backdrop" data-close-modal></div><section class="access-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="access-modal-header"><div><small>Configuración de acceso</small><h2 id="modal-title">Editar usuario</h2></div><button type="button" class="modal-close" data-close-modal aria-label="Cerrar">×</button></div><form method="post" action="<?= e(url('guardar_usuario')) ?>" id="access-form"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><input type="hidden" name="id" id="modal-user-id">
+<div class="user-identity"><div class="user-avatar" id="modal-avatar">U</div><div><strong id="modal-user-name"></strong><span id="modal-user-meta"></span><small id="modal-user-unit"></small></div></div>
+<label class="field"><span>Rol de acceso</span><select name="rol_acceso" id="modal-role"><?php foreach($roles as$k=>$v):?><option value="<?= e($k) ?>"><?= e($v) ?></option><?php endforeach;?></select><small>El rol carga una plantilla. Después puede ajustar permisos específicos.</small></label>
+<div class="permission-panels">
+<div class="permission-panel"><div><strong>Seguimiento documental</strong><small>Notas y documentos vinculados.</small></div><label class="switch"><input type="checkbox" name="permiso_seguimiento" id="modal-tracking"> Permitir</label><label class="scope-field">Alcance<select name="alcance_seguimiento" id="modal-tracking-scope"><?php foreach($alcances as$k=>$v):?><option value="<?= e($k) ?>"><?= e($v) ?></option><?php endforeach;?></select></label></div>
+<div class="permission-panel"><div><strong>Presupuesto</strong><small>Consulta del módulo Planif.</small></div><label class="switch"><input type="checkbox" name="permiso_presupuesto" id="modal-budget"> Permitir</label><label class="scope-field">Alcance<select name="alcance_presupuesto" id="modal-budget-scope"><?php foreach($alcances as$k=>$v):?><option value="<?= e($k) ?>"><?= e($v) ?></option><?php endforeach;?></select></label></div>
+<div class="permission-panel permission-panel-simple"><div><strong>Responsabilidades</strong><small>Configura cuentas administradas.</small></div><label class="switch"><input type="checkbox" name="permiso_responsabilidades" id="modal-responsibilities"> Permitir</label></div>
+<div class="permission-panel permission-panel-simple"><div><strong>Administración de usuarios</strong><small>Gestiona roles, permisos y accesos.</small></div><label class="switch"><input type="checkbox" name="permiso_usuarios" id="modal-users"> Permitir</label></div></div>
+<div class="access-options"><label class="field"><span>Nueva contraseña</span><input type="password" name="clave" autocomplete="new-password" placeholder="Dejar vacío para conservarla"><small id="modal-password-status"></small></label><label class="active-option"><input type="checkbox" name="activo" id="modal-active"> Cuenta activa</label></div><div class="modal-actions"><button type="button" class="button-secondary" data-close-modal>Cancelar</button><button type="submit">Guardar cambios</button></div></form></section></div>
+<script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script><script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
+<script>$(function(){
+$('#tabla-usuarios').DataTable({pageLength:10,columnDefs:[{orderable:false,targets:[3,5]}],language:{search:'Buscar usuario:',lengthMenu:'Mostrar _MENU_',info:'Mostrando _START_ a _END_ de _TOTAL_ cuentas',infoEmpty:'No hay cuentas',paginate:{previous:'Anterior',next:'Siguiente'},zeroRecords:'No se encontraron usuarios'}});
+var m=document.getElementById('access-modal'),last=null,t={USUARIO:[1,'UNIDAD',0,'UNIDAD',0,0],LOGISTICA:[1,'GLOBAL',0,'UNIDAD',0,0],PRESUPUESTO:[1,'GLOBAL',1,'GLOBAL',1,0],CONTABILIDAD:[1,'GLOBAL',1,'GLOBAL',0,0],FINANZAS:[1,'GLOBAL',1,'GLOBAL',0,0],ADMINISTRADOR:[1,'GLOBAL',1,'GLOBAL',1,1]};
+function set(p){$('#modal-tracking').prop('checked',!!p[0]);$('#modal-tracking-scope').val(p[1]);$('#modal-budget').prop('checked',!!p[2]);$('#modal-budget-scope').val(p[3]);$('#modal-responsibilities').prop('checked',!!p[4]);$('#modal-users').prop('checked',!!p[5]);scopes()}
+function scopes(){$('#modal-tracking-scope').prop('disabled',!$('#modal-tracking').prop('checked'));$('#modal-budget-scope').prop('disabled',!$('#modal-budget').prop('checked'))}
+$(document).on('click','.edit-user-button',function(){var u=JSON.parse(this.dataset.user);last=this;$('#modal-user-id').val(u.id);$('#modal-user-name').text(u.usuario);$('#modal-user-meta').text(u.codigo+' · Perfil Avalon: '+u.perfil_avalon);$('#modal-user-unit').text(u.unidad+' · '+u.unidad_nombre);$('#modal-avatar').text((u.usuario||'U').charAt(0).toUpperCase());$('#modal-role').val(u.rol_acceso);set([u.permiso_seguimiento,u.alcance_seguimiento,u.permiso_presupuesto,u.alcance_presupuesto,u.permiso_responsabilidades,u.permiso_usuarios]);$('#modal-active').prop('checked',u.activo);$('#modal-password-status').text(u.tiene_clave?'La cuenta ya tiene contraseña.':'La cuenta todavía no tiene contraseña.');m.hidden=false;document.body.classList.add('modal-open');$('#modal-role').focus()});
+$('#modal-role').on('change',function(){if(t[this.value])set(t[this.value])});$('#modal-tracking,#modal-budget').on('change',scopes);function close(){m.hidden=true;document.body.classList.remove('modal-open');if(last)last.focus()}$(document).on('click','[data-close-modal]',close).on('keydown',function(e){if(e.key==='Escape'&&!m.hidden)close()});
+});</script>
+<?php require APP_ROOT.'/app/Views/partials/footer.php';?>

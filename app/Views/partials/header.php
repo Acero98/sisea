@@ -19,10 +19,11 @@ $currentUser = usuario() ?? [];
         <div class="logo">◈ <b>AVALON</b><small>Seguimiento</small></div>
         <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Contraer menú" aria-expanded="true">☰</button>
         <nav>
-            <a class="<?= $activeNav === 'seguimiento' ? 'active' : '' ?>" href="<?= e(url('seguimiento')) ?>">⌕ <span>Seguimiento</span></a>
-            <a class="<?= $activeNav === 'notas' ? 'active' : '' ?>" href="<?= e(url('notas')) ?>">▤ <span>Mis notas</span></a>
-            <?php if (($currentUser['rol'] ?? '') === 'ADMIN'): ?><a class="<?= $activeNav === 'presupuesto' ? 'active' : '' ?>" href="<?= e(url('presupuesto')) ?>">▥ <span>Presupuesto</span></a><a class="<?= $activeNav === 'presupuesto_responsabilidades' ? 'active' : '' ?>" href="<?= e(url('presupuesto_responsabilidades')) ?>">⚙ <span>Responsabilidades</span></a><?php endif; ?>
-            <?php if (($currentUser['rol'] ?? '') === 'ADMIN'): ?><a class="<?= $activeNav === 'usuarios' ? 'active' : '' ?>" href="<?= e(url('usuarios')) ?>">👥 <span>Usuarios</span></a><?php endif; ?>
+            <?php if(tienePermiso('seguimiento',$currentUser)): ?><a class="<?= $activeNav === 'seguimiento' ? 'active' : '' ?>" href="<?= e(url('seguimiento')) ?>">⌕ <span>Seguimiento</span></a>
+            <a class="<?= $activeNav === 'notas' ? 'active' : '' ?>" href="<?= e(url('notas')) ?>">▤ <span>Mis notas</span></a><?php endif; ?>
+            <?php if (tienePermiso('presupuesto',$currentUser)): ?><a class="<?= $activeNav === 'presupuesto' ? 'active' : '' ?>" href="<?= e(url('presupuesto')) ?>">▥ <span>Presupuesto</span></a><?php endif; ?>
+            <?php if (tienePermiso('responsabilidades',$currentUser)): ?><a class="<?= $activeNav === 'presupuesto_responsabilidades' ? 'active' : '' ?>" href="<?= e(url('presupuesto_responsabilidades')) ?>">⚙ <span>Responsabilidades</span></a><?php endif; ?>
+            <?php if (tienePermiso('usuarios',$currentUser)): ?><a class="<?= $activeNav === 'usuarios' ? 'active' : '' ?>" href="<?= e(url('usuarios')) ?>">👥 <span>Usuarios</span></a><?php endif; ?>
         </nav>
         <div class="sidebar-user"><b><?= e($currentUser['nombre'] ?? '') ?></b><small><?= e($currentUser['perfil_nombre'] ?? $currentUser['rol'] ?? '') ?></small><a href="<?= e(url('logout')) ?>">↪ <span>Cerrar sesión</span></a></div>
     </aside>

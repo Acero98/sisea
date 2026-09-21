@@ -2,6 +2,10 @@
 $flash = $flash ?? takeFlash();
 $date = function ($value) {
     if (!$value || $value === '00000000') return '—';
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$value)) {
+        $date = DateTime::createFromFormat('Y-m-d', (string)$value);
+        return $date ? $date->format('d/m/Y') : $value;
+    }
     $date = DateTime::createFromFormat('Ymd', $value);
     return $date ? $date->format('d/m/Y') : $value;
 };
@@ -37,6 +41,7 @@ $pageTitle = 'Seguimiento documental';
 $pageDescription = 'Consulta el avance de un pedido y sus documentos vinculados.';
 $breadcrumb = 'Logística / Seguimiento documental';
 $activeNav = 'seguimiento';
+$useDataTables = count($coincidencias ?? []) > 1 && !$result;
 require APP_ROOT . '/app/Views/partials/header.php';
 ?>
         <?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
@@ -49,7 +54,29 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <div class="search-line"><input name="q" aria-label="Número de documento" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
             </form>
         </section>
-        <?php if ($term !== '' && !$error && !$result): ?><section class="empty">
+        <?php if (count($coincidencias ?? []) > 1 && !$result): ?>
+            <section class="card duplicate-results">
+                <h2>Se encontraron varias coincidencias</h2>
+                <p>Seleccione el documento correspondiente. Solo se muestran registros permitidos para su unidad orgánica.</p>
+                <div class="table-scroll"><table id="tabla-coincidencias" class="display">
+                    <thead><tr><th>Documento</th><th>Proveedor</th><th>Orden</th><th>Pedido</th><th>Unidad orgánica</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
+                    <tbody><?php foreach ($coincidencias as $coincidencia): ?>
+                        <?php $anulada=strtoupper(trim((string)($coincidencia['estado'] ?? '')))==='A'; ?>
+                        <tr class="<?= $anulada ? 'duplicate-cancelled' : '' ?>">
+                            <td><b><?= e($coincidencia['numero']) ?></b><br><small><?= e(ucfirst(str_replace('_',' ',$coincidencia['tipo']))) ?></small></td>
+                            <td><?= e($coincidencia['proveedor'] ?: 'No registrado') ?></td>
+                            <td><?= e(trim(($coincidencia['orden_tipo'] ?: '') . ' ' . ($coincidencia['orden_numero'] ?: '')) ?: '—') ?></td>
+                            <td><?= e($coincidencia['nro_pedido']) ?></td>
+                            <td><?= e(trim(($coincidencia['unidad_organica'] ?: '—').' · '.($coincidencia['unidad_nombre'] ?: 'Unidad no identificada'))) ?></td>
+                            <td><?= e($date($coincidencia['fecha'])) ?></td>
+                            <td><span class="duplicate-state <?= $anulada ? 'cancelled' : 'valid' ?>"><?= $anulada ? 'Anulado' : 'Vigente' ?></span></td>
+                            <td><a class="table-action" href="<?= e(url('seguimiento',['q'=>$term,'tipo'=>$tipo,'pedido'=>$coincidencia['nro_pedido']])) ?>">Ver seguimiento</a></td>
+                        </tr>
+                    <?php endforeach; ?></tbody>
+                </table></div>
+            </section>
+        <?php endif; ?>
+        <?php if ($term !== '' && !$error && !$result && !($coincidencias ?? [])): ?><section class="empty">
                 <h2>No se encontró <?= e($tiposBusqueda[$tipo] ?? 'el documento') ?> <?= e($term) ?></h2>
                 <p>Verifique el número o actualice primero las notas correspondientes desde Avalon.</p>
             </section><?php endif; ?><?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
@@ -261,4 +288,26 @@ require APP_ROOT . '/app/Views/partials/header.php';
     if (historyButton && historyPanel) historyButton.addEventListener('click', function () { historyPanel.hidden = !historyPanel.hidden; historyButton.textContent = historyPanel.hidden ? 'Historial de cambios' : 'Ocultar historial'; });
 }());
 </script>
+<?php if ($useDataTables): ?>
+<script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
+<script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
+<script>
+$(function(){
+    $('#tabla-coincidencias').DataTable({
+        pageLength:10,
+        lengthMenu:[[10,25,50,100],[10,25,50,100]],
+        order:[[5,'desc'],[3,'desc']],
+        language:{
+            search:'Buscar en coincidencias:',
+            lengthMenu:'Mostrar _MENU_ registros',
+            info:'Mostrando _START_ a _END_ de _TOTAL_ coincidencias',
+            infoEmpty:'No hay coincidencias para mostrar',
+            zeroRecords:'No se encontraron coincidencias',
+            paginate:{first:'Primero',previous:'Anterior',next:'Siguiente',last:'Último'}
+        },
+        pagingType:'full_numbers'
+    });
+});
+</script>
+<?php endif; ?>
 <?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>

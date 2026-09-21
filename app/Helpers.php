@@ -6,6 +6,15 @@ function url(string $route = '', array $params = []): string { return APP_URL . 
 function csrf(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(24)); return $_SESSION['csrf']; }
 function validarCsrf(): void { if (!hash_equals(csrf(), (string)($_POST['csrf'] ?? ''))) throw new DomainException('La sesión del formulario venció. Actualice la página e inténtelo nuevamente.'); }
 function usuario(): ?array { return $_SESSION['usuario'] ?? null; }
+function tienePermiso(string $modulo, ?array $cuenta = null): bool {
+    $cuenta = $cuenta ?? usuario() ?? [];
+    $campo = 'permiso_' . $modulo;
+    return array_key_exists($campo, $cuenta) ? (bool)$cuenta[$campo] : (($cuenta['rol'] ?? '') === 'ADMIN');
+}
+function alcanceModulo(string $modulo, ?array $cuenta = null): string {
+    $cuenta = $cuenta ?? usuario() ?? [];
+    return (string)($cuenta['alcance_' . $modulo] ?? $cuenta['alcance'] ?? 'UNIDAD');
+}
 function requiereLogin(): void {
     $actual=usuario();
     if (!$actual) { header('Location: ' . url('login')); exit; }
@@ -21,6 +30,8 @@ function requiereLogin(): void {
         $_SESSION=[]; session_destroy();
         header('Location: '.url('login',['motivo'=>'sesion_reemplazada'])); exit;
     }
+    $datos=(new AuthModel())->datosSesion((int)$actual['id']);
+    if($datos)$_SESSION['usuario']=array_merge($datos,['sesion_token'=>$token]);
 }
 function flash(string $type, string $message): void { $_SESSION['flash'] = compact('type', 'message'); }
 function takeFlash(): ?array { $flash = $_SESSION['flash'] ?? null; unset($_SESSION['flash']); return $flash; }

@@ -11,7 +11,7 @@ final class UsuarioModel
         $unidades = [];
         foreach ($reader->rows(AVALON_PLANIF_DATA . '/unidad.dbf', ['COD_UNIDAD', 'DES_UNIDAD']) as $unidad) $unidades[$unidad['COD_UNIDAD']] = $unidad['DES_UNIDAD'];
         $usuarios = $reader->rows(AVALON_LOGISTICA_DATA . '/sum10003.dbf', ['CCODUSUARI', 'CNOMUSUARI', 'CPERFILUSR', 'ZONA', 'LOCA', 'CODUNIORG', 'NUMALM', 'USUARIOSUP', 'ACTIVO']);
-        $sql = 'INSERT INTO usuarios (avalon_codigo,usuario,nombre,perfil_avalon,perfil_nombre,zona,localidad,unidad_organica,unidad_nombre,almacen,supervisor_avalon,rol,alcance,activo,sincronizado_en) VALUES (:codigo,:usuario,:nombre,:perfil,:perfil_nombre,:zona,:localidad,:unidad,:unidad_nombre,:almacen,:supervisor,:rol,:alcance,:activo,NOW()) ON DUPLICATE KEY UPDATE usuario=VALUES(usuario),nombre=VALUES(nombre),perfil_avalon=VALUES(perfil_avalon),perfil_nombre=VALUES(perfil_nombre),zona=VALUES(zona),localidad=VALUES(localidad),unidad_organica=VALUES(unidad_organica),unidad_nombre=VALUES(unidad_nombre),almacen=VALUES(almacen),supervisor_avalon=VALUES(supervisor_avalon),rol=VALUES(rol),alcance=VALUES(alcance),activo=VALUES(activo),sincronizado_en=NOW()';
+        $sql = 'INSERT INTO usuarios (avalon_codigo,usuario,nombre,perfil_avalon,perfil_nombre,zona,localidad,unidad_organica,unidad_nombre,almacen,supervisor_avalon,rol,alcance,activo,sincronizado_en) VALUES (:codigo,:usuario,:nombre,:perfil,:perfil_nombre,:zona,:localidad,:unidad,:unidad_nombre,:almacen,:supervisor,:rol,:alcance,:activo,NOW()) ON DUPLICATE KEY UPDATE usuario=VALUES(usuario),nombre=VALUES(nombre),perfil_avalon=VALUES(perfil_avalon),perfil_nombre=VALUES(perfil_nombre),zona=VALUES(zona),localidad=VALUES(localidad),unidad_organica=VALUES(unidad_organica),unidad_nombre=VALUES(unidad_nombre),almacen=VALUES(almacen),supervisor_avalon=VALUES(supervisor_avalon),sincronizado_en=NOW()';
         $stmt = db()->prepare($sql);
         $count = 0;
         foreach ($usuarios as $user) {
@@ -24,13 +24,39 @@ final class UsuarioModel
     }
     public function listar(): array
     {
-        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_nombre,unidad_organica,unidad_nombre,alcance,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
+        $this->instalarPermisos();
+        $this->instalarRolesAcceso();
+        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
     }
-    public function guardarAcceso(int $id, string $clave, string $alcance, bool $activo): void
+    public function guardarAcceso(int $id, string $clave, array $datos): void
     {
-        $sql = 'UPDATE usuarios SET alcance=CASE WHEN rol=\'ADMIN\' THEN :alcance ELSE \'UNIDAD\' END, activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
-        $params = ['alcance' => $alcance === 'GLOBAL' ? 'GLOBAL' : 'UNIDAD', 'activo' => $activo ? 1 : 0, 'id' => $id];
+        $this->instalarPermisos();
+        $this->instalarAlcancePropio();
+        $this->instalarRolesAcceso();
+        $roles=['USUARIO','LOGISTICA','PRESUPUESTO','CONTABILIDAD','FINANZAS','ADMINISTRADOR'];
+        $rolAcceso=in_array($datos['rol_acceso']??'', $roles,true)?$datos['rol_acceso']:'USUARIO';
+        $perfil=$rolAcceso==='ADMINISTRADOR'?'ADMINISTRADOR':($rolAcceso==='USUARIO'?'USUARIO':'SUPERVISOR');
+        $scope=static fn($v)=>in_array($v,['PROPIO','UNIDAD','GLOBAL'],true)?$v:'UNIDAD';
+        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,alcance_seguimiento=:as_,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
+        $params=['perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>!empty($datos['permiso_seguimiento'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
         if ($clave !== '') $params['clave'] = password_hash($clave, PASSWORD_DEFAULT);
         db()->prepare($sql)->execute($params);
+    }
+    private function instalarPermisos(): void {
+        if(db()->query("SHOW COLUMNS FROM usuarios LIKE 'permiso_seguimiento'")->fetch())return;
+        foreach(explode(';',(string)file_get_contents(APP_ROOT.'/database/migrations/013_permisos_modulares.sql')) as $sql) if(trim($sql)!=='')db()->exec($sql);
+    }
+    private function instalarAlcancePropio(): void
+    {
+        $tipo=(string)(db()->query("SHOW COLUMNS FROM usuarios LIKE 'alcance'")->fetch()['Type']??'');
+        if(strpos($tipo,"'PROPIO'")!==false)return;
+        db()->exec((string)file_get_contents(APP_ROOT.'/database/migrations/014_alcance_propio.sql'));
+    }
+    private function instalarRolesAcceso(): void
+    {
+        if (db()->query("SHOW COLUMNS FROM usuarios LIKE 'rol_acceso'")->fetch()) return;
+        foreach (explode(';', (string) file_get_contents(APP_ROOT.'/database/migrations/015_roles_acceso.sql')) as $sql) {
+            if (trim($sql) !== '') db()->exec($sql);
+        }
     }
 }

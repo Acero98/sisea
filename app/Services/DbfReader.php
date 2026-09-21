@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 final class DbfReader
 {
+    private bool $usarCopiaLocal;
+    public function __construct(bool $usarCopiaLocal = true) { $this->usarCopiaLocal = $usarCopiaLocal; }
     public function rows(string $file, array $fields): array
     {
+        $local = $this->filasLocales($file, $fields);
+        if ($local !== null) return $local;
         $handle = @fopen($file, 'rb');
         if (!$handle) throw new RuntimeException('No se pudo leer una tabla de Avalon. Verifique la ruta y los permisos de lectura.');
         try {
@@ -19,9 +23,59 @@ final class DbfReader
         } finally { fclose($handle); }
     }
 
+    private function filasLocales(string $file, array $fields): ?array
+    {
+        if (!$this->usarCopiaLocal) return null;
+        try {
+            $archivo = strtolower(basename($file));
+            $estado = db()->prepare('SELECT 1 FROM avalon_cache_fuentes WHERE archivo=? LIMIT 1');
+            $estado->execute([$archivo]);
+            if (!$estado->fetchColumn()) return null;
+            $stmt = db()->prepare('SELECT contenido FROM avalon_cache_filas WHERE archivo=? ORDER BY numero_fila');
+            $stmt->execute([$archivo]);
+            $salida = [];
+            while ($fila = $stmt->fetch()) {
+                $datos = json_decode((string)$fila['contenido'], true);
+                if (!is_array($datos)) continue;
+                $seleccion = [];
+                foreach ($fields as $nombre) $seleccion[$nombre] = (string)($datos[$nombre] ?? '');
+                $salida[] = $seleccion;
+            }
+            return $salida;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Recorre una tabla conservando el número físico del registro. Ese número
+     * permite actualizar la copia MySQL sin borrar y volver a insertar todo.
+     * Las filas eliminadas en DBF se entregan con datos=null.
+     */
+    public function indexedRows(string $file, array $fields): iterable
+    {
+        $handle = @fopen($file, 'rb');
+        if (!$handle) throw new RuntimeException('No se pudo leer una tabla de Avalon. Verifique la ruta y los permisos de lectura.');
+        try {
+            [$records, $start, $length, $definition] = $this->definition($handle, $fields);
+            fseek($handle, $start);
+            for ($i = 0; $i < $records; $i++) {
+                $record = $this->read($handle, $length);
+                yield [
+                    'numero_fila' => $i + 1,
+                    'datos' => $record[0] === '*' ? null : $this->record($record, $definition, $file),
+                ];
+            }
+        } finally {
+            fclose($handle);
+        }
+    }
+
     /** Lee únicamente los registros cuyo campo coincida exactamente, sin cargar toda la tabla en memoria. */
     public function findExact(string $file, array $fields, string $matchField, string $value): array
     {
+        $local = $this->buscarLocal($file, $fields, $matchField, $value, false);
+        if ($local !== null) return $local;
         $fields = array_values(array_unique([...$fields, $matchField]));
         $handle = @fopen($file, 'rb');
         if (!$handle) throw new RuntimeException('No se pudo leer una tabla de Avalon. Verifique la ruta y los permisos de lectura.');
@@ -41,6 +95,8 @@ final class DbfReader
     /** Busca texto contenido en un campo sin materializar todos los registros de la tabla. */
     public function findContains(string $file, array $fields, string $matchField, string $value): array
     {
+        $local = $this->buscarLocal($file, $fields, $matchField, $value, true);
+        if ($local !== null) return $local;
         $fields = array_values(array_unique([...$fields, $matchField]));
         $handle = @fopen($file, 'rb');
         if (!$handle) throw new RuntimeException('No se pudo leer una tabla de Avalon. Verifique la ruta y los permisos de lectura.');
@@ -55,6 +111,33 @@ final class DbfReader
             }
             return $rows;
         } finally { fclose($handle); }
+    }
+
+    private function buscarLocal(string $file, array $fields, string $campo, string $valor, bool $contiene): ?array
+    {
+        if (!$this->usarCopiaLocal) return null;
+        try {
+            $archivo = strtolower(basename($file));
+            $condicion = $contiene ? 'LOCATE(:valor,i.valor)>0' : 'i.valor=:valor';
+            $sql = 'SELECT f.contenido FROM avalon_cache_indices i INNER JOIN avalon_cache_filas f ON f.id=i.fila_id WHERE i.archivo=:archivo AND i.campo=:campo AND ' . $condicion . ' ORDER BY f.numero_fila';
+            $stmt=db()->prepare($sql);
+            $stmt->execute(['archivo'=>$archivo,'campo'=>$campo,'valor'=>trim($valor)]);
+            $filas=$stmt->fetchAll();
+            if (!$filas) {
+                $existe=db()->prepare('SELECT 1 FROM avalon_cache_fuentes WHERE archivo=:archivo LIMIT 1');
+                $existe->execute(['archivo'=>$archivo]);
+                return $existe->fetchColumn() ? [] : null;
+            }
+            $salida=[];
+            foreach($filas as $fila){
+                $datos=json_decode($fila['contenido'],true);
+                if(!is_array($datos))continue;
+                $seleccion=[];
+                foreach(array_values(array_unique([...$fields,$campo])) as $nombre)$seleccion[$nombre]=(string)($datos[$nombre]??'');
+                $salida[]=$seleccion;
+            }
+            return $salida;
+        } catch (PDOException $e) { return null; }
     }
 
     private function definition($handle, array $fields): array

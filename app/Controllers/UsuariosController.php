@@ -2,7 +2,7 @@
 declare(strict_types=1);
 final class UsuariosController
 {
-    private function admin(): void { requiereLogin(); if ((usuario()['rol'] ?? '') !== 'ADMIN') { http_response_code(403); exit('Acceso no autorizado.'); } }
+    private function admin(): void { requiereLogin(); if (!tienePermiso('usuarios')) { http_response_code(403); exit('Acceso no autorizado.'); } }
     public function index(): void { $this->admin(); $usuarios=(new UsuarioModel())->listar(); require APP_ROOT . '/app/Views/usuarios.php'; }
     public function sincronizar(): void {
         $this->admin(); validarCsrf();
@@ -26,5 +26,5 @@ final class UsuariosController
         }
         header('Location: '.url('usuarios')); exit;
     }
-    public function guardar(): void { $this->admin(); validarCsrf(); (new UsuarioModel())->guardarAcceso((int)$_POST['id'],(string)$_POST['clave'],(string)$_POST['alcance'],isset($_POST['activo'])); flash('ok','Acceso actualizado.'); header('Location: '.url('usuarios')); exit; }
+    public function guardar(): void { $this->admin(); validarCsrf(); (new UsuarioModel())->guardarAcceso((int)$_POST['id'],(string)($_POST['clave']??''),$_POST); flash('ok','Perfil, permisos y alcances actualizados.'); header('Location: '.url('usuarios')); exit; }
 }
