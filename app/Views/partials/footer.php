@@ -1,11 +1,46 @@
     </main>
     <footer class="app-footer">Avalon Seguimiento · Consulta de solo lectura</footer>
+    <script src="<?= e(APP_URL) ?>assets/js/sweetalert2.all.min.js"></script>
+    <script src="<?= e(APP_URL) ?>assets/js/tom-select.complete.min.js"></script>
+    <script>
+    (function () {
+        document.querySelectorAll('.js-tom-select').forEach(function (element) {
+            if (element.tomselect) return;
+            new TomSelect(element, {create:false, allowEmptyOption:true, maxOptions:500, closeAfterSelect:true});
+        });
+
+        var flash = document.querySelector('[data-toast-message]');
+        if (flash && window.Swal) {
+            var toast = Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:4800, timerProgressBar:true, showClass:{popup:'swal2-show'}, hideClass:{popup:'swal2-hide'}, didOpen:function(node){node.addEventListener('mouseenter',Swal.stopTimer);node.addEventListener('mouseleave',Swal.resumeTimer);}});
+            toast.fire({icon:flash.dataset.toastType === 'error' ? 'error' : 'success', title:flash.dataset.toastMessage});
+        }
+
+        document.addEventListener('submit', function (event) {
+            var form = event.target;
+            if (!form.matches('form[data-confirm]')) return;
+            if (form.dataset.confirmed === '1') { delete form.dataset.confirmed; return; }
+            event.preventDefault();
+            var message = form.dataset.confirm || '¿Deseas continuar?';
+            var ask = window.Swal ? Swal.fire({icon:'question', title:'Confirmar acción', text:message, showCancelButton:true, confirmButtonText:'Aceptar', cancelButtonText:'Cancelar', reverseButtons:true, focusCancel:true}) : Promise.resolve({isConfirmed:window.confirm(message)});
+            ask.then(function (result) { if (result.isConfirmed) { form.dataset.confirmed='1'; if (form.requestSubmit) form.requestSubmit(); else HTMLFormElement.prototype.submit.call(form); } });
+        });
+
+        document.addEventListener('click', function (event) {
+            var link = event.target.closest('a[data-confirm]');
+            if (!link) return;
+            event.preventDefault();
+            var message = link.dataset.confirm || '¿Deseas continuar?';
+            var ask = window.Swal ? Swal.fire({icon:'warning', title:'Confirmar acción', text:message, showCancelButton:true, confirmButtonText:'Aceptar', cancelButtonText:'Cancelar', reverseButtons:true, focusCancel:true}) : Promise.resolve({isConfirmed:window.confirm(message)});
+            ask.then(function (result) { if (result.isConfirmed) window.location.assign(link.href); });
+        });
+    }());
+    </script>
     <script>
     (function () {
         var toggle = document.getElementById('menu-toggle');
         if (!toggle) return;
         var collapsed = localStorage.getItem('avalon-menu-contraido') === '1';
-        function setCollapsed(value) { document.body.classList.toggle('menu-contraido', value); toggle.setAttribute('aria-expanded', value ? 'false' : 'true'); toggle.setAttribute('aria-label', value ? 'Ampliar menú' : 'Contraer menú'); toggle.textContent = value ? '›' : '☰'; }
+        function setCollapsed(value) { document.body.classList.toggle('menu-contraido', value); toggle.setAttribute('aria-expanded', value ? 'false' : 'true'); toggle.setAttribute('aria-label', value ? 'Ampliar menú' : 'Contraer menú'); toggle.innerHTML = value ? '<i class="bi bi-chevron-double-right" aria-hidden="true"></i>' : '<i class="bi bi-list" aria-hidden="true"></i>'; }
         setCollapsed(collapsed);
         toggle.addEventListener('click', function () { collapsed = !document.body.classList.contains('menu-contraido'); localStorage.setItem('avalon-menu-contraido', collapsed ? '1' : '0'); setCollapsed(collapsed); });
     }());

@@ -9,6 +9,12 @@ $date = function ($value) {
     $date = DateTime::createFromFormat('Ymd', $value);
     return $date ? $date->format('d/m/Y') : $value;
 };
+$montoDocumento = static function ($centavos, string $moneda = ''): string {
+    if ($centavos === null) return '—';
+    $valor = number_format($centavos / 100, 2, '.', ',');
+    $simbolo = $moneda === '01' ? 'S/ ' : ($moneda !== '' ? $moneda . ' ' : '');
+    return $simbolo . $valor;
+};
 $ordenes = $result['ordenes'] ?? [];
 $cotizaciones = $result['cotizaciones'] ?? [];
 $certificaciones = $result['certificaciones'] ?? [];
@@ -35,6 +41,10 @@ $stages = $isWarehouse
     ];
 $estadoFinal = $avance['pagos']['estado'] ?? 'pending';
 $final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['retiros_almacen']) ? 'Retiro de almacén registrado' : 'Pendiente de atención de almacén') : ($estadoFinal === 'complete' ? 'Proceso completado' : ($estadoFinal === 'issue' ? 'Proceso con incidencias' : ($estadoFinal === 'partial' ? 'Avance parcial' : 'En proceso'))));
+$detalleLink = function (string $tipoDocumento, string $numeroDocumento) use ($result): string {
+    $href = url('detalle_documento',['pedido'=>$result['pedido']['NRO_PEDIDO'],'tipo'=>$tipoDocumento,'numero'=>$numeroDocumento]);
+    return '<a class="table-action icon-action" href="'.e($href).'" title="Ver detalle" aria-label="Ver detalle"><img src="'.e(APP_URL).'assets/icons/bootstrap-eye.svg" alt=""></a>';
+};
 ?>
 <?php
 $pageTitle = 'Seguimiento documental';
@@ -44,7 +54,6 @@ $activeNav = 'seguimiento';
 $useDataTables = count($coincidencias ?? []) > 1 && !$result;
 require APP_ROOT . '/app/Views/partials/header.php';
 ?>
-        <?php if ($flash): ?><div class="alert"><?= e($flash['message']) ?></div><?php endif; ?>
         <section class="search-card">
             <h2>Encuentra un documento</h2>
             <p>Busca por pedido o por cualquier documento vinculado ya sincronizado.</p>
@@ -83,30 +92,13 @@ require APP_ROOT . '/app/Views/partials/header.php';
         <?php if ($result): ?>
             <?php if ($busquedaAnulada): ?><div class="alert error"><b>Documento anulado en Avalon.</b> <?= e(ucfirst($tiposBusqueda[$documentoBuscado['tipo']] ?? $documentoBuscado['tipo'])) ?> <?= e($documentoBuscado['numero']) ?> no forma parte de la ruta vigente del pedido <?= e($result['pedido']['NRO_PEDIDO']) ?>.</div><?php endif; ?>
             <?php if ($isCancelled): ?><div class="alert error"><b>Nota de pedido anulada.</b> Esta nota no debe considerarse como un proceso vigente.</div><?php endif; ?>
-            <?php if (!$busquedaAnulada && !$isCancelled && count($documentosAnulados) > 0): ?><div class="alert error">Se encontraron <?= e((string)count($documentosAnulados)) ?> documento(s) anulado(s). No se muestran en el detalle ni se consideran como avance válido.</div><?php endif; ?>
+            <?php if (!$busquedaAnulada && !$isCancelled && count($documentosAnulados) > 0): ?><div class="alert error">Se encontraron <?= e((string)count($documentosAnulados)) ?> documento(s) anulado(s). Se muestran para consulta, pero no se consideran como avance válido.</div><?php endif; ?>
             <section class="status-card">
                 <div class="status-pill">▣ <?= e($final) ?></div>
                 <div><b><?= $isCancelled ? 'Avalon registra el pedido como anulado' : ($resumenDocumental['comprobantes'] > 0 ? $resumenDocumental['comprobantes'] . ' comprobante(s), ' . $resumenDocumental['devengados'] . ' devengado(s) y ' . $resumenDocumental['pagos'] . ' pago(s) encontrados' : 'Estado calculado con los documentos encontrados') ?></b>
                     <p>La ruta diferencia órdenes de compra y órdenes de servicio.</p>
                 </div>
-                <?php if (!empty($esAdministrador)): ?><button type="button" id="mostrar-historial" class="history-button">Historial de cambios</button><?php endif; ?>
             </section>
-            <?php if (!empty($esAdministrador)): ?><section class="card" id="historial-cambios" hidden>
-                <h2>Historial de cambios</h2>
-                <p>Últimos cambios detectados durante las sincronizaciones con Avalon.</p>
-                <?php if ($historial): ?><div class="table-scroll"><table>
-                    <thead><tr><th>Fecha</th><th>Documento</th><th>Cambio</th><th>Campo</th><th>Antes</th><th>Después</th><th>Actualizado por</th></tr></thead>
-                    <tbody><?php foreach ($historial as $cambio): ?><tr>
-                        <td><?= e($cambio['creado_en']) ?></td>
-                        <td><?= e(ucfirst(str_replace('_', ' ', $cambio['tipo_documento'])) . ($cambio['numero_documento'] ? ' · ' . $cambio['numero_documento'] : '')) ?></td>
-                        <td><span class="history-event history-<?= e(strtolower($cambio['evento'])) ?>"><?= e(ucfirst(strtolower($cambio['evento']))) ?></span></td>
-                        <td><?= e($cambio['campo'] ?: 'Documento') ?></td>
-                        <td><?= e($cambio['valor_anterior'] ?? '—') ?></td>
-                        <td><?= e($cambio['valor_nuevo'] ?? '—') ?></td>
-                        <td><?= e($cambio['actualizado_por']) ?></td>
-                    </tr><?php endforeach; ?></tbody>
-                </table></div><?php else: ?><p>Aún no se han detectado cambios para esta nota desde que se activó el historial.</p><?php endif; ?>
-            </section><?php endif; ?>
             <section class="card">
                 <h2>Ruta del proceso</h2>
                 <p class="route-note"><?= $isWarehouse ? 'Ruta de existencia: se sigue el movimiento de salida registrado por Almacén.' : 'Ruta de adquisición: se sigue la documentación vinculada a la compra o al servicio.' ?></p>
@@ -132,13 +124,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 </section>
                 <section class="card">
                     <h2>Documentos vinculados</h2>
+                    <p>Los montos muestran el importe registrado para cada documento; “—” indica que Avalon no tiene un importe asociado.</p>
                     <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                         <thead>
                             <tr>
                                 <th>Documento</th>
                                 <th>Número / referencia</th>
                                 <th>Fecha</th>
+                                <th>Monto</th>
                                 <th>Estado</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -146,77 +141,104 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td>Pedido</td>
                                 <td><?= e($result['pedido']['NRO_PEDIDO']) ?></td>
                                 <td><?= e($date($result['pedido']['FEC_EMISIO'])) ?></td>
+                                <td><?= e($montoDocumento($result['pedido']['MONTO_CENTS'] ?? null, $result['pedido']['MONEDA'] ?? '')) ?></td>
                                 <td><?= e($result['pedido']['ESTADO_LABEL']) ?></td>
+                                <td><?= $detalleLink('pedido',$result['pedido']['NRO_PEDIDO']) ?></td>
                             </tr><?php foreach ($cotizaciones as $cotizacion): ?><tr>
                                     <td><b>Cotización / expediente</b></td>
                                     <td><b><?= e($cotizacion['NRO_EXPE']) ?></b></td>
                                     <td><?= e($date($cotizacion['FEC_COTIZA'])) ?></td>
+                                    <td><?= e($montoDocumento($cotizacion['MONTO_CENTS'] ?? null, $cotizacion['MONEDA'] ?? '')) ?></td>
                                     <td><?= e('Código Avalon: ' . ($cotizacion['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= $detalleLink('cotizacion',$cotizacion['NRO_EXPE']) ?></td>
                                 </tr><?php foreach ($cotizacion['CERTIFICACIONES'] as $certificacion): ?><tr>
                                     <td>↳ Certificación</td>
                                     <td><?= e($certificacion['CODCER']) ?></td>
                                     <td><?= e($date($certificacion['FECHA'])) ?></td>
+                                    <td><?= e($montoDocumento($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01')) ?></td>
                                     <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                                    <td><?= $detalleLink('certificacion',$certificacion['CODCER']) ?></td>
                                 </tr><?php endforeach; ?><?php foreach ($cotizacion['ORDENES'] as $orden): ?><tr>
                                     <td>↳ <b><?= e($orden['TIPO']) ?></b></td>
                                     <td><b><?= e($orden['NUMERO']) ?></b></td>
                                     <td><?= e($date($orden['FECHA'])) ?></td>
+                                    <td><?= e($montoDocumento($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '')) ?></td>
                                     <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= $detalleLink($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?></td>
                                 </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>Pendiente</td>
+                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>—</td><td>Pendiente</td><td>—</td>
                                 </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
                                     <td>　↳ Factura o boleta</td>
                                     <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($comprobante['FECCOMP'])) ?></td>
+                                    <td><?= e($montoDocumento($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '')) ?></td>
                                     <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= $detalleLink('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?></td>
                                 </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                     <td>　　　↳ Devengado</td>
                                     <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                     <td><?= e($date($devengado['FECT'])) ?></td>
+                                    <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
                                     <td>Registrado</td>
+                                    <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
                                 </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
                                     <td>　　　↳ Pago</td>
                                     <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($pago['FCONTABLE'])) ?></td>
+                                    <td><?= e($montoDocumento($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '')) ?></td>
                                     <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= $detalleLink('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?></td>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                     <td>　↳ Devengado sin comprobante asociado</td>
                                     <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                     <td><?= e($date($devengado['FECT'])) ?></td>
-                                    <td>Registrado</td>
+                                    <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
+                                    <td>Registrado</td><td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
                             <?php if (!$cotizaciones): ?><?php foreach ($certificaciones as $certificacion): ?><tr>
                                 <td>Certificación</td>
                                 <td><?= e($certificacion['CODCER']) ?></td>
                                 <td><?= e($date($certificacion['FECHA'])) ?></td>
+                                <td><?= e($montoDocumento($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01')) ?></td>
                                 <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                                <td><?= $detalleLink('certificacion',$certificacion['CODCER']) ?></td>
                             </tr><?php endforeach; ?><?php foreach ($ordenes as $orden): ?><tr>
                                 <td><b><?= e($orden['TIPO']) ?></b></td>
                                 <td><b><?= e($orden['NUMERO']) ?></b></td>
                                 <td><?= e($date($orden['FECHA'])) ?></td>
+                                <td><?= e($montoDocumento($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '')) ?></td>
                                 <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                                <td><?= $detalleLink($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?></td>
                             </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>Pendiente</td>
+                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>—</td><td>Pendiente</td><td>—</td>
                             </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
                                 <td>↳ Factura o boleta</td>
                                 <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($comprobante['FECCOMP'])) ?></td>
+                                <td><?= e($montoDocumento($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '')) ?></td>
                                 <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                                <td><?= $detalleLink('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?></td>
                             </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                 <td>　↳ Devengado</td>
                                 <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                 <td><?= e($date($devengado['FECT'])) ?></td>
+                                <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
                                 <td>Registrado</td>
+                                <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
                             </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
                                 <td>　↳ Pago</td>
                                 <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($pago['FCONTABLE'])) ?></td>
+                                <td><?= e($montoDocumento($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '')) ?></td>
                                 <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                                <td><?= $detalleLink('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?></td>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                 <td>↳ Devengado sin comprobante asociado</td>
                                 <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                 <td><?= e($date($devengado['FECT'])) ?></td>
+                                <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
                                 <td>Registrado</td>
+                                <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php endif; ?>
                         </tbody>
                     </table></div>
@@ -283,9 +305,6 @@ require APP_ROOT . '/app/Views/partials/header.php';
 (function () {
     var tipoInput = document.getElementById('tipo-busqueda');
     document.querySelectorAll('[data-tipo]').forEach(function (option) { option.addEventListener('click', function () { tipoInput.value = option.dataset.tipo; document.querySelectorAll('[data-tipo]').forEach(function (item) { item.classList.toggle('selected', item === option); }); }); });
-    var historyButton = document.getElementById('mostrar-historial');
-    var historyPanel = document.getElementById('historial-cambios');
-    if (historyButton && historyPanel) historyButton.addEventListener('click', function () { historyPanel.hidden = !historyPanel.hidden; historyButton.textContent = historyPanel.hidden ? 'Historial de cambios' : 'Ocultar historial'; });
 }());
 </script>
 <?php if ($useDataTables): ?>

@@ -117,12 +117,6 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
 ?>
 
-<?php if ($flash): ?>
-    <div class="alert">
-        <?= e($flash['message']) ?>
-    </div>
-<?php endif; ?>
-
 <section class="card notes-intro">
     <div>
         <h2>Consulta organizada de notas</h2>
@@ -397,30 +391,24 @@ require APP_ROOT . '/app/Views/partials/header.php';
         class="pagination"
         aria-label="Paginación de notas"
     >
-        <?php if ($resultado['pagina'] > 1): ?>
-            <a href="<?= e($link(1)) ?>">« Primero</a>
-        <?php endif; ?>
-        <?php if ($resultado['pagina'] > 1): ?>
-            <a href="<?= e($link($resultado['pagina'] - 1)) ?>">
-                ← Anterior
-            </a>
-        <?php endif; ?>
-
-        <span>
-            Página
-            <?= e((string) $resultado['pagina']) ?>
-            de
-            <?= e((string) $resultado['paginas']) ?>
+        <span class="pagination-status" aria-current="page">
+            Página <b><?= e((string) $resultado['pagina']) ?></b>
+            de <b><?= e((string) $resultado['paginas']) ?></b>
         </span>
-
-        <?php if (
-            $resultado['pagina'] < $resultado['paginas']
-        ): ?>
-            <a href="<?= e($link($resultado['pagina'] + 1)) ?>">
-                Siguiente →
-            </a>
-            <a href="<?= e($link($resultado['paginas'])) ?>">Último »</a>
-        <?php endif; ?>
+        <div class="pagination-actions">
+            <?php if ($resultado['pagina'] > 1): ?>
+                <a class="pagination-edge" href="<?= e($link(1)) ?>">« Primero</a>
+                <a href="<?= e($link($resultado['pagina'] - 1)) ?>">← Anterior</a>
+            <?php endif; ?>
+            <?php if (
+                $resultado['pagina'] < $resultado['paginas']
+            ): ?>
+                <a href="<?= e($link($resultado['pagina'] + 1)) ?>">
+                    Siguiente →
+                </a>
+                <a class="pagination-edge" href="<?= e($link($resultado['paginas'])) ?>">Último »</a>
+            <?php endif; ?>
+        </div>
     </nav>
 </section>
 

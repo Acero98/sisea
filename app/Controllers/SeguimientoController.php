@@ -2,6 +2,14 @@
 declare(strict_types=1);
 final class SeguimientoController
 {
+    public function detalleDocumento(): void
+    {
+        requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');}
+        $pedido=trim((string)($_GET['pedido']??'')); $tipo=trim((string)($_GET['tipo']??'')); $numero=trim((string)($_GET['numero']??''));
+        try { $detalle=(new SeguimientoModel())->detalleDocumento($pedido,$tipo,$numero,usuario()??[]); }
+        catch(RuntimeException $e){ http_response_code(404); $error=$e->getMessage(); $detalle=null; }
+        require APP_ROOT.'/app/Views/documento_detalle.php';
+    }
     public function index(): void
     {
         requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');} $acceso=usuario() ?? []; $flash=takeFlash(); $term = trim((string)($_GET['q'] ?? '')); $tipo = (string)($_GET['tipo'] ?? 'todo'); $pedidoSeleccionado=trim((string)($_GET['pedido'] ?? '')); $result = null; $error = null; $coincidencias=[];
@@ -21,13 +29,6 @@ final class SeguimientoController
                 db()->prepare('INSERT INTO consultas(usuario_id,termino,tipo) VALUES(:usuario,:termino,:tipo)')->execute(['usuario' => $acceso['id'], 'termino' => $term, 'tipo' => strtoupper($tipo)]);
             }
             catch (RuntimeException $exception) { $error = $exception->getMessage(); }
-        }
-        $historial = [];
-        $esAdministrador = (usuario()['rol'] ?? '') === 'ADMIN';
-        if ($esAdministrador && $result) {
-            $stmtHistorial = db()->prepare('SELECT h.creado_en,h.tipo_documento,h.numero_documento,h.evento,h.campo,h.valor_anterior,h.valor_nuevo,COALESCE(u.usuario,\'Proceso programado\') actualizado_por FROM seguimiento_historial h LEFT JOIN usuarios u ON u.id=h.usuario_id WHERE h.nro_pedido=:pedido ORDER BY h.id DESC LIMIT 100');
-            $stmtHistorial->execute(['pedido' => $result['pedido']['NRO_PEDIDO']]);
-            $historial = $stmtHistorial->fetchAll();
         }
         $recent = db()->prepare('SELECT termino,tipo,creado_en FROM consultas WHERE usuario_id=:usuario ORDER BY id DESC LIMIT 5'); $recent->execute(['usuario' => usuario()['id']]); $recent = $recent->fetchAll();
         require APP_ROOT . '/app/Views/seguimiento.php';

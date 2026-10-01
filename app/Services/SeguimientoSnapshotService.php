@@ -284,7 +284,7 @@ final class SeguimientoSnapshotService
     }
     private function invalidarCacheConsultas(): void
     {
-        foreach (glob(APP_ROOT . '/storage/cache/seguimiento-v25-*.json') ?: [] as $archivo) @unlink($archivo);
+        foreach (glob(APP_ROOT . '/storage/cache/seguimiento-v*.json') ?: [] as $archivo) @unlink($archivo);
     }
     private function registrarCambiosNota(PDOStatement $stmt, int $syncId, ?int $usuarioId, ?array $anterior, array $actual): void
     {
