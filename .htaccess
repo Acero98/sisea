@@ -1,0 +1,4 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(?:app|bin|config|database|storage|docs|tests|resources|node_modules|dist|\.git|\.codex|\.agents)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)\. - [F,L]

@@ -45,6 +45,12 @@ $detalleLink = function (string $tipoDocumento, string $numeroDocumento) use ($r
     $href = url('detalle_documento',['pedido'=>$result['pedido']['NRO_PEDIDO'],'tipo'=>$tipoDocumento,'numero'=>$numeroDocumento]);
     return '<a class="table-action icon-action" href="'.e($href).'" title="Ver detalle" aria-label="Ver detalle"><img src="'.e(APP_URL).'assets/icons/bootstrap-eye.svg" alt=""></a>';
 };
+$celdaMonto = static function ($centavos, string $moneda = '') use ($mostrarMontos, $montoDocumento): string {
+    return $mostrarMontos ? '<td>'.e($montoDocumento($centavos, $moneda)).'</td>' : '';
+};
+$celdaDetalle = static function (string $tipoDocumento, string $numeroDocumento) use ($puedeVerDetalle, $detalleLink): string {
+    return $puedeVerDetalle ? '<td>'.$detalleLink($tipoDocumento, $numeroDocumento).'</td>' : '';
+};
 ?>
 <?php
 $pageTitle = 'Seguimiento documental';
@@ -104,7 +110,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <p class="route-note"><?= $isWarehouse ? 'Ruta de existencia: se sigue el movimiento de salida registrado por Almacén.' : 'Ruta de adquisición: se sigue la documentación vinculada a la compra o al servicio.' ?></p>
                 <div class="timeline"><?php foreach ($stages as $stage): ?><div class="stage <?= e($stage['estado']) ?>" title="<?= e($stage['nota']) ?>"><small class="stage-count"><?= e($stage['cantidad']) ?></small><i><?= $stage['estado'] === 'complete' ? '✓' : ($stage['estado'] === 'partial' ? '!' : ($stage['estado'] === 'issue' ? '×' : '○')) ?></i><span><?= e($stage['label']) ?></span><?php if ($stage['nota'] !== ''): ?><em><?= e($stage['nota']) ?></em><?php endif; ?></div><?php endforeach; ?></div>
             </section>
-            <div class="grid">
+            <div class="grid tracking-documents-grid">
                 <section class="card">
                     <h2>Resumen de la solicitud</h2>
                     <dl>
@@ -124,16 +130,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 </section>
                 <section class="card">
                     <h2>Documentos vinculados</h2>
-                    <p>Los montos muestran el importe registrado para cada documento; “—” indica que Avalon no tiene un importe asociado.</p>
+                    <?php if($mostrarMontos): ?><p>Los montos muestran el importe registrado para cada documento; “—” indica que Avalon no tiene un importe asociado.</p><?php endif; ?>
                     <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                         <thead>
                             <tr>
                                 <th>Documento</th>
                                 <th>Número / referencia</th>
                                 <th>Fecha</th>
-                                <th>Monto</th>
+                                <?php if($mostrarMontos): ?><th>Monto</th><?php endif; ?>
                                 <th>Estado</th>
-                                <th>Acción</th>
+                                <?php if($puedeVerDetalle): ?><th>Acción</th><?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -141,104 +147,104 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td>Pedido</td>
                                 <td><?= e($result['pedido']['NRO_PEDIDO']) ?></td>
                                 <td><?= e($date($result['pedido']['FEC_EMISIO'])) ?></td>
-                                <td><?= e($montoDocumento($result['pedido']['MONTO_CENTS'] ?? null, $result['pedido']['MONEDA'] ?? '')) ?></td>
+                                <?= $celdaMonto($result['pedido']['MONTO_CENTS'] ?? null, $result['pedido']['MONEDA'] ?? '') ?>
                                 <td><?= e($result['pedido']['ESTADO_LABEL']) ?></td>
-                                <td><?= $detalleLink('pedido',$result['pedido']['NRO_PEDIDO']) ?></td>
+                                <?= $celdaDetalle('pedido',$result['pedido']['NRO_PEDIDO']) ?>
                             </tr><?php foreach ($cotizaciones as $cotizacion): ?><tr>
                                     <td><b>Cotización / expediente</b></td>
                                     <td><b><?= e($cotizacion['NRO_EXPE']) ?></b></td>
                                     <td><?= e($date($cotizacion['FEC_COTIZA'])) ?></td>
-                                    <td><?= e($montoDocumento($cotizacion['MONTO_CENTS'] ?? null, $cotizacion['MONEDA'] ?? '')) ?></td>
+                                    <?= $celdaMonto($cotizacion['MONTO_CENTS'] ?? null, $cotizacion['MONEDA'] ?? '') ?>
                                     <td><?= e('Código Avalon: ' . ($cotizacion['ESTADO'] ?: '—')) ?></td>
-                                    <td><?= $detalleLink('cotizacion',$cotizacion['NRO_EXPE']) ?></td>
+                                    <?= $celdaDetalle('cotizacion',$cotizacion['NRO_EXPE']) ?>
                                 </tr><?php foreach ($cotizacion['CERTIFICACIONES'] as $certificacion): ?><tr>
                                     <td>↳ Certificación</td>
                                     <td><?= e($certificacion['CODCER']) ?></td>
                                     <td><?= e($date($certificacion['FECHA'])) ?></td>
-                                    <td><?= e($montoDocumento($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01')) ?></td>
+                                    <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
                                     <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
-                                    <td><?= $detalleLink('certificacion',$certificacion['CODCER']) ?></td>
+                                    <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
                                 </tr><?php endforeach; ?><?php foreach ($cotizacion['ORDENES'] as $orden): ?><tr>
                                     <td>↳ <b><?= e($orden['TIPO']) ?></b></td>
                                     <td><b><?= e($orden['NUMERO']) ?></b></td>
                                     <td><?= e($date($orden['FECHA'])) ?></td>
-                                    <td><?= e($montoDocumento($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '')) ?></td>
+                                    <?= $celdaMonto($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '') ?>
                                     <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
-                                    <td><?= $detalleLink($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?></td>
+                                    <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
                                 </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>—</td><td>Pendiente</td><td>—</td>
+                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
                                 </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
                                     <td>　↳ Factura o boleta</td>
                                     <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($comprobante['FECCOMP'])) ?></td>
-                                    <td><?= e($montoDocumento($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '')) ?></td>
+                                    <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
                                     <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
-                                    <td><?= $detalleLink('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?></td>
+                                    <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
                                 </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                     <td>　　　↳ Devengado</td>
                                     <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                     <td><?= e($date($devengado['FECT'])) ?></td>
-                                    <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
+                                    <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
                                     <td>Registrado</td>
-                                    <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
+                                    <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
                                 </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
                                     <td>　　　↳ Pago</td>
                                     <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($pago['FCONTABLE'])) ?></td>
-                                    <td><?= e($montoDocumento($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '')) ?></td>
+                                    <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
                                     <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
-                                    <td><?= $detalleLink('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?></td>
+                                    <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                     <td>　↳ Devengado sin comprobante asociado</td>
                                     <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                     <td><?= e($date($devengado['FECT'])) ?></td>
-                                    <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
-                                    <td>Registrado</td><td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
+                                    <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
+                                    <td>Registrado</td><?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
                             <?php if (!$cotizaciones): ?><?php foreach ($certificaciones as $certificacion): ?><tr>
                                 <td>Certificación</td>
                                 <td><?= e($certificacion['CODCER']) ?></td>
                                 <td><?= e($date($certificacion['FECHA'])) ?></td>
-                                <td><?= e($montoDocumento($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01')) ?></td>
+                                <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
                                 <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
-                                <td><?= $detalleLink('certificacion',$certificacion['CODCER']) ?></td>
+                                <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
                             </tr><?php endforeach; ?><?php foreach ($ordenes as $orden): ?><tr>
                                 <td><b><?= e($orden['TIPO']) ?></b></td>
                                 <td><b><?= e($orden['NUMERO']) ?></b></td>
                                 <td><?= e($date($orden['FECHA'])) ?></td>
-                                <td><?= e($montoDocumento($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '')) ?></td>
+                                <?= $celdaMonto($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '') ?>
                                 <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
-                                <td><?= $detalleLink($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?></td>
+                                <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
                             </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><td>—</td><td>Pendiente</td><td>—</td>
+                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
                             </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
                                 <td>↳ Factura o boleta</td>
                                 <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($comprobante['FECCOMP'])) ?></td>
-                                <td><?= e($montoDocumento($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '')) ?></td>
+                                <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
                                 <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
-                                <td><?= $detalleLink('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?></td>
+                                <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
                             </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                 <td>　↳ Devengado</td>
                                 <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                 <td><?= e($date($devengado['FECT'])) ?></td>
-                                <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
+                                <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
                                 <td>Registrado</td>
-                                <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
+                                <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
                             </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
                                 <td>　↳ Pago</td>
                                 <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($pago['FCONTABLE'])) ?></td>
-                                <td><?= e($montoDocumento($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '')) ?></td>
+                                <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
                                 <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
-                                <td><?= $detalleLink('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?></td>
+                                <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                 <td>↳ Devengado sin comprobante asociado</td>
                                 <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
                                 <td><?= e($date($devengado['FECT'])) ?></td>
-                                <td><?= e($montoDocumento($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01')) ?></td>
+                                <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
                                 <td>Registrado</td>
-                                <td><?= $detalleLink('devengado',$devengado['DOC1']) ?></td>
+                                <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php endif; ?>
                         </tbody>
                     </table></div>

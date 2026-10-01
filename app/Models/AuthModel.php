@@ -4,7 +4,8 @@ final class AuthModel
 {
     public function login(string $user, string $password): ?array
     {
-        $stmt = db()->prepare('SELECT id,usuario,nombre,clave_hash,rol,perfil_portal,alcance,avalon_codigo,unidad_organica,unidad_nombre,zona,localidad,perfil_nombre,permiso_seguimiento,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios FROM usuarios WHERE usuario=:usuario AND activo=1 LIMIT 1');
+        UsuarioModel::instalarPermisosDocumentales();
+        $stmt = db()->prepare('SELECT id,usuario,nombre,clave_hash,rol,perfil_portal,alcance,avalon_codigo,unidad_organica,unidad_nombre,zona,localidad,perfil_nombre,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios FROM usuarios WHERE usuario=:usuario AND activo=1 LIMIT 1');
         $stmt->execute(['usuario' => $user]); $row = $stmt->fetch();
         if (!$row || !$row['clave_hash'] || !password_verify($password, $row['clave_hash'])) return null;
         unset($row['clave_hash']); $row['alcance']=$row['alcance_seguimiento'] ?: $row['alcance']; return $row;
@@ -24,7 +25,8 @@ final class AuthModel
     }
     public function datosSesion(int $usuarioId): ?array
     {
-        $stmt=db()->prepare('SELECT id,usuario,nombre,rol,perfil_portal,alcance_seguimiento AS alcance,avalon_codigo,unidad_organica,unidad_nombre,zona,localidad,perfil_nombre,permiso_seguimiento,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios FROM usuarios WHERE id=:id AND activo=1');
+        UsuarioModel::instalarPermisosDocumentales();
+        $stmt=db()->prepare('SELECT id,usuario,nombre,rol,perfil_portal,alcance_seguimiento AS alcance,avalon_codigo,unidad_organica,unidad_nombre,zona,localidad,perfil_nombre,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios FROM usuarios WHERE id=:id AND activo=1');
         $stmt->execute(['id'=>$usuarioId]); $fila=$stmt->fetch(); return $fila?:null;
     }
 

@@ -2,9 +2,12 @@
 declare(strict_types=1);
 
 define('APP_ROOT', dirname(__DIR__));
-define('APP_URL', '/sisea/public/');
-define('AVALON_LOGISTICA_DATA', getenv('AVALON_LOGISTICA_DATA') ?: 'C:/Avalon/Logistica/data');
-define('AVALON_PLANIF_DATA', getenv('AVALON_PLANIF_DATA') ?: 'C:/Avalon/Planif/data');
+$settings = require __DIR__.'/settings.php';
+define('APP_URL', rtrim($settings['app_url'] ?? '/sisea/public/', '/').'/');
+define('AVALON_LOGISTICA_DATA', rtrim($settings['avalon_logistica'] ?? 'C:/Avalon/Logistica/data', '/\\'));
+define('AVALON_PLANIF_DATA', rtrim($settings['avalon_planif'] ?? 'C:/Avalon/Planif/data', '/\\'));
+define('AVALON_CONTAB_DATA', rtrim($settings['avalon_contab'] ?? 'C:/Avalon/contab/data', '/\\'));
+define('AVALON_FINANZAS_DATA', rtrim($settings['avalon_finanzas'] ?? 'C:/Avalon/Finanzas/data', '/\\'));
 date_default_timezone_set('America/Lima');
 
 spl_autoload_register(function ($class) {

@@ -5,14 +5,16 @@ final class SeguimientoController
     public function detalleDocumento(): void
     {
         requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');}
+        if(!tienePermiso('ver_detalle')){http_response_code(403);exit('No tiene permiso para abrir el detalle de documentos.');}
         $pedido=trim((string)($_GET['pedido']??'')); $tipo=trim((string)($_GET['tipo']??'')); $numero=trim((string)($_GET['numero']??''));
-        try { $detalle=(new SeguimientoModel())->detalleDocumento($pedido,$tipo,$numero,usuario()??[]); }
+        $mostrarMontos=tienePermiso('ver_montos');
+        try { $detalle=(new SeguimientoModel())->detalleDocumento($pedido,$tipo,$numero,usuario()??[],$mostrarMontos); }
         catch(RuntimeException $e){ http_response_code(404); $error=$e->getMessage(); $detalle=null; }
         require APP_ROOT.'/app/Views/documento_detalle.php';
     }
     public function index(): void
     {
-        requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');} $acceso=usuario() ?? []; $flash=takeFlash(); $term = trim((string)($_GET['q'] ?? '')); $tipo = (string)($_GET['tipo'] ?? 'todo'); $pedidoSeleccionado=trim((string)($_GET['pedido'] ?? '')); $result = null; $error = null; $coincidencias=[];
+        requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');} $acceso=usuario() ?? []; $mostrarMontos=tienePermiso('ver_montos',$acceso); $puedeVerDetalle=tienePermiso('ver_detalle',$acceso); $flash=takeFlash(); $term = trim((string)($_GET['q'] ?? '')); $tipo = (string)($_GET['tipo'] ?? 'todo'); $pedidoSeleccionado=trim((string)($_GET['pedido'] ?? '')); $result = null; $error = null; $coincidencias=[];
         liberarSesion();
         if (!in_array($tipo, ['todo', 'pedido', 'cotizacion', 'certificacion', 'orden_compra', 'orden_servicio', 'comprobante', 'devengado', 'pago'], true)) $tipo = 'todo';
         if ($term !== '') {

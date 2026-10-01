@@ -9,7 +9,7 @@ final class SeguimientoSnapshotService
     {
         $this->reader = new DbfReader();
     }
-    public function sincronizar(array $filtro = [], ?int $usuarioId = null): int
+    public function sincronizar(array $filtro = [], ?int $usuarioId = null, ?callable $progreso = null): int
     {
         $this->instalar();
         $pdo = db();
@@ -20,7 +20,8 @@ final class SeguimientoSnapshotService
         try {
             // Primero actualiza únicamente las tablas DBF cuyo tamaño o fecha
             // cambió. Desde este punto, el cálculo trabaja con MySQL.
-            (new AvalonCacheService())->sincronizar();
+            (new AvalonCacheService())->sincronizar($progreso);
+            if ($progreso) $progreso('Construyendo seguimiento documental');
             $unidades = [];
             foreach ($this->reader->rows(AVALON_PLANIF_DATA . '/unidad.dbf', ['COD_UNIDAD', 'DES_UNIDAD']) as $u) $unidades[$u['COD_UNIDAD']] = $u['DES_UNIDAD'];
             $notas = [];
@@ -97,14 +98,14 @@ final class SeguimientoSnapshotService
                     if (!$this->anulado($r['ESTADO'])) $this->etapa($notas, $n, 'Factura o boleta', 5);
                 }
             }
-            foreach ($this->reader->rows('C:/Avalon/contab/data/FCON0024.DBF', ['OCOS', 'FCONTABLE', 'DOC1', 'FECT']) as $r) {
+            foreach ($this->reader->rows(AVALON_CONTAB_DATA . '/FCON0024.DBF', ['OCOS', 'FCONTABLE', 'DOC1', 'FECT']) as $r) {
                 $o = strtoupper(preg_replace('/\s+/', '', $r['OCOS']));
                 if (isset($ordenes[$o])) {
                     $this->documento($documentos, $ordenes[$o], 'devengado', $r['DOC1'], '', $this->fecha($r['FECT']));
                     $this->etapa($notas, $ordenes[$o], 'Devengado', 6);
                 }
             }
-            foreach ($this->reader->rows('C:/Avalon/Finanzas/data/rfin0019.DBF', ['COMPROB', 'FCONTABLE', 'CMPBTE', 'DOC1', 'ESTADO']) as $r) {
+            foreach ($this->reader->rows(AVALON_FINANZAS_DATA . '/rfin0019.DBF', ['COMPROB', 'FCONTABLE', 'CMPBTE', 'DOC1', 'ESTADO']) as $r) {
                 if (isset($comprobantes[$r['COMPROB']])) {
                     $contexto = $comprobantes[$r['COMPROB']];
                     $pago = trim($r['CMPBTE'] . ' ' . (ltrim($r['DOC1'], '0') ?: '0'));

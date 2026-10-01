@@ -44,7 +44,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
     </div>
     <div class="table-scroll orders-table-scroll">
         <table id="tabla-ordenes" class="display orders-table" aria-label="Listado de órdenes de compra y servicio">
-            <thead><tr><th>Orden</th><th>Tipo</th><th>Fecha</th><th>Pedidos vinculados</th><th>Unidad / descripción</th><th>Estado</th><th>Importe</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Orden</th><th>Tipo</th><th>Fecha</th><th>Pedidos vinculados</th><th>Unidad / descripción</th><th>Estado</th><?php if($mostrarMontos): ?><th>Importe</th><?php endif; ?><?php if($puedeVerDetalle): ?><th>Detalle</th><?php endif; ?></tr></thead>
         </table>
     </div>
 </section>
@@ -93,14 +93,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 var cancelled = String(row.estado || '').trim().toUpperCase() === 'A';
                 return '<span class="order-state ' + (cancelled ? 'is-cancelled' : 'is-current') + '">' + escapeHtml(value) + '</span>';
             }},
-            {data: 'importe', orderable: false, className: 'order-amount', render: $.fn.dataTable.render.text()},
+            <?php if($mostrarMontos): ?>{data: 'importe', orderable: false, className: 'order-amount', render: $.fn.dataTable.render.text()},<?php endif; ?>
+            <?php if($puedeVerDetalle): ?>
             {data: 'detalle_url', orderable: false, searchable: false, className: 'order-action', render: function (value, type, row) {
                 if (type !== 'display') return value;
                 return '<a class="table-action order-view-action" href="' + escapeHtml(value) + '" aria-label="Ver detalle de ' + escapeHtml(row.numero_label) + '" title="Ver detalle"><i class="bi bi-eye" aria-hidden="true"></i></a>';
             }}
+            <?php endif; ?>
         ],
         createdRow: function (row) {
-            var labels = ['Orden', 'Tipo', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Estado', 'Importe', 'Detalle'];
+            var labels = <?= json_encode(array_merge(['Orden','Tipo','Fecha','Pedidos vinculados','Unidad / descripción','Estado'], $mostrarMontos ? ['Importe'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
             $('td', row).each(function (index) { this.setAttribute('data-label', labels[index] || ''); });
         },
         language: {

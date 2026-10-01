@@ -1,11 +1,6 @@
-# Avalon · Seguimiento de Logística
+# SISEA · Seguimiento de Avalon
 
-Primer módulo web de consulta de seguimiento documental. Lee las tablas DBF de Avalon en modo solo lectura y mantiene sus propios usuarios.
+Consulta documental y presupuestal de Avalon, con usuarios y permisos locales.
 
-## Instalación local
-
-1. Ejecute `php database/install.php` desde esta carpeta.
-2. Abra `http://localhost/avalon/public/`.
-3. Ingrese con `admin` y la clave inicial `Avalon2026*`.
-
-Cambie la clave inicial después del primer ingreso.
+Para instalar en otro equipo Windows/Laragon consulte [la guía de traslado](docs/INSTALACION_WINDOWS.md).
+El paquete de aplicación no incluye datos ni credenciales. La instalación exige una base vacía y genera una clave inicial única, o importa las cuentas del traslado.

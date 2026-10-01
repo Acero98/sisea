@@ -82,7 +82,7 @@ final class OrdenesModel
         $stmt->bindValue(':inicio', $start, PDO::PARAM_INT);
         $stmt->execute();
         $filas = $stmt->fetchAll();
-        $this->completarImportes($filas);
+        $this->completarImportes($filas, tienePermiso('ver_montos', $acceso), tienePermiso('ver_detalle', $acceso));
 
         return ['draw' => $draw, 'recordsTotal' => $total, 'recordsFiltered' => $filtrados, 'data' => $filas];
     }
@@ -94,7 +94,7 @@ final class OrdenesModel
         return (int)$stmt->fetchColumn();
     }
 
-    private function completarImportes(array &$filas): void
+    private function completarImportes(array &$filas, bool $mostrarMontos, bool $puedeVerDetalle): void
     {
         $necesarios = ['orden_compra' => [], 'orden_servicio' => []];
         foreach ($filas as $fila) $necesarios[$fila['tipo']][(string)$fila['numero']] = true;
@@ -105,7 +105,7 @@ final class OrdenesModel
         $archivos = ['orden_compra' => 'sum40015.DBF', 'orden_servicio' => 'sum40017.DBF'];
         $keys = ['orden_compra' => 'NRO_ORDCMP', 'orden_servicio' => 'NRO_SERVIC'];
         $cache = [];
-        foreach ($necesarios as $tipo => $numeros) {
+        foreach ($mostrarMontos ? $necesarios : [] as $tipo => $numeros) {
             foreach (array_keys($numeros) as $numero) {
                 try {
                     $cabeceras = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/' . $archivos[$tipo], $campos[$tipo], $keys[$tipo], (string)$numero);
@@ -116,18 +116,20 @@ final class OrdenesModel
             }
         }
         foreach ($filas as &$fila) {
-            $cabecera = $cache[$fila['tipo']][(string)$fila['numero']] ?? [];
-            $total = $fila['tipo'] === 'orden_compra' ? ($cabecera['TOTALOC'] ?? '') : ($cabecera['TOTALOS'] ?? '');
-            if (!is_numeric($total) || (float)$total === 0.0) $total = $cabecera['VAL_TOTORD'] ?? '';
-            $moneda = trim((string)($cabecera['MONEDA'] ?? ''));
-            $prefijo = $moneda === '01' ? 'S/ ' : ($moneda !== '' ? $moneda . ' ' : '');
-            $fila['importe'] = is_numeric($total) ? $prefijo . number_format((float)$total, 2, '.', ',') : '—';
+            if ($mostrarMontos) {
+                $cabecera = $cache[$fila['tipo']][(string)$fila['numero']] ?? [];
+                $total = $fila['tipo'] === 'orden_compra' ? ($cabecera['TOTALOC'] ?? '') : ($cabecera['TOTALOS'] ?? '');
+                if (!is_numeric($total) || (float)$total === 0.0) $total = $cabecera['VAL_TOTORD'] ?? '';
+                $moneda = trim((string)($cabecera['MONEDA'] ?? ''));
+                $prefijo = $moneda === '01' ? 'S/ ' : ($moneda !== '' ? $moneda . ' ' : '');
+                $fila['importe'] = is_numeric($total) ? $prefijo . number_format((float)$total, 2, '.', ',') : '—';
+            }
             $fila['tipo_label'] = $fila['tipo'] === 'orden_compra' ? 'Compra' : 'Servicio';
             $fila['numero_label'] = $fila['tipo'] === 'orden_compra' ? 'OC ' . $fila['numero'] : 'OS ' . $fila['numero'];
             $fila['estado_label'] = trim((string)$fila['estado']) === '' ? 'Sin estado' : (strtoupper(trim((string)$fila['estado'])) === 'A' ? 'Anulada' : 'Avalon: ' . trim((string)$fila['estado']));
             $instante = $fila['fecha'] ? strtotime((string)$fila['fecha']) : false;
             $fila['fecha_label'] = $instante !== false ? date('d/m/Y', $instante) : '—';
-            $fila['detalle_url'] = url('detalle_documento', ['pedido' => $fila['nro_pedido'], 'tipo' => $fila['tipo'], 'numero' => $fila['numero']]);
+            if ($puedeVerDetalle) $fila['detalle_url'] = url('detalle_documento', ['pedido' => $fila['nro_pedido'], 'tipo' => $fila['tipo'], 'numero' => $fila['numero']]);
             $fila['busqueda_unidad'] = trim((string)($fila['unidad_label'] ?? 'Unidad no identificada'));
             $fila['sustentacion'] = trim((string)$fila['sustentacion']);
         }

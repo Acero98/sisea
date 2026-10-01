@@ -26,25 +26,39 @@ final class UsuarioModel
     {
         $this->instalarPermisos();
         $this->instalarRolesAcceso();
-        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
+        self::instalarPermisosDocumentales();
+        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
     }
     public function guardarAcceso(int $id, string $clave, array $datos): void
     {
         $this->instalarPermisos();
         $this->instalarAlcancePropio();
         $this->instalarRolesAcceso();
+        self::instalarPermisosDocumentales();
         $roles=['USUARIO','LOGISTICA','PRESUPUESTO','CONTABILIDAD','FINANZAS','ADMINISTRADOR'];
         $rolAcceso=in_array($datos['rol_acceso']??'', $roles,true)?$datos['rol_acceso']:'USUARIO';
         $perfil=$rolAcceso==='ADMINISTRADOR'?'ADMINISTRADOR':($rolAcceso==='USUARIO'?'USUARIO':'SUPERVISOR');
         $scope=static fn($v)=>in_array($v,['PROPIO','UNIDAD','GLOBAL'],true)?$v:'UNIDAD';
-        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,alcance_seguimiento=:as_,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
-        $params=['perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>!empty($datos['permiso_seguimiento'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
+        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,permiso_ver_montos=:pm,permiso_ver_detalle=:pd,alcance_seguimiento=:as_,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
+        $seguimiento=!empty($datos['permiso_seguimiento']);
+        $params=['perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>$seguimiento?1:0,'pm'=>$seguimiento&&!empty($datos['permiso_ver_montos'])?1:0,'pd'=>$seguimiento&&!empty($datos['permiso_ver_detalle'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
         if ($clave !== '') $params['clave'] = password_hash($clave, PASSWORD_DEFAULT);
         db()->prepare($sql)->execute($params);
     }
     private function instalarPermisos(): void {
         if(db()->query("SHOW COLUMNS FROM usuarios LIKE 'permiso_seguimiento'")->fetch())return;
         foreach(explode(';',(string)file_get_contents(APP_ROOT.'/database/migrations/013_permisos_modulares.sql')) as $sql) if(trim($sql)!=='')db()->exec($sql);
+    }
+    public static function instalarPermisosDocumentales(): void
+    {
+        static $instalado = false;
+        if ($instalado) return;
+        foreach (['permiso_ver_montos', 'permiso_ver_detalle'] as $columna) {
+            if (!db()->query("SHOW COLUMNS FROM usuarios LIKE '" . $columna . "'")->fetch()) {
+                db()->exec('ALTER TABLE usuarios ADD COLUMN ' . $columna . ' TINYINT(1) NOT NULL DEFAULT 1');
+            }
+        }
+        $instalado = true;
     }
     private function instalarAlcancePropio(): void
     {

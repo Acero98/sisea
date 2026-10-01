@@ -15,7 +15,7 @@ $flash = $flash ?? takeFlash();
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/inter.css">
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/vendor/select2/select2.min.css">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20261001c">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20261001f">
     <?php if (!empty($useDataTables)): ?><link rel="stylesheet" href="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.css"><?php endif; ?>
     <script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
     <title><?= e($pageTitle) ?> · Avalon</title>

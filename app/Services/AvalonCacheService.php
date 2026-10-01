@@ -11,12 +11,14 @@ final class AvalonCacheService
         $this->reader = new DbfReader(false);
     }
 
-    public function sincronizar(): array
+    public function sincronizar(?callable $progreso = null): array
     {
         $this->instalar();
         $resultado = [];
         foreach ($this->fuentes() as $fuente) {
+            if ($progreso) $progreso('Leyendo '.$fuente['archivo']);
             $resultado[$fuente['archivo']] = $this->sincronizarFuente($fuente);
+            if ($progreso) $progreso('Finalizado '.$fuente['archivo']);
         }
         return $resultado;
     }
@@ -152,7 +154,7 @@ final class AvalonCacheService
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40007.DBF', ['NRO_PEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','CAN_ORDENA','CENCOS','COD_PROY','CODACTIVID','CTA_CON'], ['NRO_PEDIDO']),
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40003.DBF', ['TIPOFAMI','GRUPO','SUBGRUPO','SEC_SERV','DESC_SERV','UNIMED'], ['SEC_SERV']),
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40004.DBF', ['TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','DESC_MAT','UNIMED'], ['SEC_BIEN']),
-            $this->fuente('C:/Avalon/contab/data/cct0004.DBF', ['CCTA','DESC'], ['CCTA']),
+            $this->fuente(AVALON_CONTAB_DATA . '/cct0004.DBF', ['CCTA','DESC'], ['CCTA']),
             $this->fuente(AVALON_PLANIF_DATA.'/tab_recu.dbf', ['COD_CCP1','DESCRIP'], ['COD_CCP1']),
             $this->fuente(AVALON_PLANIF_DATA.'/mae_proy.dbf', ['COD_PROY','DESC_PROY'], ['COD_PROY']),
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40008.DBF', ['NRO_PEDIDO','IDMOVIM','IDTRANSAC','TIPO_MOV','DOC_REF','FECHA','CANTIDAD','NUMALM','ALM_REF','ESTMOV','ENTREGADOA','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','SEC_ITEMMO'], ['NRO_PEDIDO']),
@@ -167,8 +169,8 @@ final class AvalonCacheService
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40018.DBF', ['NRO_SERVIC','NRO_PEDIDO','SECPEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_SERV','SECITEMOS','CAN_ORDENA','PRE_UNITAR','PRE_TOT','MONIMPTO','CTA_CON','CODPROY','CCOSTO','ACTIVIDAD','CODACTIVID','DETLIN','ESTADO'], ['NRO_SERVIC','NRO_PEDIDO']),
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40030.DBF', ['COMPROB','NRO_SERVIC','NRO_ORDCMP','DOCSER','DOCNRO','FECCOMP','ESTADO','PAGADO','FECPAGO','NOMPROV','RUCPROV','PREVENT','MONEDA'], ['COMPROB','NRO_SERVIC','NRO_ORDCMP']),
             $this->fuente(AVALON_LOGISTICA_DATA.'/sum40031.DBF', ['COMPROB','NRO_SERVIC','NRO_ORDCMP','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','SEC_SERV','VALOR','CCOSTO','CTA_CTBLE','CODPROY','ESTADO'], ['COMPROB']),
-            $this->fuente('C:/Avalon/contab/data/FCON0024.DBF', ['FCONTABLE','DOC1','FECT','OCOS','SERIE','NUMERO','MON_SOL'], ['OCOS']),
-            $this->fuente('C:/Avalon/Finanzas/data/rfin0019.DBF', ['FCONTABLE','CMPBTE','DOC1','COMPROB','IMPORTE','ESTADO'], ['COMPROB']),
+            $this->fuente(AVALON_CONTAB_DATA . '/FCON0024.DBF', ['FCONTABLE','DOC1','FECT','OCOS','SERIE','NUMERO','MON_SOL'], ['OCOS']),
+            $this->fuente(AVALON_FINANZAS_DATA . '/rfin0019.DBF', ['FCONTABLE','CMPBTE','DOC1','COMPROB','IMPORTE','ESTADO'], ['COMPROB']),
             $this->fuente(AVALON_PLANIF_DATA.'/unidad.dbf', ['COD_UNIDAD','DES_UNIDAD'], ['COD_UNIDAD']),
         ];
     }

@@ -8,6 +8,9 @@ body.menu-contraido .logo{display:none}body.menu-contraido .menu-toggle{align-se
 .main header{flex-wrap:wrap}.main header>div{min-width:0}.read-only{max-width:100%}
 .sidebar{overflow-y:auto;z-index:10}.menu-toggle{padding:0;flex-shrink:0;cursor:pointer;min-height:40px}
 .main .grid{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+.main .tracking-documents-grid{grid-template-columns:minmax(340px,.54fr) minmax(0,1fr)}
+.tracking-documents-grid>.card{min-width:0}
+.permission-suboptions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 18px;padding-top:10px;border-top:1px solid var(--line)}
 .main .card,.main .search-card,.main .recent,.main .empty,.main .status-card{min-width:0;overflow-wrap:anywhere}
 .search-line{display:flex;flex-wrap:wrap}.search-line input{min-width:0;flex:1 1 240px;width:100%;font:inherit;font-size:16px}
 .search-line button,.clear-search{min-height:48px}.types button{min-height:44px}
@@ -18,6 +21,7 @@ body.menu-contraido .logo{display:none}body.menu-contraido .menu-toggle{align-se
 .timeline{max-width:100%;overflow-x:auto;padding-bottom:12px}.stage{min-width:110px}
 .main dd{min-width:0;overflow-wrap:anywhere}.recent li{gap:12px;flex-wrap:wrap}.recent li span{overflow-wrap:anywhere}
 @media(max-width:1150px){.main .grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1280px){.main .tracking-documents-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:850px){
  .sidebar,body.menu-contraido .sidebar{position:static;width:100%;padding:16px;display:flex;align-items:stretch;overflow:visible}
  .sidebar .logo,body.menu-contraido .logo{display:block;font-size:20px}
@@ -219,3 +223,4 @@ html,body{max-width:100%;overflow-x:clip}
 .orders-budget-context{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;padding:16px 20px;border-color:#cbdcea;background:#f4f8fb}.orders-budget-context p{margin:4px 0 0;color:var(--muted);font-size:13px}
 @media(max-width:560px){.budget-orders-dialog{width:calc(100vw - 16px);max-height:90vh;border-radius:13px}.budget-orders-dialog-head{padding:16px}.budget-orders-summary{padding:14px 16px}.budget-orders-table-wrap{max-height:58vh;padding:0 12px}.budget-orders-dialog-foot{padding:12px 16px}}
 @media(max-width:560px){.orders-budget-context{align-items:flex-start;flex-direction:column}.orders-open-budget{margin:12px 14px}}
+@media(max-width:850px){.orders-table tbody td.order-amount{align-items:flex-end;text-align:right}.orders-table tbody td.order-action{grid-column:1/-1;align-items:flex-end;border-bottom:0}}

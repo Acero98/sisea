@@ -33,7 +33,7 @@ final class SeguimientoModel
             $source = $this->reader->findExact(AVALON_LOGISTICA_DATA . $sourceFile, $sourceFields, $codeField, $detail['SEC_BIEN']);
             foreach ($source as $item) if ($detail['TIPOFAMI'] === $item['TIPOFAMI'] && $detail['GRUPO'] === $item['GRUPO'] && $detail['SUBGRUPO'] === $item['SUBGRUPO'] && $detail['SEC_BIEN'] === $item[$codeField]) { $detail['DESC_MAT'] = $item[$nameField]; $detail['UNIMED'] = $item['UNIMED']; break; }
             $detail['DESC_MAT'] = $detail['DESC_MAT'] ?? 'Recurso sin descripción'; $detail['UNIMED'] = $detail['UNIMED'] ?? '—';
-            $centro = $detail['CENCOS'] !== '' ? $this->reader->findExact('C:/Avalon/contab/data/cct0004.DBF', ['CCTA','DESC'], 'CCTA', $detail['CENCOS']) : [];
+            $centro = $detail['CENCOS'] !== '' ? $this->reader->findExact(AVALON_CONTAB_DATA . '/cct0004.DBF', ['CCTA','DESC'], 'CCTA', $detail['CENCOS']) : [];
             $detail['CENTRO_COSTO'] = $centro ? trim($centro[0]['CCTA'] . ' · ' . $centro[0]['DESC']) : ($detail['CENCOS'] ?: 'No registrado');
             $detail['COSTO_ABC'] = $detail['CODACTIVID'] ?: 'No registrado';
             $cuenta = $detail['CTA_CON'] !== '' ? $this->reader->findExact(AVALON_PLANIF_DATA . '/tab_recu.dbf', ['COD_CCP1','DESCRIP'], 'COD_CCP1', $detail['CTA_CON']) : [];
@@ -129,7 +129,7 @@ final class SeguimientoModel
             $orden['FINANCIERO'] = ResumenFinancieroService::calcular($cabeceraFinanciera[0] ?? [], $orden['COMPROBANTES'], $campoTotal);
             $orden['MONEDA'] = $orden['FINANCIERO']['moneda'];
             $orden['MONTO_CENTS'] = $orden['FINANCIERO']['total'];
-            $orden['DEVENGADOS'] = $this->reader->findContains('C:/Avalon/contab/data/FCON0024.DBF', ['FCONTABLE','DOC1','FECT','OCOS','SERIE','NUMERO','MON_SOL'], 'OCOS', $orden['PREFIJO'] . $orden['NUMERO']);
+            $orden['DEVENGADOS'] = $this->reader->findContains(AVALON_CONTAB_DATA . '/FCON0024.DBF', ['FCONTABLE','DOC1','FECT','OCOS','SERIE','NUMERO','MON_SOL'], 'OCOS', $orden['PREFIJO'] . $orden['NUMERO']);
             foreach ($orden['DEVENGADOS'] as &$devengadoMonto) {
                 $devengadoMonto['MONTO_CENTS'] = $this->centavos($devengadoMonto['MON_SOL']);
                 $devengadoMonto['MONEDA'] = '01';
@@ -140,7 +140,7 @@ final class SeguimientoModel
             $resumenDocumental['devengados'] += count($orden['DEVENGADOS']);
             foreach ($orden['COMPROBANTES'] as &$comprobanteOrden) {
                 $comprobanteOrden['MONTO_CENTS'] = $this->centavos($comprobanteOrden['PREVENT']);
-                $comprobanteOrden['PAGOS'] = $this->reader->findExact('C:/Avalon/Finanzas/data/rfin0019.DBF', ['FCONTABLE','CMPBTE','DOC1','COMPROB','IMPORTE','ESTADO'], 'COMPROB', $comprobanteOrden['COMPROB']);
+                $comprobanteOrden['PAGOS'] = $this->reader->findExact(AVALON_FINANZAS_DATA . '/rfin0019.DBF', ['FCONTABLE','CMPBTE','DOC1','COMPROB','IMPORTE','ESTADO'], 'COMPROB', $comprobanteOrden['COMPROB']);
                 foreach ($comprobanteOrden['PAGOS'] as &$pagoMonto) {
                     $pagoMonto['MONTO_CENTS'] = $this->centavos($pagoMonto['IMPORTE']);
                     $pagoMonto['MONEDA'] = $comprobanteOrden['MONEDA'];
@@ -281,7 +281,7 @@ final class SeguimientoModel
         $this->saveCache($cacheKey, $result);
         return $result;
     }
-    public function detalleDocumento(string $pedido, string $tipo, string $numero, array $acceso): array
+    public function detalleDocumento(string $pedido, string $tipo, string $numero, array $acceso, bool $mostrarMontos = true): array
     {
         $tipos=['pedido','cotizacion','certificacion','orden_compra','orden_servicio','comprobante','devengado','pago'];
         if ($pedido==='' || $numero==='' || !in_array($tipo,$tipos,true)) throw new RuntimeException('El documento solicitado no es válido.');
@@ -364,7 +364,7 @@ final class SeguimientoModel
                 $actividad = $proyecto !== '' ? $zona . '.' . $local . '.' . $proyecto : '';
                 $actividadCuenta = trim($actividad . ($actividad !== '' && $cuenta !== '' ? ' - ' : '') . $cuenta);
                 $centroCodigo = trim((string)($esCompra ? ($centrosPorLinea[$linea['NRO_PEDIDO'] . '|' . $linea['SECPEDIDO']] ?? '') : ($linea['CCOSTO'] ?? '')));
-                $centroFilas = $centroCodigo !== '' ? $this->reader->findExact('C:/Avalon/contab/data/cct0004.DBF', ['CCTA','DESC'], 'CCTA', $centroCodigo) : [];
+                $centroFilas = $centroCodigo !== '' ? $this->reader->findExact(AVALON_CONTAB_DATA . '/cct0004.DBF', ['CCTA','DESC'], 'CCTA', $centroCodigo) : [];
                 $centroCosto = $centroFilas ? trim($centroFilas[0]['DESC']) : $centroCodigo;
                 $rows[] = [
                     'pedido'=>$linea['NRO_PEDIDO'], 'item'=>$esCompra ? $linea['SEC_ITEMOC'] : $linea['SECITEMOS'],
@@ -379,8 +379,18 @@ final class SeguimientoModel
             $detalleOrden = ['cabecera'=>$cabecera,'moneda'=>$cabecera['MONEDA'] ?? '', 'condiciones'=>array_values($condiciones)];
         }
         elseif($tipo==='comprobante'){$titulo='Factura o boleta '.$numero; foreach($this->reader->rows(AVALON_LOGISTICA_DATA.'/sum40030.DBF',['COMPROB','DOCSER','DOCNRO','NOMPROV','FECCOMP','ESTADO']) as $h) if(trim($h['DOCSER'].'-'. $h['DOCNRO'])===$numero){$meta[]=$h;$rows=$this->reader->findExact(AVALON_LOGISTICA_DATA.'/sum40031.DBF',['COMPROB','NRO_SERVIC','NRO_ORDCMP','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','SEC_SERV','VALOR','CCOSTO','ESTADO'],'COMPROB',$h['COMPROB']); break;}}
-        elseif($tipo==='devengado'){$titulo='Devengado '.$numero; $rows=$this->reader->findExact('C:/Avalon/contab/data/FCON0024.DBF',['DOC1','FCONTABLE','FECT','GLOS','NOMB','CTAB','MON_SOL','SERIE','NUMERO','OCOS'],'DOC1',$numero);}
-        else {$titulo='Pago '.$numero; foreach($this->reader->rows('C:/Avalon/Finanzas/data/rfin0019.DBF',['FCONTABLE','CMPBTE','DOC1','COMPROB','DOCSER','DOCNRO','IMPORTE','ESTADO']) as $r) if(trim($r['CMPBTE'].' '.($r['DOC1']?:''))===$numero){$rows[]=$r;}}
+        elseif($tipo==='devengado'){$titulo='Devengado '.$numero; $rows=$this->reader->findExact(AVALON_CONTAB_DATA . '/FCON0024.DBF',['DOC1','FCONTABLE','FECT','GLOS','NOMB','CTAB','MON_SOL','SERIE','NUMERO','OCOS'],'DOC1',$numero);}
+        else {$titulo='Pago '.$numero; foreach($this->reader->rows(AVALON_FINANZAS_DATA . '/rfin0019.DBF',['FCONTABLE','CMPBTE','DOC1','COMPROB','DOCSER','DOCNRO','IMPORTE','ESTADO']) as $r) if(trim($r['CMPBTE'].' '.($r['DOC1']?:''))===$numero){$rows[]=$r;}}
+        if (!$mostrarMontos) {
+            $camposMonetarios = array_fill_keys(['PRE_PRO','PRO_TOT','VALOFER','SOLICITADO','DISPONIBLE','SALDO','VALOR','MON_SOL','IMPORTE','Subtotal','Impuesto','Total','precio_unitario','precio_total'], true);
+            foreach ($meta as &$datos) $datos = array_diff_key($datos, $camposMonetarios);
+            unset($datos);
+            foreach ($rows as &$fila) $fila = array_diff_key($fila, $camposMonetarios);
+            unset($fila);
+            if (isset($detalleOrden)) {
+                $detalleOrden['cabecera'] = array_diff_key($detalleOrden['cabecera'], array_fill_keys(['VAL_TOTORD','MONIMPTO','MONOTROS','TOTALOC','TOTALOS'], true));
+            }
+        }
         return compact('pedido','nota','tipo','numero','titulo','meta','rows') + (isset($detalleOrden) ? ['orden'=>$detalleOrden] : []);
     }
     private function pedidoDesdeOrden(string $numeroOrden, string $tipo): ?string

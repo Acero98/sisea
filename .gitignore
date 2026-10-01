@@ -1,2 +1,4 @@
 /config/local.php
 /node_modules/select2/
+/dist/
+/storage/backups/
