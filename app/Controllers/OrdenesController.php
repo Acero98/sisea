@@ -21,6 +21,10 @@ final class OrdenesController
         $breadcrumb = 'Logística / Órdenes';
         $activeNav = 'ordenes';
         $useDataTables = true;
+        $ordenesIniciales = array_values(array_unique(array_filter(array_map(static function ($valor): string {
+            $valor = trim((string)$valor);
+            return preg_match('/^(orden_compra|orden_servicio)\|[A-Za-z0-9._-]{1,40}$/', $valor) ? $valor : '';
+        }, (array)($_GET['ordenes'] ?? [])))));
         require APP_ROOT . '/app/Views/ordenes.php';
     }
 

@@ -79,6 +79,8 @@ $unidadCorta = static function (string $nombre): string {
 $link = static function (int $pagina) use (
     $alcance,
     $busqueda,
+    $desde,
+    $hasta,
     $resultado
 ): string {
     return url(
@@ -86,6 +88,8 @@ $link = static function (int $pagina) use (
         [
             'vista' => $alcance,
             'q' => $busqueda,
+            'desde' => $desde,
+            'hasta' => $hasta,
             'pagina' => $pagina,
             'por_pagina' => $resultado['por_pagina'],
         ]
@@ -168,7 +172,10 @@ require APP_ROOT . '/app/Views/partials/header.php';
 </section>
 
 <section class="card">
-    <form class="notes-filter" method="get">
+    <?php if ($errorFechas !== ''): ?>
+        <p class="alert error" role="alert"><?= e($errorFechas) ?></p>
+    <?php endif; ?>
+    <form class="notes-filter notes-date-filter" method="get">
         <input type="hidden" name="r" value="notas">
 
         <input
@@ -177,7 +184,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             value="<?= e($alcance) ?>"
         >
 
-        <label>
+        <label class="notes-search-field">
             Buscar notas
 
             <input
@@ -186,6 +193,15 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 value="<?= e($busqueda) ?>"
                 placeholder="Número, unidad, usuario, glosa, tipo o estado"
             >
+        </label>
+
+        <label>
+            Desde (emisión)
+            <input type="date" name="desde" value="<?= e($desde) ?>" min="1000-01-01" max="9999-12-31">
+        </label>
+        <label>
+            Hasta (emisión)
+            <input type="date" name="hasta" value="<?= e($hasta) ?>" min="1000-01-01" max="9999-12-31">
         </label>
 
         <label>
@@ -215,9 +231,12 @@ require APP_ROOT . '/app/Views/partials/header.php';
             </select>
         </label>
 
-        <button>Buscar</button>
+        <div class="notes-filter-actions">
+        <button type="submit">Buscar</button>
 
-        <a class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda])) ?>">Exportar CSV</a>
+        <?php if ($errorFechas === ''): ?>
+        <a class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda, 'desde' => $desde, 'hasta' => $hasta])) ?>">Exportar CSV</a>
+        <?php endif; ?>
 
         <a
             class="clear-search"
@@ -225,6 +244,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
         >
             Limpiar
         </a>
+        </div>
     </form>
 
     <div class="section-heading">

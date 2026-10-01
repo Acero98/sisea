@@ -28,6 +28,7 @@ final class NotasController
         }
 
         $busqueda = trim((string) ($_GET['q'] ?? ''));
+        [$desde, $hasta, $errorFechas] = $this->fechas();
         $pagina = max(1, (int) ($_GET['pagina'] ?? 1));
 
         $porPaginaSolicitado = (int) ($_GET['por_pagina'] ?? 10);
@@ -37,12 +38,16 @@ final class NotasController
 
         $modelo = new NotasModel();
 
-        $resultado = $modelo->listar(
+        $resultado = $errorFechas !== ''
+            ? ['items' => [], 'total' => 0, 'pagina' => 1, 'por_pagina' => $porPagina, 'paginas' => 1]
+            : $modelo->listar(
             $acceso,
             $alcance,
             $busqueda,
             $pagina,
-            $porPagina
+            $porPagina,
+            $desde,
+            $hasta
         );
 
         $notas = $resultado['items'];
@@ -175,16 +180,40 @@ final class NotasController
     public function exportar(): void
     {
         requiereLogin();
+        if (!tienePermiso('seguimiento')) { http_response_code(403); exit('No tiene acceso a las notas.'); }
+        [$desde, $hasta, $errorFechas] = $this->fechas();
+        if ($errorFechas !== '') {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+            exit($errorFechas);
+        }
         $acceso = $this->acceso();
         $vista = (string)($_GET['vista'] ?? 'unidad');
         $alcance = $vista === 'mis' && trim((string)($acceso['avalon_codigo'] ?? '')) !== '' ? 'mis' : 'unidad';
-        $filas = (new NotasModel())->exportar($acceso, $alcance, trim((string)($_GET['q'] ?? '')));
+        $filas = (new NotasModel())->exportar($acceso, $alcance, trim((string)($_GET['q'] ?? '')), $desde, $hasta);
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="notas-' . $alcance . '-' . date('Ymd-His') . '.csv"');
         $out = fopen('php://output', 'wb'); fwrite($out, "\xEF\xBB\xBF");
         fputcsv($out, ['Nota','Fecha de emisión','Unidad orgánica','Nombre de unidad','Glosa / sustentación','Tipo','Prioridad','Última etapa','Estado Logística','Código usuario','Registrado por'], ';');
         foreach ($filas as $fila) fputcsv($out, [$fila['nro_pedido'],$fila['fecha_emision'],$fila['unidad_organica'],$fila['unidad_nombre'],$fila['sustentacion'],$fila['tipo_pedido'],$fila['prioridad'],$fila['etapa'],$fila['estado_logistica'],$fila['usuario_codigo'],$fila['usuario_nombre']], ';');
         fclose($out); exit;
+    }
+
+    private function fechas(): array
+    {
+        $desde = is_string($_GET['desde'] ?? '') ? trim($_GET['desde'] ?? '', " \t\n\r") : 'inválida';
+        $hasta = is_string($_GET['hasta'] ?? '') ? trim($_GET['hasta'] ?? '', " \t\n\r") : 'inválida';
+        foreach ([$desde, $hasta] as $valor) {
+            if ($valor === '') continue;
+            $fecha = preg_match('/^\d{4}-\d{2}-\d{2}$/D', $valor)
+                ? DateTimeImmutable::createFromFormat('!Y-m-d', $valor) : false;
+            if (!$fecha || $fecha->format('Y-m-d') !== $valor || $valor < '1000-01-01' || $valor > '9999-12-31') {
+                return [$desde, $hasta, 'Ingrese fechas válidas para la búsqueda.'];
+            }
+        }
+        $error = $desde !== '' && $hasta !== '' && $desde > $hasta
+            ? 'La fecha Desde debe ser anterior o igual a la fecha Hasta.' : '';
+        return [$desde, $hasta, $error];
     }
 
     private function errorAlcance(

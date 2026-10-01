@@ -4,11 +4,13 @@ $pageDescription = 'Consulta en solo lectura de las órdenes vinculadas a pedido
 $breadcrumb = 'Logística / Órdenes';
 $activeNav = 'ordenes';
 $useDataTables = true;
+if (!isset($ordenesIniciales)) $ordenesIniciales = [];
 require APP_ROOT . '/app/Views/partials/header.php';
 ?>
+<?php if ($ordenesIniciales): ?><section class="card orders-budget-context"><div><strong>Órdenes seleccionadas desde Presupuesto</strong><p>El listado conserva los filtros de acceso de tu usuario.</p></div><a class="orders-clear" href="<?= e(url('ordenes')) ?>">Ver todas las órdenes</a></section><?php endif; ?>
 <section class="card orders-filter-card min-w-0">
     <div class="orders-heading flex items-center gap-3">
-        <span class="orders-heading-icon grid place-items-center rounded-xl"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i></span>
+        <span class="orders-heading-icon"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i></span>
         <div>
             <h2>Consulta de órdenes</h2>
             <p>Busca y filtra órdenes vinculadas a los pedidos permitidos para tu unidad o alcance.</p>
@@ -17,14 +19,14 @@ require APP_ROOT . '/app/Views/partials/header.php';
     </div>
     <div class="orders-filters" id="orders-filters" role="group" aria-label="Filtros de órdenes">
         <label><span>Tipo de orden</span>
-            <select class="js-tom-select" id="orders-type" aria-label="Tipo de orden">
+            <select class="js-select2" id="orders-type" aria-label="Tipo de orden">
                 <option value="todas">Todas las órdenes</option>
                 <option value="orden_compra">Orden de compra</option>
                 <option value="orden_servicio">Orden de servicio</option>
             </select>
         </label>
         <label><span>Estado</span>
-            <select class="js-tom-select" id="orders-state" aria-label="Estado de la orden">
+            <select class="js-select2" id="orders-state" aria-label="Estado de la orden">
                 <option value="todos">Todos los estados</option>
                 <option value="vigentes">Vigentes</option>
                 <option value="anuladas">Anuladas</option>
@@ -47,7 +49,6 @@ require APP_ROOT . '/app/Views/partials/header.php';
     </div>
 </section>
 
-<script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
 <script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
 <script>
 (function () {
@@ -56,7 +57,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
         processing: true,
         serverSide: true,
         searchDelay: 350,
-        pageLength: 25,
+        pageLength: 10,
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         order: [[2, 'desc']],
         autoWidth: false,
@@ -67,6 +68,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 request.estado = $('#orders-state').val();
                 request.desde = $('#orders-from').val();
                 request.hasta = $('#orders-to').val();
+                request.ordenes = <?= json_encode($ordenesIniciales, JSON_UNESCAPED_SLASHES) ?>;
             }
         },
         columns: [
@@ -97,6 +99,10 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 return '<a class="table-action order-view-action" href="' + escapeHtml(value) + '" aria-label="Ver detalle de ' + escapeHtml(row.numero_label) + '" title="Ver detalle"><i class="bi bi-eye" aria-hidden="true"></i></a>';
             }}
         ],
+        createdRow: function (row) {
+            var labels = ['Orden', 'Tipo', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Estado', 'Importe', 'Detalle'];
+            $('td', row).each(function (index) { this.setAttribute('data-label', labels[index] || ''); });
+        },
         language: {
             processing: 'Consultando órdenes…',
             search: 'Buscar:',
@@ -122,8 +128,8 @@ require APP_ROOT . '/app/Views/partials/header.php';
     $('#orders-clear').on('click', function () {
         ['orders-type', 'orders-state'].forEach(function (id) {
             var element = document.getElementById(id);
-            if (element.tomselect) element.tomselect.setValue(id === 'orders-type' ? 'todas' : 'todos', true);
-            else element.value = id === 'orders-type' ? 'todas' : 'todos';
+            element.value = id === 'orders-type' ? 'todas' : 'todos';
+            $(element).trigger('change.select2');
         });
         $('#orders-from, #orders-to').val('');
         table.search('').draw();

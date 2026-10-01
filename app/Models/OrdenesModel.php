@@ -23,6 +23,10 @@ final class OrdenesModel
         $desde = $this->fechaFiltro((string)($entrada['desde'] ?? ''));
         $hasta = $this->fechaFiltro((string)($entrada['hasta'] ?? ''));
         $busqueda = trim((string)($entrada['search']['value'] ?? ''));
+        $ordenesSeleccionadas = array_values(array_unique(array_filter(array_map(static function ($valor): string {
+            $valor = trim((string)$valor);
+            return preg_match('/^(orden_compra|orden_servicio)\|[A-Za-z0-9._-]{1,40}$/', $valor) ? $valor : '';
+        }, (array)($entrada['ordenes'] ?? [])))));
 
         $global = alcanceModulo('seguimiento', $acceso) === 'GLOBAL';
         $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
@@ -39,6 +43,16 @@ final class OrdenesModel
         if ($estado === 'vigentes') $where[] = "UPPER(TRIM(COALESCE(d.estado,'')))<>'A'";
         if ($desde !== null) { $where[] = 'd.fecha>=:desde'; $params['desde'] = $desde; }
         if ($hasta !== null) { $where[] = 'd.fecha<=:hasta'; $params['hasta'] = $hasta; }
+        if ($ordenesSeleccionadas) {
+            $seleccion = [];
+            foreach ($ordenesSeleccionadas as $i => $valor) {
+                [$tipoSeleccionado, $numeroSeleccionado] = explode('|', $valor, 2);
+                $tipoParam = 'sel_tipo_' . $i; $numeroParam = 'sel_numero_' . $i;
+                $seleccion[] = '(d.tipo=:' . $tipoParam . ' AND d.numero=:' . $numeroParam . ')';
+                $params[$tipoParam] = $tipoSeleccionado; $params[$numeroParam] = $numeroSeleccionado;
+            }
+            $where[] = '(' . implode(' OR ', $seleccion) . ')';
+        }
 
         $filtro = implode(' AND ', $where);
         $total = $this->contar($filtro, $params);

@@ -308,7 +308,6 @@ require APP_ROOT . '/app/Views/partials/header.php';
 }());
 </script>
 <?php if ($useDataTables): ?>
-<script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
 <script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
 <script>
 $(function(){

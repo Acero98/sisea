@@ -32,6 +32,63 @@ final class PresupuestoModel
         return $resultado;
     }
 
+    /** Órdenes logísticas asociadas a los movimientos de compromiso de una cuenta. */
+    public function ordenesComprometidas(string $actividad, string $cuenta, string $inversion, string $periodo): array
+    {
+        $meses = ['ENE'=>1,'FEB'=>2,'MAR'=>3,'ABR'=>4,'MAY'=>5,'JUN'=>6,'JUL'=>7,'AGO'=>8,'SET'=>9,'OCT'=>10,'NOV'=>11,'DIC'=>12];
+        if ($periodo !== 'total' && !isset($meses[$periodo])) throw new InvalidArgumentException('El período seleccionado no es válido.');
+        $anio = (int)date('Y'); $movimientos = [];
+        foreach ((new DbfReader(false))->rows(AVALON_PLANIF_DATA . '/con_apru.dbf', ['COD_DOC','COD_NUM','COD_CCP','COD_CC','COD_INV','NUM_MES','VALOR','FECHA']) as $movimiento) {
+            $fecha = preg_replace('/\D/', '', (string)$movimiento['FECHA']); $mes = (int)$movimiento['NUM_MES'];
+            if ((int)substr($fecha, 0, 4) !== $anio || trim($movimiento['COD_DOC']) === 'EX'
+                || trim($movimiento['COD_CCP']) !== $actividad || trim($movimiento['COD_CC']) !== $cuenta
+                || trim($movimiento['COD_INV']) !== $inversion || $mes < 1 || $mes > 12
+                || ($periodo !== 'total' && $meses[$periodo] !== $mes)) continue;
+            $movimientos[] = $movimiento;
+        }
+
+        $ordenesPorExpediente = []; $ordenesPorReferencia = []; $reader = new DbfReader(false);
+        foreach ([
+            ['archivo'=>'sum40015.DBF','tipo'=>'Compra','campo'=>'NRO_ORDCMP','estado'=>'EST_ORDCMP','total'=>'TOTALOC'],
+            ['archivo'=>'sum40017.DBF','tipo'=>'Servicio','campo'=>'NRO_SERVIC','estado'=>'ESTADO','total'=>'TOTALOS'],
+        ] as $def) {
+            foreach ($reader->rows(AVALON_LOGISTICA_DATA . '/' . $def['archivo'], [$def['campo'],'NRO_EXPE','FEC_EMISIO',$def['estado'],$def['total'],'VAL_TOTORD','MONEDA']) as $fila) {
+                $expediente = trim($fila['NRO_EXPE']); $numero = trim($fila[$def['campo']]);
+                if ($numero === '') continue;
+                $total = $fila[$def['total']];
+                if (!is_numeric($total) || (float)$total === 0.0) $total = $fila['VAL_TOTORD'];
+                $fecha=preg_replace('/\D/','',trim($fila['FEC_EMISIO']));
+                if(strlen($fecha)===8)$fecha=substr($fecha,6,2).'/'.substr($fecha,4,2).'/'.substr($fecha,0,4);
+                $estado=trim($fila[$def['estado']]);
+                $orden = ['numero'=>$numero,'tipo'=>$def['tipo'],'fecha'=>$fecha,'estado'=>$estado===''?'Sin estado':(strtoupper($estado)==='A'?'Anulada':'Avalon: '.$estado),'total'=>is_numeric($total)?(float)$total:null,'moneda'=>trim($fila['MONEDA']),'expediente'=>$expediente];
+                $claveOrden = $def['tipo'].'|'.$numero;
+                if ($expediente !== '') $ordenesPorExpediente[$expediente][$claveOrden] = $orden;
+                $referencias = [$numero, ($def['tipo']==='Compra'?'OC':'OS').$numero];
+                foreach ($referencias as $referencia) $ordenesPorReferencia[$this->normalizarReferencia($referencia)][$claveOrden] = $orden;
+            }
+        }
+        $ordenes=[]; $compromisoTotal=0.0; $compromisoVinculado=0.0;
+        foreach($movimientos as $movimiento){
+            $monto=is_numeric($movimiento['VALOR'])?(float)$movimiento['VALOR']:0.0; $compromisoTotal+=$monto;
+            $referencia=trim($movimiento['COD_NUM']); $tipoDocumento=strtoupper(trim($movimiento['COD_DOC']));
+            if ($tipoDocumento === 'EX') continue;
+            $coincidencias=$ordenesPorReferencia[$this->normalizarReferencia($referencia)]??[];
+            if (!$coincidencias && $tipoDocumento === 'SU') $coincidencias=$ordenesPorExpediente[$referencia]??[];
+            if (!$coincidencias) continue;
+            $compromisoVinculado+=$monto;
+            $distribucionExacta=count($coincidencias)===1;
+            foreach($coincidencias as $clave=>$orden){if(!isset($ordenes[$clave]))$ordenes[$clave]=$orden+['compromiso'=>$distribucionExacta?0.0:null];if($ordenes[$clave]['compromiso']!==null)$ordenes[$clave]['compromiso']+=$monto;}
+        }
+        usort($ordenes,static fn(array $a,array $b):int=>[$a['fecha'],$a['numero']]<=>[$b['fecha'],$b['numero']]);
+        $etiquetasMes=['ENE'=>'enero','FEB'=>'febrero','MAR'=>'marzo','ABR'=>'abril','MAY'=>'mayo','JUN'=>'junio','JUL'=>'julio','AGO'=>'agosto','SET'=>'setiembre','OCT'=>'octubre','NOV'=>'noviembre','DIC'=>'diciembre'];
+        return ['anio'=>$anio,'periodo'=>$periodo==='total'?'anual':'de '.$etiquetasMes[$periodo],'total'=>$compromisoTotal,'vinculado'=>$compromisoVinculado,'sin_orden'=>$compromisoTotal-$compromisoVinculado,'ordenes'=>array_values($ordenes)];
+    }
+
+    private function normalizarReferencia(string $referencia): string
+    {
+        return strtoupper((string)preg_replace('/[^A-Z0-9]/i', '', trim($referencia)));
+    }
+
     public function configuracion(string $unidad): array
     {
         $fuentes = array_values(array_filter($this->fuentes($unidad, $this->catalogo($unidad), true), static fn(array $fila): bool => $fila['origen'] === 'EXTERNA'));

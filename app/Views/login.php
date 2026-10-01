@@ -11,8 +11,10 @@ if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/login.css?v=20260913">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/tailwind.css?v=20260930c">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/inter.css">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/login.css?v=20260930c">
     <title>Acceso · Avalon</title>
 </head>
 <body class="login-page">
@@ -28,17 +30,17 @@ if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
             <p>Consulta el avance de tus pedidos, cotizaciones y órdenes desde un solo lugar.</p>
             <div class="access-flow" aria-label="Pedidos, cotizaciones y órdenes">
                 <div><span>01</span><strong>Pedidos</strong></div>
-                <i aria-hidden="true">→</i>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 <div><span>02</span><strong>Cotizaciones</strong></div>
-                <i aria-hidden="true">→</i>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 <div><span>03</span><strong>Órdenes</strong></div>
             </div>
         </div>
-        <div class="access-story-footer"><span aria-hidden="true">✦</span> Información conectada. Seguimiento más simple.</div>
+        <div class="access-story-footer"><i class="bi bi-stars" aria-hidden="true"></i> Información conectada. Seguimiento más simple.</div>
     </section>
     <section class="access-form-side" aria-labelledby="access-title">
         <div class="access-card">
-            <div class="access-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
+            <div class="access-icon" aria-hidden="true"><i class="bi bi-lock"></i></div>
             <span class="access-eyebrow">PORTAL DE CONSULTAS</span>
             <h2 id="access-title">Bienvenido de nuevo</h2>
             <p>Ingresa con tu cuenta para continuar.</p>
@@ -55,7 +57,7 @@ if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
                 <input id="usuario" name="usuario" autocomplete="username" placeholder="Tu usuario" required>
                 <label for="clave">Contraseña</label>
                 <input id="clave" type="password" name="clave" autocomplete="current-password" placeholder="Ingresa tu contraseña" required>
-                <button type="submit">Ingresar al sistema <span aria-hidden="true">→</span></button>
+                <button type="submit">Ingresar al sistema <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
             </form>
             <div class="access-help">¿Necesitas acceso? Contacta al administrador del sistema.</div>
         </div>

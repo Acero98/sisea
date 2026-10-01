@@ -1,12 +1,20 @@
     </main>
     <footer class="app-footer">Avalon Seguimiento · Consulta de solo lectura</footer>
+    <script src="<?= e(APP_URL) ?>assets/vendor/select2/select2.full.min.js"></script>
+    <script src="<?= e(APP_URL) ?>assets/vendor/select2/es.js"></script>
     <script src="<?= e(APP_URL) ?>assets/js/sweetalert2.all.min.js"></script>
-    <script src="<?= e(APP_URL) ?>assets/js/tom-select.complete.min.js"></script>
     <script>
     (function () {
-        document.querySelectorAll('.js-tom-select').forEach(function (element) {
-            if (element.tomselect) return;
-            new TomSelect(element, {create:false, allowEmptyOption:true, maxOptions:500, closeAfterSelect:true});
+        $('.js-select2, .budget-filter select, #modal-role, #modal-tracking-scope, #modal-budget-scope').each(function () {
+            var $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) return;
+            var $modal = $select.closest('.access-modal');
+            $select.select2({
+                width:'100%',
+                language:'es',
+                minimumResultsForSearch:Infinity,
+                dropdownParent:$modal.length ? $modal : $(document.body)
+            });
         });
 
         var flash = document.querySelector('[data-toast-message]');
@@ -36,14 +44,6 @@
     }());
     </script>
     <script>
-    (function () {
-        var toggle = document.getElementById('menu-toggle');
-        if (!toggle) return;
-        var collapsed = localStorage.getItem('avalon-menu-contraido') === '1';
-        function setCollapsed(value) { document.body.classList.toggle('menu-contraido', value); toggle.setAttribute('aria-expanded', value ? 'false' : 'true'); toggle.setAttribute('aria-label', value ? 'Ampliar menú' : 'Contraer menú'); toggle.innerHTML = value ? '<i class="bi bi-chevron-double-right" aria-hidden="true"></i>' : '<i class="bi bi-list" aria-hidden="true"></i>'; }
-        setCollapsed(collapsed);
-        toggle.addEventListener('click', function () { collapsed = !document.body.classList.contains('menu-contraido'); localStorage.setItem('avalon-menu-contraido', collapsed ? '1' : '0'); setCollapsed(collapsed); });
-    }());
     (function () {
         var panel=document.getElementById('sync-global-status');
         var detail=document.getElementById('sync-global-detail');
