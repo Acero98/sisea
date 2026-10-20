@@ -8,6 +8,7 @@ define('AVALON_LOGISTICA_DATA', rtrim($settings['avalon_logistica'] ?? 'C:/Avalo
 define('AVALON_PLANIF_DATA', rtrim($settings['avalon_planif'] ?? 'C:/Avalon/Planif/data', '/\\'));
 define('AVALON_CONTAB_DATA', rtrim($settings['avalon_contab'] ?? 'C:/Avalon/contab/data', '/\\'));
 define('AVALON_FINANZAS_DATA', rtrim($settings['avalon_finanzas'] ?? 'C:/Avalon/Finanzas/data', '/\\'));
+define('AVALON_PATRIMONIO_DATA', rtrim($settings['avalon_patrimonio'] ?? 'C:/Avalon/Patrimonio/Data', '/\\'));
 date_default_timezone_set('America/Lima');
 
 spl_autoload_register(function ($class) {

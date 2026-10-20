@@ -27,7 +27,7 @@ final class UsuarioModel
         $this->instalarPermisos();
         $this->instalarRolesAcceso();
         self::instalarPermisosDocumentales();
-        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
+        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_patrimonio,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
     }
     public function guardarAcceso(int $id, string $clave, array $datos): void
     {
@@ -39,9 +39,9 @@ final class UsuarioModel
         $rolAcceso=in_array($datos['rol_acceso']??'', $roles,true)?$datos['rol_acceso']:'USUARIO';
         $perfil=$rolAcceso==='ADMINISTRADOR'?'ADMINISTRADOR':($rolAcceso==='USUARIO'?'USUARIO':'SUPERVISOR');
         $scope=static fn($v)=>in_array($v,['PROPIO','UNIDAD','GLOBAL'],true)?$v:'UNIDAD';
-        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,permiso_ver_montos=:pm,permiso_ver_detalle=:pd,alcance_seguimiento=:as_,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
+        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,permiso_ver_montos=:pm,permiso_ver_detalle=:pd,alcance_seguimiento=:as_,permiso_patrimonio=:pat,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
         $seguimiento=!empty($datos['permiso_seguimiento']);
-        $params=['perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>$seguimiento?1:0,'pm'=>$seguimiento&&!empty($datos['permiso_ver_montos'])?1:0,'pd'=>$seguimiento&&!empty($datos['permiso_ver_detalle'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
+        $params=['pat'=>!empty($datos['permiso_patrimonio'])?1:0,'perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>$seguimiento?1:0,'pm'=>$seguimiento&&!empty($datos['permiso_ver_montos'])?1:0,'pd'=>$seguimiento&&!empty($datos['permiso_ver_detalle'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
         if ($clave !== '') $params['clave'] = password_hash($clave, PASSWORD_DEFAULT);
         db()->prepare($sql)->execute($params);
     }
@@ -57,6 +57,10 @@ final class UsuarioModel
             if (!db()->query("SHOW COLUMNS FROM usuarios LIKE '" . $columna . "'")->fetch()) {
                 db()->exec('ALTER TABLE usuarios ADD COLUMN ' . $columna . ' TINYINT(1) NOT NULL DEFAULT 1');
             }
+        }
+        if (!db()->query("SHOW COLUMNS FROM usuarios LIKE 'permiso_patrimonio'")->fetch()) {
+            db()->exec('ALTER TABLE usuarios ADD COLUMN permiso_patrimonio TINYINT(1) NOT NULL DEFAULT 0');
+            db()->exec("UPDATE usuarios SET permiso_patrimonio=1 WHERE rol='ADMIN'");
         }
         $instalado = true;
     }

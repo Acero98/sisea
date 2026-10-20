@@ -19,6 +19,7 @@ CREATE TABLE `usuarios` (
   `alcance` enum('GLOBAL','UNIDAD','PROPIO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
   `permiso_seguimiento` tinyint(1) NOT NULL DEFAULT '1',
   `alcance_seguimiento` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
+  `permiso_patrimonio` tinyint(1) NOT NULL DEFAULT '0',
   `permiso_presupuesto` tinyint(1) NOT NULL DEFAULT '0',
   `alcance_presupuesto` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
   `permiso_responsabilidades` tinyint(1) NOT NULL DEFAULT '0',

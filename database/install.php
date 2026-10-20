@@ -32,12 +32,13 @@ try {
             $allowed=$pdo->query("SHOW COLUMNS FROM `$table`")->fetchAll(PDO::FETCH_COLUMN);
             foreach($rows as $row) {
                 unset($row['sesion_token'],$row['sesion_iniciada_en']);
+                if($table==='usuarios' && !array_key_exists('permiso_patrimonio',$row)) $row['permiso_patrimonio']=($row['rol']??'')==='ADMIN'?1:0;
                 if(!$row || array_diff(array_keys($row),$allowed)) throw new RuntimeException('Columnas incompatibles.');
                 $pdo->prepare('INSERT INTO `'.$table.'` (`'.implode('`,`',array_keys($row)).'`) VALUES ('.implode(',',array_fill(0,count($row),'?')).')')->execute(array_values($row));
             }
         }
     } else {
-        $pdo->prepare("INSERT INTO usuarios(usuario,nombre,clave_hash,rol,perfil_portal,rol_acceso,alcance,alcance_seguimiento,alcance_presupuesto,permiso_presupuesto,permiso_responsabilidades,permiso_usuarios) VALUES('admin','Administrador',?,'ADMIN','ADMIN','ADMIN','GLOBAL','GLOBAL','GLOBAL',1,1,1)")->execute([password_hash($password,PASSWORD_DEFAULT)]);
+        $pdo->prepare("INSERT INTO usuarios(usuario,nombre,clave_hash,rol,perfil_portal,rol_acceso,alcance,alcance_seguimiento,alcance_presupuesto,permiso_patrimonio,permiso_presupuesto,permiso_responsabilidades,permiso_usuarios) VALUES('admin','Administrador',?,'ADMIN','ADMIN','ADMIN','GLOBAL','GLOBAL','GLOBAL',1,1,1,1)")->execute([password_hash($password,PASSWORD_DEFAULT)]);
     }
     $pdo->commit();
     foreach(['cache','sessions','backups'] as $dir) { $path=__DIR__.'/../storage/'.$dir; if(!is_dir($path) && !mkdir($path,0770,true)) throw new RuntimeException('No se pudo crear '.$path); }

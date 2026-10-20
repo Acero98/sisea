@@ -6,5 +6,6 @@ return [
     'avalon_logistica' => 'C:/Avalon/Logistica/data',
     'avalon_planif' => 'C:/Avalon/Planif/data',
     'avalon_contab' => 'C:/Avalon/contab/data',
+    'avalon_patrimonio' => 'C:/Avalon/Patrimonio/Data',
     'avalon_finanzas' => 'C:/Avalon/Finanzas/data',
 ];
