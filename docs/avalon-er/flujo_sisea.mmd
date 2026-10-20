@@ -1,0 +1,35 @@
+flowchart LR
+  T0["Logistica.sum40014"]
+  T1["Logistica.sum40007"]
+  T0 -.->|"NRO_PEDIDO / NRO_PEDIDO"| T1
+  T2["Logistica.sum40008"]
+  T0 -.->|"NRO_PEDIDO / NRO_PEDIDO"| T2
+  T3["Logistica.sum40025"]
+  T4["Logistica.sum40026"]
+  T3 -.->|"NRO_EXPE / NRO_EXPE"| T4
+  T5["Logistica.sum40028"]
+  T3 -.->|"NRO_EXPE / NRO_EXPE"| T5
+  T6["Logistica.sum40015"]
+  T3 -.->|"NRO_EXPE / NRO_EXPE"| T6
+  T7["Logistica.sum40017"]
+  T3 -.->|"NRO_EXPE / NRO_EXPE"| T7
+  T8["Logistica.sum40016"]
+  T6 -.->|"NRO_ORDCMP / NRO_ORDCMP"| T8
+  T9["Logistica.sum40018"]
+  T7 -.->|"NRO_SERVIC / NRO_SERVIC"| T9
+  T10["Logistica.sum40030"]
+  T6 -.->|"NRO_ORDCMP / NRO_ORDCMP"| T10
+  T7 -.->|"NRO_SERVIC / NRO_SERVIC"| T10
+  T11["Logistica.sum40031"]
+  T10 -.->|"COMPROB / COMPROB"| T11
+  T12["Finanzas.rfin0019"]
+  T10 -.->|"COMPROB / COMPROB"| T12
+  T13["Planif.cabcertifica"]
+  T14["Planif.detcertifica"]
+  T13 -.->|"CODCER / CODCER"| T14
+  T15["Planif.unidad"]
+  T15 -.->|"COD_UNIDAD / CODUNIORG"| T0
+  T16["contab.cct0004"]
+  T16 -.->|"CCTA / CTA_CON"| T1
+  T17["Planif.mae_proy"]
+  T17 -.->|"COD_PROY / COD_PROY"| T1

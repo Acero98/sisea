@@ -1,0 +1,45 @@
+flowchart LR
+  T0["zona"]
+  T1["local"]
+  T0 -->|"cod_zona → cod_zona"| T1
+  T2["tab_acti"]
+  T0 -->|"cod_zona → cod_zon"| T2
+  T3["tab_tipr"]
+  T4["tab_prog"]
+  T3 -->|"codigo → cod_cpr"| T4
+  T5["tab_prme"]
+  T4 -->|"codigo → cod_pro"| T5
+  T4 -->|"codigo → cod_pro"| T2
+  T6["tab_meta"]
+  T6 -->|"codigo → cod_met"| T4
+  T7["tab_obje"]
+  T7 -->|"codigo → cod_obje"| T6
+  T8["com_tipo"]
+  T9["com_tdat"]
+  T8 -->|"pk_codigo → tipo_orige"| T9
+  T10["con_tipo"]
+  T11["con_deta"]
+  T10 -->|"pk_codigo → cod_origen"| T11
+  T12["con_ffin"]
+  T13["con_ffde"]
+  T12 -->|"pk_cod → cod_origen"| T13
+  T14["dbfpcc"]
+  T2 -->|"indice → cod_pre"| T14
+  T15["dbfniv"]
+  T2 -->|"indice → cod_pre"| T15
+  T16["tab_recu"]
+  T2 -->|"indice → cod_pre"| T16
+  T17["con_soli"]
+  T18["con_comp"]
+  T17 -->|"codigo → cod_soli"| T18
+  T19["con_segu"]
+  T5 -->|"pk_pro_cod → pro_met"| T19
+  T3 -->|"cod_pla_ti → tab_tipr"| T4
+  T4 -->|"tab_acti → pro_pla_ti"| T2
+  T2 -->|"tab_recu → cp_plan_ti"| T16
+  T5 -->|"pk_pro_cod → tab_prme"| T2
+  T20["tab_pinv"]
+  T21["tab_pide"]
+  T20 -->|"codigo → codigo"| T21
+  T22["tab_piob"]
+  T20 -->|"codigo → codigo"| T22

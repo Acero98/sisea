@@ -1,0 +1,161 @@
+﻿module,field,type,width,tables,status
+Finanzas,CODFF,C,2,rfin0017 | rfin0053,Candidato por nombre y tipo; sin validación de datos
+Finanzas,FCONTABLE,D,8,rfin0019 | rfin0031 | rfin0032 | rfin0033 | rfin0041 | rfin0042 | rfin0043,Candidato por nombre y tipo; sin validación de datos
+Finanzas,CODMOD,C,3,rfin0031 | rfin0046,Candidato por nombre y tipo; sin validación de datos
+Finanzas,CODACTIVID,C,20,rfin0032 | rfin0037,Candidato por nombre y tipo; sin validación de datos
+Finanzas,CODFUENTE,C,2,rfin0032 | rfin0033 | rfin0052 | rfin0054 | rfin0055,Candidato por nombre y tipo; sin validación de datos
+Finanzas,COD_PRE,C,11,rfin0033 | rfin0043,Candidato por nombre y tipo; sin validación de datos
+Finanzas,COD_INV,C,4,rfin0033 | rfin0043,Candidato por nombre y tipo; sin validación de datos
+Finanzas,CODRUB,C,2,rfin0036 | rfin0045,Candidato por nombre y tipo; sin validación de datos
+Finanzas,CODCQ,C,2,rfin0051 | rfin0052,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODPROY,C,4,duplica | movialma | sum040008-p | sum30002 | sum40005 | sum40006 | sum40008 | sum40008bk | sum40014 | sum40015 | sum40017 | sum40018 | sum40028 | sum40031 | sum40035 | sum40036,Candidato por nombre y tipo; sin validación de datos
+Logistica,COD_INV,C,4,duplica | movialma | sum040008-p | sum30002 | sum40005 | sum40006 | sum40007 | sum40008 | sum40008bk | sum40014 | sum40015 | sum40016 | sum40017 | sum40018 | sum40021 | sum40028 | sum40029 | sum40031 | sum40032 | sum40035 | sum40036 | sum40039 | tempo | tempo1 | tempo2,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDMOVIM,C,10,duplica | movialma | sum040008-p | sum40008 | sum40008bk,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_ORDCMP,C,7,duplica | movialma | sum040008-p | sum40008 | sum40008bk | sum40015 | sum40016 | sum40019 | sum40030 | sum40031,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_PEDIDO,C,7,duplica | movialma | sum040008-p | sum40007 | sum40008 | sum40008bk | sum40014 | sum40016 | sum40018 | sum40022 | sum40028,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDTRANSAC,C,3,duplica | movialma | sum040008-p | sum30007 | sum40008 | sum40008bk | sum40009,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODUNIORG,C,4,duplica | movialma | sum040008-p | sum10003 | sum40008 | sum40008bk | sum40014 | sum40016 | sum40029 | tempo | tempo1 | tempo2,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDMOVIMTRS,C,10,duplica | movialma | sum040008-p | sum40008 | sum40008bk,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDMOVIMTR2,C,10,duplica | movialma | sum040008-p | sum40008 | sum40008bk,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODCH,C,3,sum040008-p | sum30019 | sum40008,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODCLIENTE,C,11,sum040008-p | sum40008,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODACTIVID,C,20,sum040008-p | sum40007 | sum40008 | sum40016 | sum40018 | sum40028 | sum40031,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODFUENTE,C,2,sum040008-p | sum40008 | sum40015 | sum40017 | sum40022 | sum40025 | sum40030 | sum40040,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODCUBSO,C,16,sum20012 | sum40003 | sum40004,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODSTIPO,C,2,sum20013 | sum40015 | sum40017 | sum40025,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDCONTEO,C,10,sum30002 | sum40005 | sum40012,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDTIPSTOCK,C,1,sum30005 | sum40004 | sum40029 | tempo | tempo1 | tempo2,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDTIPOMAT,C,3,sum30006 | sum40004,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODSNT,C,10,sum30007 | sum30008,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDPLANT,C,6,sum30009 | sum30011 | sum30012 | sum40015 | sum40016 | sum40017 | sum40018 | sum40027 | sum40028 | sum40031,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDIMPTO,C,10,sum30011 | sum30012,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDDOCUM,C,2,sum30013 | sum40030,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODAGR,C,3,sum30017 | sum40014 | sum40015 | sum40017,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDSERVICIO,C,8,sum40003 | sum40021 | sum40023 | sum40027 | sum40032,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDBIEN,C,8,sum40004 | sum40023 | sum40027 | sum40032,Candidato por nombre y tipo; sin validación de datos
+Logistica,COD_PROY,C,4,sum40007 | sum40016 | sum40021 | sum40032 | sum40039,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODPROV,C,11,sum40013 | sum40015 | sum40017 | sum40025 | sum40026 | sum40028 | sum40030 | sum40034,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_EXPE,C,7,sum40015 | sum40017 | sum40022 | sum40023 | sum40025 | sum40026 | sum40027 | sum40028,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_SOLCOT,C,7,sum40015 | sum40017 | sum40025 | sum40026 | sum40027 | sum40028,Candidato por nombre y tipo; sin validación de datos
+Logistica,IDPLANANU,C,10,sum40015 | sum40017 | sum40032,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_SERVIC,C,7,sum40017 | sum40018 | sum40019 | sum40030 | sum40031 | sum40042,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_PEDSER,C,7,sum40021 | sum40023,Candidato por nombre y tipo; sin validación de datos
+Logistica,CODSEACE,C,2,sum40022 | sum40025,Candidato por nombre y tipo; sin validación de datos
+Logistica,COMPROB,C,10,sum40030 | sum40031,Candidato por nombre y tipo; sin validación de datos
+Logistica,NRO_EXTORN,C,7,sum40038 | sum40039,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODDPTO,C,2,rh000000 | rh001000 | rh201000 | rh202100 | rh202110 | rh202111 | rh207000 | rh208000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPROV,C,2,rh000000 | rh001000 | rh201000 | rh202110 | rh202111 | rh207000 | rh208000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODDIST,C,2,rh000000 | rh001000 | rh201000 | rh202111,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTRABAJ,C,4,rh001000 | rh104100 | rh108000 | rh110000 | rh110100 | rh113000 | rh113100 | rh113200 | rh113400 | rh114000 | rh114300 | rh115000 | rh115100 | rh116000 | rh120000 | rh201000 | rh208000 | rh209000 | rh210000 | rh211000 | rh212000 | rh214000 | rh215000 | rh218000 | rh301000 | rh301100 | rh302000 | rh303000 | rh303100 | rh304000 | rh405000 | rh408000 | rh410000 | rh412000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODSUCUR,C,4,rh001000 | rh104100 | rh110000 | rh110100 | rh112000 | rh113000 | rh113100 | rh113200 | rh113400 | rh114000 | rh114300 | rh115000 | rh120000 | rh301000 | rh301100 | rh303000 | rh303100 | rh405000 | rh408000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODREGIME,C,2,rh001000 | rh102000 | rh103000 | rh104100 | rh105100 | rh106000 | rh107000 | rh108000 | rh109000 | rh110000 | rh111000 | rh111100 | rh112000 | rh113000 | rh113100 | rh113200 | rh113400 | rh114000 | rh114300 | rh115000 | rh120000 | rh218000 | rh301000 | rh301100 | rh302000 | rh303000 | rh303100 | rh304000 | rh405000 | rh408000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCENCOS,C,8,rh001000 | rh113000 | rh113100 | rh301000 | rh301100 | rh303000 | rh303100,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPPTAL,C,8,rh001000 | rh113000 | rh113100 | rh301000 | rh301100 | rh303000 | rh303100 | rh405000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODINVER,C,4,rh001000 | rh113000 | rh113100 | rh301000 | rh301100 | rh303000 | rh303100 | rh405000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCOPCAP,C,5,rh001000 | rh211000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODUNIORG,C,4,rh001000 | rh113000 | rh211000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCARGO,C,3,rh001000 | rh201000 | rh203000 | rh209000 | rh211000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODOCUPAC,C,3,rh001000 | rh211000 | rh216000 | rh216100,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCLASE,C,2,rh001000 | rh211000 | rh216100,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTIPPUE,C,3,rh001000 | rh211000 | rh217000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODNIVEL,C,4,rh001000 | rh105000 | rh105100 | rh113000 | rh211000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODAFP,C,2,rh001000 | rh104000 | rh113000 | rh113100 | rh301000 | rh303000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTAZINT,C,2,rh001000 | rh405000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCONTRA,C,4,rh001000 | rh214000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPAIS,C,2,rh001000 | rh201000 | rh202000 | rh202100 | rh202110 | rh202111 | rh207000 | rh208000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPROF,C,3,rh001000 | rh201000 | rh204000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCATEG,C,2,rh001000 | rh201000 | rh219000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODGRAINS,C,2,rh001000 | rh201000 | rh208000 | rh211000 | rh212000 | rh213000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTURNO,C,2,rh001000 | rh111100 | rh420000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPLANIL,C,4,rh104100 | rh112000 | rh113000 | rh113100 | rh113200 | rh113400 | rh114000 | rh114300 | rh120000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCONCEP,C,3,rh105100 | rh108000 | rh109000 | rh115000 | rh120000 | rh218000 | rh302000 | rh304000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODAGRUPA,C,2,rh109000 | rh406000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODHORARI,C,4,rh110000 | rh111000 | rh111100 | rh408000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODFUENTE,C,2,rh112000 | rh426000 | rh427000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODAREA,C,2,rh113000 | rh113100,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODBANCO,C,2,rh117000 | rh405000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODIGO,C,2,rh119000 | rh407000 | rh409000 | rh411000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCENTRO,C,3,rh205000 | rh206000 | rh207000 | rh208000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODCURSO,C,4,rh206000 | rh207000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODPROG,C,4,rh207000 | rh215000,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTIPCON,C,2,rh211100 | rh214000 | rh214100,Candidato por nombre y tipo; sin validación de datos
+Nomina,CODTRA,C,4,rh421000 | rh422000 | rh423000 | rh424000 | rh425000,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,COD_CLASE,C,2,cpaf0010 | cpaf0015,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,COD_SUC,C,4,cpaf0040 | cpaf0050 | cpaf0080 | cpaf0112 | cpaf0113 | tempo,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,COD_ACT,C,9,cpaf0050 | cpaf0111 | cpaf0112 | cpaf0113 | cpaf0114 | cpaf0116 | cpaf0117 | tempo,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,CODTIPSNT,C,5,cpaf0050 | tempo,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,COD_ESP,C,10,cpaf0111 | cpaf0112,Candidato por nombre y tipo; sin validación de datos
+Patrimonio,CODFUENTE,C,2,cpaf0115 | cpaf0116,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,C,6,____con_soli | con_apru | con_cant | con_ejec | con_mont | con_soli | hiscapru | hisccant | hiscejec | hiscmont | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_DOC,C,2,____con_soli | con_apru | con_ejec | con_soli | hiscapru | hiscejec | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_NUM,C,18,____con_soli | con_apru | con_soli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CCP,C,11,____con_soli | con_apru | con_soli | hiscapru | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CC,C,10,____con_soli | con_ejec | con_mont | con_soli | hiscapru | hisccant | hiscejec | hiscmont | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_INV,C,4,____con_soli | auxrec | bktab_recu | con_apru | con_cdiv | con_ejec | con_ffin | con_mont | con_pinv | con_soli | con_tipo | detcertifica | detdevengado | detobsdeven | his_recu | hiscapru | hisccant | hiscejec | hiscmont | hiscsoli | logrepro | mae_proy | tab_pinv | tab_recu | tempo,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_RECU,N,4,____con_soli | con_apru | con_soli | hiscapru | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_USUARI,C,5,____con_soli | accionistas | auxrec | bktab_recu | com_cate | com_tdat | com_tipo | con_apru | con_cant | con_cdiv | con_comp | con_deta | con_ejec | con_ffde | con_ffin | con_mont | con_segu | con_soli | con_tipo | dbfniv | dbfpcc | his_acti | his_defi | his_loca | his_meta | his_nive | his_obje | his_prme | his_prog | his_recu | his_rmde | his_tiin | his_tipr | his_unid | his_zona | hiscapru | hisccant | hisccomp | hiscejec | hiscmont | hiscsegu | hiscsoli | hisrcfg1 | hisrcfg2 | hisrcfg3 | hisrcfg4 | hisrcvar | local | mae_proy | rep_cfg1 | rep_cfg2 | rep_cfg3 | rep_cfg4 | rep_cvar | tab_acti | tab_cla | tab_defi | tab_meta | tab_nive | tab_obje | tab_pres | tab_prme | tab_prog | tab_recu | tab_rmde | tab_tiin | tab_tipr | tempo | transact | unidad | zona,Candidato por nombre y tipo; sin validación de datos
+Planif,COD,N,1,accionistas | directorio | sistema,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_PRE,C,11,auxrec | bktab_recu | com_tipo | con_cdiv | con_ffin | con_pinv | con_tipo | dbfniv | dbfpcc | his_recu | logrepro | tab_metaact | tab_pinv | tab_recu | tempo,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CCP1,C,20,auxrec | bktab_recu | tab_recu | tempo,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,N,4,auxrec | bktab_recu | his_recu | his_rmde | tab_recu | tab_rmde | tempo,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_TPR,C,2,auxrec | bktab_recu | his_acti | his_prog | his_recu | tab_acti | tab_prog | tab_recu | tempo,Candidato por nombre y tipo; sin validación de datos
+Planif,CODCER,C,10,cabcertifica | detcertifica,Candidato por nombre y tipo; sin validación de datos
+Planif,CODUSUARIO,C,5,cabcertifica | cabconciliacion | cabdevengado | detcertifica | detdevengado | detobsdeven | his_clamef | his_rubros | logrepro | obsdevengado | tab_agrumeta | tab_clamef | tab_metaact | tab_rubros | tab_tipunidad | tab_unimeta,Candidato por nombre y tipo; sin validación de datos
+Planif,CODFUENTE,C,2,cabcertifica | tab_acti,Candidato por nombre y tipo; sin validación de datos
+Planif,CODDEV,C,10,cabdevengado | detdevengado | detobsdeven | obsdevengado,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,C,2,com_cate | com_tipo | con_cdiv | con_deta | con_ffde | con_ffin | con_pinv | con_tipo | his_acti | his_obje | his_prme | his_prog | his_tipr | tab_acti | tab_docu | tab_obje | tab_prme | tab_prog | tab_tipr,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_MAT,C,10,con_cant | con_comp | his_rmde | tab_rmde,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_SOLI,C,6,con_comp | hisccomp,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_SOL,C,6,con_ejec | hiscejec,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CP,C,11,con_ejec | con_mont | hisccant | hiscejec | hiscmont,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_NUM,C,10,con_ejec | hiscapru | hiscejec | hiscsoli,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_MS,C,1,con_ejec | hiscejec,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_PRO,C,2,con_segu | his_acti | his_prme | hiscsegu | tab_acti | tab_prme | transact,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_MET,C,2,con_segu | hiscsegu,Candidato por nombre y tipo; sin validación de datos
+Planif,CODPRE,C,11,detcertifica | detdevengado | detobsdeven,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_UOE,C,4,his_acti | tab_acti,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_ZON,C,2,his_acti | tab_acti,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_LOC,C,2,his_acti | tab_acti,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CLA,C,2,his_clamef | tab_acti | tab_clamef,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_LOCAL,C,2,his_loca | local | mae_proy,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_ZONA,C,2,his_loca | his_zona | local | mae_proy | zona,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,C,4,his_meta | his_tiin | tab_meta | tab_pide | tab_pinv | tab_piob | tab_tiin | transact,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,C,3,his_nive | tab_nive,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_MET,C,4,his_prog | tab_prog,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_UOR,C,4,his_prog | tab_prog,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CPR,C,2,his_prog | tab_prog,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_RUB,C,2,his_rubros | tab_rubros,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_UNIDAD,C,4,his_unid | his_zona | mae_proy | unidad | zona,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_AMB,C,2,his_unid | unidad,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_REP,C,2,hisrcfg1 | hisrcfg2 | hisrcfg3 | hisrcfg4 | hisrcvar | rep_cfg1 | rep_cfg2 | rep_cfg3 | rep_cfg4 | rep_cvar,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CON,C,8,hisrcfg2 | hisrcfg4,Candidato por nombre y tipo; sin validación de datos
+Planif,CODIGO,C,7,hisrcfg3 | rep_cfg3,Candidato por nombre y tipo; sin validación de datos
+Planif,COD_CON,C,10,rep_cfg2 | rep_cfg4,Candidato por nombre y tipo; sin validación de datos
+contab,CCTA,C,10,cct0004 | cct0009 | cct0020 | cct0030 | cct0031 | cct0032,Candidato por nombre y tipo; sin validación de datos
+contab,CODCOG,C,1,cct0006 | cct0007 | cct0008,Candidato por nombre y tipo; sin validación de datos
+contab,CODCOE,C,1,cct0007 | cct0008,Candidato por nombre y tipo; sin validación de datos
+contab,CCTAEM,C,10,cct0033 | cct0036,Candidato por nombre y tipo; sin validación de datos
+contab,CCTARE,C,10,cct0033 | cct0036,Candidato por nombre y tipo; sin validación de datos
+contab,CODPRO,C,2,cct0070 | cct0071 | cct0072 | cct0073,Candidato por nombre y tipo; sin validación de datos
+contab,CODMAPRO,C,10,cct0071 | cct0072 | cct0073,Candidato por nombre y tipo; sin validación de datos
+contab,CODPROEM,C,20,cct0072 | cct0073,Candidato por nombre y tipo; sin validación de datos
+contab,CODIND,C,3,cct0076 | cct0077 | cct0078 | cct0081 | cct0084,Candidato por nombre y tipo; sin validación de datos
+contab,CODMATRIZ,N,5,cct0082 | cct0083 | cct0084,Candidato por nombre y tipo; sin validación de datos
+contab,CCTA,C,20,fcon0006 | fcon0015 | fcon0022 | fcon0031 | fcon0038,Candidato por nombre y tipo; sin validación de datos
+contab,FCONTABLE,D,8,fcon0024 | fcon0025 | fcon0032 | fcon0033 | temp4,Candidato por nombre y tipo; sin validación de datos
+contab,CODDD,N,2,fcon0024 | fcon0032,Candidato por nombre y tipo; sin validación de datos
+contab,CODR,C,2,fcon0024 | fcon0032,Candidato por nombre y tipo; sin validación de datos
+contab,CODAGRUPA,C,2,fcon0029 | fcon0072,Candidato por nombre y tipo; sin validación de datos
+contab,CODPROV,C,11,fcon0030 | fcon0052,Candidato por nombre y tipo; sin validación de datos
+contab,CODDOC,C,2,fcon0045 | fcon0053,Candidato por nombre y tipo; sin validación de datos
+contab,CODRUB,C,3,fcon0054 | fcon0055 | fcon0057,Candidato por nombre y tipo; sin validación de datos
+contab,CODSUC,C,4,fcon0055 | fcon0056 | fcon0057 | fcon0058,Candidato por nombre y tipo; sin validación de datos
+contab,CODFONDO,C,2,fcon0055 | fcon0056 | fcon0057,Candidato por nombre y tipo; sin validación de datos
+contab,CODTRA,C,4,fcon0055 | fcon0056,Candidato por nombre y tipo; sin validación de datos
+contab,CODPRE,C,11,fcon0055 | fcon0056,Candidato por nombre y tipo; sin validación de datos
+contab,CODINV,C,4,fcon0055 | fcon0056,Candidato por nombre y tipo; sin validación de datos
+contab,CODCTA,C,20,fcon0055 | fcon0056 | fcon0063,Candidato por nombre y tipo; sin validación de datos
+contab,CODAG,C,1,fcon0060 | fcon0061,Candidato por nombre y tipo; sin validación de datos
+contab,CODTAB,N,2,fcon0069 | fcon0070,Candidato por nombre y tipo; sin validación de datos
+contab,CODFF,C,8,temp3 | temp4,Candidato por nombre y tipo; sin validación de datos
+contab,CODACTIVID,C,1,temp3 | temp4,Candidato por nombre y tipo; sin validación de datos

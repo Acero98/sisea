@@ -1,0 +1,224 @@
+﻿table,copies,paths
+foxypreviewer_settings,10,C:\Avalon\contab\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Finanzas\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Logistica\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Logistica\Exes\api32\FoxyPreviewer_Settings.dbf | C:\Avalon\Nomina\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Patrimonio\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Patrimonio\Exes\api32bits\FoxyPreviewer_Settings.dbf | C:\Avalon\Planif\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Planif2025\api\FoxyPreviewer_Settings.dbf | C:\Avalon\Planif2026\api\FoxyPreviewer_Settings.dbf
+sys002,2,C:\Avalon\contab\data\sys002.dbf | C:\Avalon\Finanzas\data\sys002.dbf
+sys003,2,C:\Avalon\contab\data\sys003.DBF | C:\Avalon\Finanzas\data\sys003.dbf
+sys005,2,C:\Avalon\contab\data\sys005.dbf | C:\Avalon\Finanzas\data\sys005.dbf
+sys006,2,C:\Avalon\contab\data\sys006.dbf | C:\Avalon\Finanzas\data\sys006.dbf
+sys007,3,C:\Avalon\contab\data\sys007.dbf | C:\Avalon\Finanzas\data\sys007.dbf | C:\Avalon\Patrimonio\Data\sys007.dbf
+licencia64f_old,6,C:\Avalon\contab\Exes\LICENCIA64f_old.DBF | C:\Avalon\Finanzas\Exes\LICENCIA64f_old.DBF | C:\Avalon\Logistica\Exes\LICENCIA64f_old.DBF | C:\Avalon\Nomina\Exes\LICENCIA64f_old.DBF | C:\Avalon\Patrimonio\Exes\LICENCIA64f_old.DBF | C:\Avalon\Planif\Exes\LICENCIA64f_old.DBF
+foxuser,11,C:\Avalon\contab\FOXUSER.DBF | C:\Avalon\Finanzas\Exes\FOXUSER.DBF | C:\Avalon\Finanzas\FOXUSER.DBF | C:\Avalon\Logistica\Exes\FOXUSER.DBF | C:\Avalon\Logistica\FOXUSER.DBF | C:\Avalon\Nomina\Exes\FOXUSER.DBF | C:\Avalon\Nomina\FOXUSER.DBF | C:\Avalon\Patrimonio\FOXUSER.DBF | C:\Avalon\Planif\FOXUSER.DBF | C:\Avalon\Planif2025\FOXUSER.DBF | C:\Avalon\Planif2026\FOXUSER.DBF
+licencia,9,C:\Avalon\contab\licencia.DBF | C:\Avalon\Finanzas\Exes\licencia.DBF | C:\Avalon\Finanzas\licencia.DBF | C:\Avalon\Logistica\licencia.DBF | C:\Avalon\Nomina\licencia.DBF | C:\Avalon\Patrimonio\licencia.DBF | C:\Avalon\Planif\licencia.DBF | C:\Avalon\Planif2025\licencia.DBF | C:\Avalon\Planif2026\licencia.DBF
+licencia64f,7,C:\Avalon\contab\LICENCIA64f.DBF | C:\Avalon\Finanzas\LICENCIA64f.DBF | C:\Avalon\Logistica\LICENCIA64f.DBF | C:\Avalon\Nomina\LICENCIA64f.DBF | C:\Avalon\Patrimonio\LICENCIA64f.DBF | C:\Avalon\Planif\LICENCIA64f.DBF | C:\Avalon\Planif2026\LICENCIA64f.DBF
+sys001,4,C:\Avalon\Finanzas\data\sys001.dbf | C:\Avalon\Nomina\DATA\sys001.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys001.DBF | C:\Avalon\Patrimonio\Data\sys001.dbf
+lcl0826,2,C:\Avalon\Finanzas\EXPSIINCO\LCL0826.dbf | C:\Avalon\Finanzas\EXPSIINCO\OTROS\LCL0826.dbf
+tec0826,2,C:\Avalon\Finanzas\EXPSIINCO\OTROS\TEC0826.dbf | C:\Avalon\Finanzas\EXPSIINCO\TEC0826.dbf
+tel0826,2,C:\Avalon\Finanzas\EXPSIINCO\OTROS\TEL0826.dbf | C:\Avalon\Finanzas\EXPSIINCO\TEL0826.dbf
+foxypreviewer_emails,2,C:\Avalon\Logistica\FoxyPreviewer_Emails.DBF | C:\Avalon\Nomina\FoxyPreviewer_Emails.DBF
+rh001000,4,C:\Avalon\Nomina\DATA\Back08012026_1612\rh001000.DBF | C:\Avalon\Nomina\DATA\rh001000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\Back08012026_1612\rh001000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh001000.DBF
+nomina,2,C:\Avalon\Nomina\DATA\nomina.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\nomina.dbf
+rh000000,2,C:\Avalon\Nomina\DATA\rh000000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh000000.DBF
+rh102000,2,C:\Avalon\Nomina\DATA\rh102000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh102000.DBF
+rh103000,2,C:\Avalon\Nomina\DATA\rh103000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh103000.DBF
+rh104000,2,C:\Avalon\Nomina\DATA\rh104000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh104000.DBF
+rh104100,2,C:\Avalon\Nomina\DATA\rh104100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh104100.dbf
+rh105000,2,C:\Avalon\Nomina\DATA\rh105000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh105000.dbf
+rh105100,2,C:\Avalon\Nomina\DATA\rh105100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh105100.dbf
+rh106000,2,C:\Avalon\Nomina\DATA\rh106000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh106000.DBF
+rh107000,2,C:\Avalon\Nomina\DATA\rh107000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh107000.dbf
+rh108000,2,C:\Avalon\Nomina\DATA\rh108000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh108000.DBF
+rh109000,2,C:\Avalon\Nomina\DATA\rh109000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh109000.DBF
+rh110000,2,C:\Avalon\Nomina\DATA\rh110000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh110000.dbf
+rh110100,2,C:\Avalon\Nomina\DATA\rh110100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh110100.dbf
+rh111000,2,C:\Avalon\Nomina\DATA\rh111000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh111000.dbf
+rh111100,2,C:\Avalon\Nomina\DATA\rh111100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh111100.dbf
+rh112000,2,C:\Avalon\Nomina\DATA\rh112000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh112000.DBF
+rh113000,2,C:\Avalon\Nomina\DATA\rh113000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh113000.DBF
+rh113100,2,C:\Avalon\Nomina\DATA\rh113100.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh113100.DBF
+rh113200,2,C:\Avalon\Nomina\DATA\rh113200.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh113200.DBF
+rh113400,2,C:\Avalon\Nomina\DATA\rh113400.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh113400.DBF
+rh114000,2,C:\Avalon\Nomina\DATA\rh114000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh114000.DBF
+rh114300,2,C:\Avalon\Nomina\DATA\rh114300.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh114300.DBF
+rh115000,2,C:\Avalon\Nomina\DATA\RH115000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\RH115000.DBF
+rh115100,2,C:\Avalon\Nomina\DATA\RH115100.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\RH115100.DBF
+rh116000,2,C:\Avalon\Nomina\DATA\rh116000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh116000.dbf
+rh116100,2,C:\Avalon\Nomina\DATA\rh116100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh116100.dbf
+rh117000,2,C:\Avalon\Nomina\DATA\rh117000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh117000.dbf
+rh118000,2,C:\Avalon\Nomina\DATA\rh118000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh118000.dbf
+rh119000,2,C:\Avalon\Nomina\DATA\rh119000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh119000.dbf
+rh120000,2,C:\Avalon\Nomina\DATA\rh120000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh120000.dbf
+rh201000,2,C:\Avalon\Nomina\DATA\rh201000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh201000.dbf
+rh202000,2,C:\Avalon\Nomina\DATA\rh202000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh202000.dbf
+rh202100,2,C:\Avalon\Nomina\DATA\rh202100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh202100.dbf
+rh202110,2,C:\Avalon\Nomina\DATA\rh202110.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh202110.dbf
+rh202111,2,C:\Avalon\Nomina\DATA\rh202111.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh202111.dbf
+rh203000,2,C:\Avalon\Nomina\DATA\rh203000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh203000.DBF
+rh204000,2,C:\Avalon\Nomina\DATA\rh204000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh204000.dbf
+rh205000,2,C:\Avalon\Nomina\DATA\rh205000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh205000.dbf
+rh206000,2,C:\Avalon\Nomina\DATA\rh206000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh206000.DBF
+rh207000,2,C:\Avalon\Nomina\DATA\rh207000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh207000.dbf
+rh208000,2,C:\Avalon\Nomina\DATA\rh208000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh208000.dbf
+rh209000,2,C:\Avalon\Nomina\DATA\rh209000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh209000.dbf
+rh210000,2,C:\Avalon\Nomina\DATA\rh210000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh210000.dbf
+rh211000,2,C:\Avalon\Nomina\DATA\rh211000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh211000.dbf
+rh211100,2,C:\Avalon\Nomina\DATA\rh211100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh211100.dbf
+rh212000,2,C:\Avalon\Nomina\DATA\rh212000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh212000.dbf
+rh213000,2,C:\Avalon\Nomina\DATA\rh213000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh213000.dbf
+rh214000,2,C:\Avalon\Nomina\DATA\rh214000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh214000.dbf
+rh214100,2,C:\Avalon\Nomina\DATA\rh214100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh214100.dbf
+rh215000,2,C:\Avalon\Nomina\DATA\rh215000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh215000.dbf
+rh216000,2,C:\Avalon\Nomina\DATA\rh216000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh216000.DBF
+rh216100,2,C:\Avalon\Nomina\DATA\rh216100.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh216100.dbf
+rh217000,2,C:\Avalon\Nomina\DATA\rh217000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh217000.dbf
+rh218000,2,C:\Avalon\Nomina\DATA\rh218000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh218000.dbf
+rh219000,2,C:\Avalon\Nomina\DATA\rh219000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh219000.dbf
+rh301000,2,C:\Avalon\Nomina\DATA\rh301000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh301000.DBF
+rh301100,2,C:\Avalon\Nomina\DATA\rh301100.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh301100.DBF
+rh302000,2,C:\Avalon\Nomina\DATA\rh302000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh302000.dbf
+rh303000,2,C:\Avalon\Nomina\DATA\rh303000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh303000.DBF
+rh303100,2,C:\Avalon\Nomina\DATA\rh303100.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh303100.DBF
+rh304000,2,C:\Avalon\Nomina\DATA\rh304000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh304000.dbf
+rh401000,2,C:\Avalon\Nomina\DATA\rh401000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh401000.dbf
+rh402000,2,C:\Avalon\Nomina\DATA\rh402000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh402000.dbf
+rh403000,2,C:\Avalon\Nomina\DATA\rh403000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh403000.dbf
+rh404000,2,C:\Avalon\Nomina\DATA\rh404000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh404000.dbf
+rh405000,2,C:\Avalon\Nomina\DATA\rh405000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh405000.dbf
+rh406000,2,C:\Avalon\Nomina\DATA\rh406000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh406000.dbf
+rh407000,2,C:\Avalon\Nomina\DATA\rh407000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh407000.DBF
+rh408000,2,C:\Avalon\Nomina\DATA\rh408000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh408000.DBF
+rh409000,2,C:\Avalon\Nomina\DATA\rh409000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh409000.DBF
+rh410000,2,C:\Avalon\Nomina\DATA\rh410000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh410000.DBF
+rh411000,2,C:\Avalon\Nomina\DATA\rh411000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh411000.DBF
+rh412000,2,C:\Avalon\Nomina\DATA\rh412000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh412000.dbf
+rh420000,2,C:\Avalon\Nomina\DATA\rh420000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh420000.DBF
+rh421000,2,C:\Avalon\Nomina\DATA\rh421000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh421000.DBF
+rh422000,2,C:\Avalon\Nomina\DATA\rh422000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh422000.DBF
+rh423000,2,C:\Avalon\Nomina\DATA\rh423000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh423000.DBF
+rh424000,2,C:\Avalon\Nomina\DATA\rh424000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh424000.DBF
+rh425000,2,C:\Avalon\Nomina\DATA\rh425000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh425000.DBF
+rh426000,2,C:\Avalon\Nomina\DATA\rh426000.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh426000.dbf
+rh427000,2,C:\Avalon\Nomina\DATA\rh427000.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\rh427000.DBF
+sys002,2,C:\Avalon\Nomina\DATA\sys002.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys002.dbf
+sys003,2,C:\Avalon\Nomina\DATA\sys003.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys003.DBF
+sys004,2,C:\Avalon\Nomina\DATA\sys004.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys004.dbf
+sys005,2,C:\Avalon\Nomina\DATA\sys005.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys005.dbf
+sys006,2,C:\Avalon\Nomina\DATA\sys006.dbf | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\sys006.dbf
+trabajadores,2,C:\Avalon\Nomina\DATA\trabajadores.DBF | C:\Avalon\Nomina\Exes\bk-pll-pnf\DATA\trabajadores.DBF
+sys003,4,C:\Avalon\Patrimonio\Data\sys003.dbf | C:\Avalon\Planif\Data\sys003.dbf | C:\Avalon\Planif2025\Data\sys003.dbf | C:\Avalon\Planif2026\Data\sys003.dbf
+sys006,4,C:\Avalon\Patrimonio\Data\sys006.DBF | C:\Avalon\Planif\Data\sys006.DBF | C:\Avalon\Planif2025\Data\sys006.DBF | C:\Avalon\Planif2026\Data\sys006.DBF
+____con_soli,3,C:\Avalon\Planif\Data\____con_soli.DBF | C:\Avalon\Planif2025\Data\____con_soli.DBF | C:\Avalon\Planif2026\Data\____con_soli.DBF
+accionistas,3,C:\Avalon\Planif\Data\accionistas.dbf | C:\Avalon\Planif2025\Data\accionistas.dbf | C:\Avalon\Planif2026\Data\accionistas.dbf
+auxrec,3,C:\Avalon\Planif\Data\AUXREC.DBF | C:\Avalon\Planif2025\Data\AUXREC.DBF | C:\Avalon\Planif2026\Data\AUXREC.DBF
+bktab_recu,3,C:\Avalon\Planif\Data\bktab_recu.DBF | C:\Avalon\Planif2025\Data\bktab_recu.DBF | C:\Avalon\Planif2026\Data\bktab_recu.DBF
+cabcertifica,3,C:\Avalon\Planif\Data\cabcertifica.dbf | C:\Avalon\Planif2025\Data\cabcertifica.dbf | C:\Avalon\Planif2026\Data\cabcertifica.dbf
+cabconciliacion,3,C:\Avalon\Planif\Data\cabconciliacion.dbf | C:\Avalon\Planif2025\Data\cabconciliacion.dbf | C:\Avalon\Planif2026\Data\cabconciliacion.dbf
+com_cate,3,C:\Avalon\Planif\Data\com_cate.dbf | C:\Avalon\Planif2025\Data\com_cate.dbf | C:\Avalon\Planif2026\Data\com_cate.dbf
+com_tdat,3,C:\Avalon\Planif\Data\com_tdat.dbf | C:\Avalon\Planif2025\Data\com_tdat.dbf | C:\Avalon\Planif2026\Data\com_tdat.dbf
+com_tipo,3,C:\Avalon\Planif\Data\com_tipo.dbf | C:\Avalon\Planif2025\Data\com_tipo.dbf | C:\Avalon\Planif2026\Data\com_tipo.dbf
+con_apru,3,C:\Avalon\Planif\Data\con_apru.dbf | C:\Avalon\Planif2025\Data\con_apru.dbf | C:\Avalon\Planif2026\Data\con_apru.dbf
+con_cant,3,C:\Avalon\Planif\Data\con_cant.dbf | C:\Avalon\Planif2025\Data\con_cant.dbf | C:\Avalon\Planif2026\Data\con_cant.dbf
+con_cdiv,3,C:\Avalon\Planif\Data\con_cdiv.dbf | C:\Avalon\Planif2025\Data\con_cdiv.dbf | C:\Avalon\Planif2026\Data\con_cdiv.dbf
+con_comp,3,C:\Avalon\Planif\Data\con_comp.dbf | C:\Avalon\Planif2025\Data\con_comp.dbf | C:\Avalon\Planif2026\Data\con_comp.dbf
+con_deta,3,C:\Avalon\Planif\Data\con_deta.dbf | C:\Avalon\Planif2025\Data\con_deta.dbf | C:\Avalon\Planif2026\Data\con_deta.dbf
+con_ejec,3,C:\Avalon\Planif\Data\con_ejec.DBF | C:\Avalon\Planif2025\Data\con_ejec.DBF | C:\Avalon\Planif2026\Data\con_ejec.DBF
+con_ffde,3,C:\Avalon\Planif\Data\con_ffde.dbf | C:\Avalon\Planif2025\Data\con_ffde.dbf | C:\Avalon\Planif2026\Data\con_ffde.dbf
+con_ffin,3,C:\Avalon\Planif\Data\con_ffin.dbf | C:\Avalon\Planif2025\Data\con_ffin.dbf | C:\Avalon\Planif2026\Data\con_ffin.dbf
+con_mont,3,C:\Avalon\Planif\Data\con_mont.dbf | C:\Avalon\Planif2025\Data\con_mont.dbf | C:\Avalon\Planif2026\Data\con_mont.dbf
+con_pinv,3,C:\Avalon\Planif\Data\con_pinv.dbf | C:\Avalon\Planif2025\Data\con_pinv.dbf | C:\Avalon\Planif2026\Data\con_pinv.dbf
+con_segu,3,C:\Avalon\Planif\Data\con_segu.dbf | C:\Avalon\Planif2025\Data\con_segu.dbf | C:\Avalon\Planif2026\Data\con_segu.dbf
+con_soli,3,C:\Avalon\Planif\Data\con_soli.DBF | C:\Avalon\Planif2025\Data\con_soli.DBF | C:\Avalon\Planif2026\Data\con_soli.DBF
+con_tipo,3,C:\Avalon\Planif\Data\con_tipo.dbf | C:\Avalon\Planif2025\Data\con_tipo.dbf | C:\Avalon\Planif2026\Data\con_tipo.dbf
+cpaferror,3,C:\Avalon\Planif\Data\cpaferror.dbf | C:\Avalon\Planif2025\Data\cpaferror.dbf | C:\Avalon\Planif2026\Data\cpaferror.dbf
+dbfniv,3,C:\Avalon\Planif\Data\dbfniv.dbf | C:\Avalon\Planif2025\Data\dbfniv.dbf | C:\Avalon\Planif2026\Data\dbfniv.dbf
+dbfpcc,3,C:\Avalon\Planif\Data\dbfpcc.dbf | C:\Avalon\Planif2025\Data\dbfpcc.dbf | C:\Avalon\Planif2026\Data\dbfpcc.dbf
+detcertifica,3,C:\Avalon\Planif\Data\detcertifica.DBF | C:\Avalon\Planif2025\Data\detcertifica.DBF | C:\Avalon\Planif2026\Data\detcertifica.DBF
+detdevengado,3,C:\Avalon\Planif\Data\detdevengado.dbf | C:\Avalon\Planif2025\Data\detdevengado.dbf | C:\Avalon\Planif2026\Data\detdevengado.dbf
+detobsdeven,3,C:\Avalon\Planif\Data\detobsdeven.dbf | C:\Avalon\Planif2025\Data\detobsdeven.dbf | C:\Avalon\Planif2026\Data\detobsdeven.dbf
+directorio,3,C:\Avalon\Planif\Data\directorio.dbf | C:\Avalon\Planif2025\Data\directorio.dbf | C:\Avalon\Planif2026\Data\directorio.dbf
+equivale,3,C:\Avalon\Planif\Data\EQUIVALE.DBF | C:\Avalon\Planif2025\Data\EQUIVALE.DBF | C:\Avalon\Planif2026\Data\EQUIVALE.DBF
+grafico,3,C:\Avalon\Planif\Data\grafico.dbf | C:\Avalon\Planif2025\Data\grafico.dbf | C:\Avalon\Planif2026\Data\grafico.dbf
+his_acti,3,C:\Avalon\Planif\Data\his_acti.dbf | C:\Avalon\Planif2025\Data\his_acti.dbf | C:\Avalon\Planif2026\Data\his_acti.dbf
+his_clamef,3,C:\Avalon\Planif\Data\his_clamef.DBF | C:\Avalon\Planif2025\Data\his_clamef.DBF | C:\Avalon\Planif2026\Data\his_clamef.DBF
+his_defi,3,C:\Avalon\Planif\Data\his_defi.dbf | C:\Avalon\Planif2025\Data\his_defi.dbf | C:\Avalon\Planif2026\Data\his_defi.dbf
+his_loca,3,C:\Avalon\Planif\Data\his_loca.dbf | C:\Avalon\Planif2025\Data\his_loca.dbf | C:\Avalon\Planif2026\Data\his_loca.dbf
+his_meta,3,C:\Avalon\Planif\Data\his_meta.dbf | C:\Avalon\Planif2025\Data\his_meta.dbf | C:\Avalon\Planif2026\Data\his_meta.dbf
+his_nive,3,C:\Avalon\Planif\Data\his_nive.dbf | C:\Avalon\Planif2025\Data\his_nive.dbf | C:\Avalon\Planif2026\Data\his_nive.dbf
+his_obje,3,C:\Avalon\Planif\Data\his_obje.DBF | C:\Avalon\Planif2025\Data\his_obje.DBF | C:\Avalon\Planif2026\Data\his_obje.DBF
+his_prme,3,C:\Avalon\Planif\Data\his_prme.dbf | C:\Avalon\Planif2025\Data\his_prme.dbf | C:\Avalon\Planif2026\Data\his_prme.dbf
+his_prog,3,C:\Avalon\Planif\Data\his_prog.dbf | C:\Avalon\Planif2025\Data\his_prog.dbf | C:\Avalon\Planif2026\Data\his_prog.dbf
+his_recu,3,C:\Avalon\Planif\Data\his_recu.dbf | C:\Avalon\Planif2025\Data\his_recu.dbf | C:\Avalon\Planif2026\Data\his_recu.dbf
+his_rmde,3,C:\Avalon\Planif\Data\his_rmde.dbf | C:\Avalon\Planif2025\Data\his_rmde.dbf | C:\Avalon\Planif2026\Data\his_rmde.dbf
+his_rubros,3,C:\Avalon\Planif\Data\his_rubros.DBF | C:\Avalon\Planif2025\Data\his_rubros.DBF | C:\Avalon\Planif2026\Data\his_rubros.DBF
+his_tiin,3,C:\Avalon\Planif\Data\his_tiin.dbf | C:\Avalon\Planif2025\Data\his_tiin.dbf | C:\Avalon\Planif2026\Data\his_tiin.dbf
+his_tipr,3,C:\Avalon\Planif\Data\his_tipr.dbf | C:\Avalon\Planif2025\Data\his_tipr.dbf | C:\Avalon\Planif2026\Data\his_tipr.dbf
+his_unid,3,C:\Avalon\Planif\Data\his_unid.dbf | C:\Avalon\Planif2025\Data\his_unid.dbf | C:\Avalon\Planif2026\Data\his_unid.dbf
+his_zona,3,C:\Avalon\Planif\Data\his_zona.dbf | C:\Avalon\Planif2025\Data\his_zona.dbf | C:\Avalon\Planif2026\Data\his_zona.dbf
+hiscapru,3,C:\Avalon\Planif\Data\hiscapru.dbf | C:\Avalon\Planif2025\Data\hiscapru.dbf | C:\Avalon\Planif2026\Data\hiscapru.dbf
+hisccant,3,C:\Avalon\Planif\Data\hisccant.dbf | C:\Avalon\Planif2025\Data\hisccant.dbf | C:\Avalon\Planif2026\Data\hisccant.dbf
+hisccomp,3,C:\Avalon\Planif\Data\hisccomp.dbf | C:\Avalon\Planif2025\Data\hisccomp.dbf | C:\Avalon\Planif2026\Data\hisccomp.dbf
+hiscejec,3,C:\Avalon\Planif\Data\hiscejec.dbf | C:\Avalon\Planif2025\Data\hiscejec.dbf | C:\Avalon\Planif2026\Data\hiscejec.dbf
+hiscmont,3,C:\Avalon\Planif\Data\hiscmont.dbf | C:\Avalon\Planif2025\Data\hiscmont.dbf | C:\Avalon\Planif2026\Data\hiscmont.dbf
+hiscsegu,3,C:\Avalon\Planif\Data\hiscsegu.dbf | C:\Avalon\Planif2025\Data\hiscsegu.dbf | C:\Avalon\Planif2026\Data\hiscsegu.dbf
+hiscsoli,3,C:\Avalon\Planif\Data\hiscsoli.dbf | C:\Avalon\Planif2025\Data\hiscsoli.dbf | C:\Avalon\Planif2026\Data\hiscsoli.dbf
+hisrcfg1,3,C:\Avalon\Planif\Data\hisrcfg1.dbf | C:\Avalon\Planif2025\Data\hisrcfg1.dbf | C:\Avalon\Planif2026\Data\hisrcfg1.dbf
+hisrcfg2,3,C:\Avalon\Planif\Data\hisrcfg2.dbf | C:\Avalon\Planif2025\Data\hisrcfg2.dbf | C:\Avalon\Planif2026\Data\hisrcfg2.dbf
+hisrcfg3,3,C:\Avalon\Planif\Data\hisrcfg3.dbf | C:\Avalon\Planif2025\Data\hisrcfg3.dbf | C:\Avalon\Planif2026\Data\hisrcfg3.dbf
+hisrcfg4,3,C:\Avalon\Planif\Data\hisrcfg4.dbf | C:\Avalon\Planif2025\Data\hisrcfg4.dbf | C:\Avalon\Planif2026\Data\hisrcfg4.dbf
+hisrcvar,3,C:\Avalon\Planif\Data\hisrcvar.dbf | C:\Avalon\Planif2025\Data\hisrcvar.dbf | C:\Avalon\Planif2026\Data\hisrcvar.dbf
+histabla,3,C:\Avalon\Planif\Data\histabla.dbf | C:\Avalon\Planif2025\Data\histabla.dbf | C:\Avalon\Planif2026\Data\histabla.dbf
+local,3,C:\Avalon\Planif\Data\LOCAL.DBF | C:\Avalon\Planif2025\Data\LOCAL.DBF | C:\Avalon\Planif2026\Data\LOCAL.DBF
+logrepro,3,C:\Avalon\Planif\Data\logrepro.DBF | C:\Avalon\Planif2025\Data\logrepro.DBF | C:\Avalon\Planif2026\Data\logrepro.DBF
+mae_proy,3,C:\Avalon\Planif\Data\mae_proy.dbf | C:\Avalon\Planif2025\Data\mae_proy.dbf | C:\Avalon\Planif2026\Data\mae_proy.dbf
+obsdevengado,3,C:\Avalon\Planif\Data\obsdevengado.dbf | C:\Avalon\Planif2025\Data\obsdevengado.dbf | C:\Avalon\Planif2026\Data\obsdevengado.dbf
+rep_cfg1,3,C:\Avalon\Planif\Data\rep_cfg1.dbf | C:\Avalon\Planif2025\Data\rep_cfg1.dbf | C:\Avalon\Planif2026\Data\rep_cfg1.dbf
+rep_cfg2,3,C:\Avalon\Planif\Data\rep_cfg2.dbf | C:\Avalon\Planif2025\Data\rep_cfg2.dbf | C:\Avalon\Planif2026\Data\rep_cfg2.dbf
+rep_cfg3,3,C:\Avalon\Planif\Data\rep_cfg3.dbf | C:\Avalon\Planif2025\Data\rep_cfg3.dbf | C:\Avalon\Planif2026\Data\rep_cfg3.dbf
+rep_cfg4,3,C:\Avalon\Planif\Data\rep_cfg4.dbf | C:\Avalon\Planif2025\Data\rep_cfg4.dbf | C:\Avalon\Planif2026\Data\rep_cfg4.dbf
+rep_cvar,3,C:\Avalon\Planif\Data\rep_cvar.dbf | C:\Avalon\Planif2025\Data\rep_cvar.dbf | C:\Avalon\Planif2026\Data\rep_cvar.dbf
+rutas,3,C:\Avalon\Planif\Data\rutas.DBF | C:\Avalon\Planif2025\Data\rutas.DBF | C:\Avalon\Planif2026\Data\rutas.DBF
+sys001,3,C:\Avalon\Planif\Data\sys001.DBF | C:\Avalon\Planif2025\Data\sys001.DBF | C:\Avalon\Planif2026\Data\sys001.DBF
+sys004,3,C:\Avalon\Planif\Data\sys004.DBF | C:\Avalon\Planif2025\Data\sys004.DBF | C:\Avalon\Planif2026\Data\sys004.DBF
+sys005,3,C:\Avalon\Planif\Data\sys005.DBF | C:\Avalon\Planif2025\Data\sys005.DBF | C:\Avalon\Planif2026\Data\sys005.DBF
+tab_acti,3,C:\Avalon\Planif\Data\tab_acti.DBF | C:\Avalon\Planif2025\Data\tab_acti.DBF | C:\Avalon\Planif2026\Data\tab_acti.DBF
+tab_actm,3,C:\Avalon\Planif\Data\tab_actM.dbf | C:\Avalon\Planif2025\Data\tab_actM.dbf | C:\Avalon\Planif2026\Data\tab_actM.dbf
+tab_agrumeta,3,C:\Avalon\Planif\Data\tab_agrumeta.DBF | C:\Avalon\Planif2025\Data\tab_agrumeta.DBF | C:\Avalon\Planif2026\Data\tab_agrumeta.DBF
+tab_aprm,3,C:\Avalon\Planif\Data\tab_aprm.dbf | C:\Avalon\Planif2025\Data\tab_aprm.dbf | C:\Avalon\Planif2026\Data\tab_aprm.dbf
+tab_ccta,3,C:\Avalon\Planif\Data\tab_ccta.DBF | C:\Avalon\Planif2025\Data\tab_ccta.DBF | C:\Avalon\Planif2026\Data\tab_ccta.DBF
+tab_cggm,3,C:\Avalon\Planif\Data\tab_cggm.dbf | C:\Avalon\Planif2025\Data\tab_cggm.dbf | C:\Avalon\Planif2026\Data\tab_cggm.dbf
+tab_cla,3,C:\Avalon\Planif\Data\tab_cla.DBF | C:\Avalon\Planif2025\Data\tab_cla.DBF | C:\Avalon\Planif2026\Data\tab_cla.DBF
+tab_clamef,3,C:\Avalon\Planif\Data\tab_clamef.DBF | C:\Avalon\Planif2025\Data\tab_clamef.DBF | C:\Avalon\Planif2026\Data\tab_clamef.DBF
+tab_defi,3,C:\Avalon\Planif\Data\tab_defi.dbf | C:\Avalon\Planif2025\Data\tab_defi.dbf | C:\Avalon\Planif2026\Data\tab_defi.dbf
+tab_docu,3,C:\Avalon\Planif\Data\tab_docu.dbf | C:\Avalon\Planif2025\Data\tab_docu.dbf | C:\Avalon\Planif2026\Data\tab_docu.dbf
+tab_egam,3,C:\Avalon\Planif\Data\tab_egam.DBF | C:\Avalon\Planif2025\Data\tab_egam.DBF | C:\Avalon\Planif2026\Data\tab_egam.DBF
+tab_esp2,3,C:\Avalon\Planif\Data\tab_esp2.DBF | C:\Avalon\Planif2025\Data\tab_esp2.DBF | C:\Avalon\Planif2026\Data\tab_esp2.DBF
+tab_funm,3,C:\Avalon\Planif\Data\tab_funm.dbf | C:\Avalon\Planif2025\Data\tab_funm.dbf | C:\Avalon\Planif2026\Data\tab_funm.dbf
+tab_gggm,3,C:\Avalon\Planif\Data\tab_gggm.DBF | C:\Avalon\Planif2025\Data\tab_gggm.DBF | C:\Avalon\Planif2026\Data\tab_gggm.DBF
+tab_mapm,3,C:\Avalon\Planif\Data\tab_mapm.DBF | C:\Avalon\Planif2025\Data\tab_mapm.DBF | C:\Avalon\Planif2026\Data\tab_mapm.DBF
+tab_mate,3,C:\Avalon\Planif\Data\tab_mate.dbf | C:\Avalon\Planif2025\Data\tab_mate.dbf | C:\Avalon\Planif2026\Data\tab_mate.dbf
+tab_meta,3,C:\Avalon\Planif\Data\tab_meta.dbf | C:\Avalon\Planif2025\Data\tab_meta.dbf | C:\Avalon\Planif2026\Data\tab_meta.dbf
+tab_metaact,3,C:\Avalon\Planif\Data\tab_metaact.dbf | C:\Avalon\Planif2025\Data\tab_metaact.dbf | C:\Avalon\Planif2026\Data\tab_metaact.dbf
+tab_nive,3,C:\Avalon\Planif\Data\tab_nive.dbf | C:\Avalon\Planif2025\Data\tab_nive.dbf | C:\Avalon\Planif2026\Data\tab_nive.dbf
+tab_obje,3,C:\Avalon\Planif\Data\tab_obje.dbf | C:\Avalon\Planif2025\Data\tab_obje.dbf | C:\Avalon\Planif2026\Data\tab_obje.dbf
+tab_pide,3,C:\Avalon\Planif\Data\tab_pide.dbf | C:\Avalon\Planif2025\Data\tab_pide.dbf | C:\Avalon\Planif2026\Data\tab_pide.dbf
+tab_pinv,3,C:\Avalon\Planif\Data\tab_pinv.dbf | C:\Avalon\Planif2025\Data\tab_pinv.dbf | C:\Avalon\Planif2026\Data\tab_pinv.dbf
+tab_piob,3,C:\Avalon\Planif\Data\tab_piob.dbf | C:\Avalon\Planif2025\Data\tab_piob.dbf | C:\Avalon\Planif2026\Data\tab_piob.dbf
+tab_pres,3,C:\Avalon\Planif\Data\tab_pres.dbf | C:\Avalon\Planif2025\Data\tab_pres.dbf | C:\Avalon\Planif2026\Data\tab_pres.dbf
+tab_prme,3,C:\Avalon\Planif\Data\tab_prme.dbf | C:\Avalon\Planif2025\Data\tab_prme.dbf | C:\Avalon\Planif2026\Data\tab_prme.dbf
+tab_prog,3,C:\Avalon\Planif\Data\tab_prog.dbf | C:\Avalon\Planif2025\Data\tab_prog.dbf | C:\Avalon\Planif2026\Data\tab_prog.dbf
+tab_prom,3,C:\Avalon\Planif\Data\tab_proM.dbf | C:\Avalon\Planif2025\Data\tab_proM.dbf | C:\Avalon\Planif2026\Data\tab_proM.dbf
+tab_recu,3,C:\Avalon\Planif\Data\tab_recu.dbf | C:\Avalon\Planif2025\Data\tab_recu.dbf | C:\Avalon\Planif2026\Data\tab_recu.dbf
+tab_rmde,3,C:\Avalon\Planif\Data\tab_rmde.dbf | C:\Avalon\Planif2025\Data\tab_rmde.dbf | C:\Avalon\Planif2026\Data\tab_rmde.dbf
+tab_rubros,3,C:\Avalon\Planif\Data\tab_rubros.DBF | C:\Avalon\Planif2025\Data\tab_rubros.DBF | C:\Avalon\Planif2026\Data\tab_rubros.DBF
+tab_sprm,3,C:\Avalon\Planif\Data\tab_sprm.dbf | C:\Avalon\Planif2025\Data\tab_sprm.dbf | C:\Avalon\Planif2026\Data\tab_sprm.dbf
+tab_tiin,3,C:\Avalon\Planif\Data\tab_tiin.dbf | C:\Avalon\Planif2025\Data\tab_tiin.dbf | C:\Avalon\Planif2026\Data\tab_tiin.dbf
+tab_tipr,3,C:\Avalon\Planif\Data\tab_tipr.dbf | C:\Avalon\Planif2025\Data\tab_tipr.dbf | C:\Avalon\Planif2026\Data\tab_tipr.dbf
+tab_tipunidad,3,C:\Avalon\Planif\Data\tab_tipunidad.DBF | C:\Avalon\Planif2025\Data\tab_tipunidad.DBF | C:\Avalon\Planif2026\Data\tab_tipunidad.DBF
+tab_unimeta,3,C:\Avalon\Planif\Data\tab_unimeta.DBF | C:\Avalon\Planif2025\Data\tab_unimeta.DBF | C:\Avalon\Planif2026\Data\tab_unimeta.DBF
+tabla,3,C:\Avalon\Planif\Data\tabla.DBF | C:\Avalon\Planif2025\Data\tabla.DBF | C:\Avalon\Planif2026\Data\tabla.DBF
+tempo,3,C:\Avalon\Planif\Data\tempo.DBF | C:\Avalon\Planif2025\Data\tempo.DBF | C:\Avalon\Planif2026\Data\tempo.DBF
+transact,3,C:\Avalon\Planif\Data\transact.DBF | C:\Avalon\Planif2025\Data\transact.DBF | C:\Avalon\Planif2026\Data\transact.DBF
+unidad,3,C:\Avalon\Planif\Data\unidad.dbf | C:\Avalon\Planif2025\Data\unidad.dbf | C:\Avalon\Planif2026\Data\unidad.dbf
+zona,3,C:\Avalon\Planif\Data\zona.dbf | C:\Avalon\Planif2025\Data\zona.dbf | C:\Avalon\Planif2026\Data\zona.dbf
+licencia 24-11-2025 08.49,3,C:\Avalon\Planif\Exes\licencia 24-11-2025 08.49.DBF | C:\Avalon\Planif2025\Exes\licencia 24-11-2025 08.49.DBF | C:\Avalon\Planif2026\Exes\licencia 24-11-2025 08.49.DBF
+sys002,3,C:\Avalon\Planif\sys002.DBF | C:\Avalon\Planif2025\sys002.DBF | C:\Avalon\Planif2026\sys002.DBF
+cabdevengado,2,C:\Avalon\Planif2025\Data\cabdevengado.dbf | C:\Avalon\Planif2026\Data\cabdevengado.dbf
+sistema,2,C:\Avalon\Planif2025\Data\sistema.DBF | C:\Avalon\Planif2026\Data\sistema.DBF

@@ -1,0 +1,24 @@
+flowchart LR
+  T0["Set_Grupos_Cuentas_FC"]
+  T1["Set_Estructura_Cuentas_FC"]
+  T0 -->|"pk_codigo → tipo"| T1
+  T2["Set_Cmpbtes_RRFF"]
+  T3["Mov_Cmpbtes_Cabecera"]
+  T2 -->|"pk_codigo → cmpbte"| T3
+  T4["Set_Numeración_Comprobantes"]
+  T2 -->|"pk_codigo → cmpbte"| T4
+  T5["Set_Tipo_Monedas"]
+  T5 -->|"pk_codmon → tipomoneda"| T3
+  T6["Set_Fondos_Rendiciones"]
+  T7["Mov_CChica_Rendición"]
+  T6 -->|"pk_sucfon → sucfondo"| T7
+  T8["Set_Documentos_CCh"]
+  T9["Mov_CChica_Renglon"]
+  T8 -->|"doc_tip → tipodoc"| T9
+  T10["Mov_Tipo_Cambio"]
+  T5 -->|"pk_codmon → codmoneda"| T10
+  T11["His_Cmpbtes_Cabecera"]
+  T12["His_Cmpbtes_Detalles"]
+  T11 -->|"pk_ysuccmp → ysuccmp"| T12
+  T13["His_Cmpbtes_OtrasCtas"]
+  T11 -->|"pk_ysuccmp → ysuccmp"| T13

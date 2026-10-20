@@ -1,0 +1,48 @@
+flowchart LR
+  T0["sum30008"]
+  T1["sum40004"]
+  T0 -->|"pkunimed → unimed"| T1
+  T2["sum40003"]
+  T0 -->|"pkunimed → unimed"| T2
+  T3["sum40002"]
+  T3 -->|"pkgrupsubr → grupsubgr"| T2
+  T3 -->|"pkgrupsubr → grupsubgru"| T1
+  T4["sum30005"]
+  T4 -->|"pktipostoc → tipostock"| T1
+  T5["sum30006"]
+  T5 -->|"pktipomat → tipomat"| T1
+  T6["sum30003"]
+  T7["sum40013"]
+  T6 -->|"pkclase → clase"| T7
+  T8["sum30004"]
+  T9["sum40015"]
+  T8 -->|"pkformpago → forpago"| T9
+  T10["sum40017"]
+  T8 -->|"pkformpago → forpago"| T10
+  T11["sum40021"]
+  T12["sum40023"]
+  T11 -->|"pkdetpedse → pedservi"| T12
+  T13["sum30009"]
+  T14["sum30012"]
+  T13 -->|"pkplanti → idplant"| T14
+  T15["sum40018"]
+  T13 -->|"pkplanti → plantilla"| T15
+  T16["sum40027"]
+  T13 -->|"pkplanti → plantilla"| T16
+  T7 -->|"pkproveedo → proveedor"| T9
+  T7 -->|"pkproveedo → proveedor"| T10
+  T17["sum40026"]
+  T7 -->|"pkproveedo → proveedor"| T17
+  T13 -->|"pkplanti → plantilla"| T9
+  T13 -->|"pkplanti → plantilla"| T10
+  T18["sum40001"]
+  T3 -->|"pkgrupsubr → grupsubgr"| T18
+  T19["sum40033"]
+  T19 -->|"pkgrupo → akgrupo"| T3
+  T20["sum30001"]
+  T21["sum40010"]
+  T20 -->|"pkalmacen → almacenes"| T21
+  T22["sum30015"]
+  T20 -->|"pkalmacen → destino"| T22
+  T23["sum30011"]
+  T14 -->|"pkarreglo → pkplantill"| T23

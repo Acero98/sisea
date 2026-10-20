@@ -1,0 +1,23 @@
+flowchart LR
+  T0["cpaf0100"]
+  T1["cpaf0105"]
+  T0 -->|"suc_for → suc_for"| T1
+  T2["cpaf0050"]
+  T2 -->|"suc_bien → suc_bien"| T1
+  T3["cpaf0060"]
+  T2 -->|"suc_bien → suc_bien"| T3
+  T4["cpaf0080"]
+  T2 -->|"suc_bien → cod_dep"| T4
+  T5["cpaf0010"]
+  T6["cpaf0020"]
+  T5 -->|"cod_grp → rub_tec"| T6
+  T7["cpaf0040"]
+  T2 -->|"suc_bien → suc_bien"| T7
+  T8["cpaf0015"]
+  T5 -->|"cod_grp → grp_sgr"| T8
+  T8 -->|"rub_item → subgrupo"| T2
+  T9["cpaf0030"]
+  T9 -->|"causabaja → tipobaja"| T2
+  T9 -->|"tipoing → tipoingre"| T2
+  T9 -->|"estadoscon → estadocon"| T2
+  T9 -->|"docingre → docingre"| T2

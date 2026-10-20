@@ -1,0 +1,41 @@
+flowchart LR
+  T0["rh206000"]
+  T1["rh207000"]
+  T0 -->|"pk_curso → key_03"| T1
+  T2["rh205000"]
+  T2 -->|"pk_centro → codcentro"| T0
+  T3["rh215000"]
+  T1 -->|"pk_prog → codprog"| T3
+  T4["rh202110"]
+  T5["rh202111"]
+  T4 -->|"pk_prov → key_02"| T5
+  T6["rh202100"]
+  T6 -->|"pk_dpto → key_02"| T4
+  T7["rh202000"]
+  T7 -->|"pk_pais → codpais"| T6
+  T8["rh216000"]
+  T9["rh216100"]
+  T8 -->|"pk_ocupac → codocupac"| T9
+  T10["rh105000"]
+  T11["rh105100"]
+  T10 -->|"pk_nivel → key_03"| T11
+  T12["rh115000"]
+  T13["rh115100"]
+  T12 -->|"pk_ctacte → key_01"| T13
+  T14["rh301000"]
+  T15["rh301100"]
+  T14 -->|"pk_trabaj → codtrabaj"| T15
+  T16["rh303000"]
+  T17["rh303100"]
+  T16 -->|"pk_trabaj → codtrabaj"| T17
+  T0 -->|"pk_curso → key_03"| T1
+  T2 -->|"pk_centro → codcentro"| T0
+  T1 -->|"pk_prog → codprog"| T3
+  T4 -->|"pk_prov → key_02"| T5
+  T6 -->|"pk_dpto → key_02"| T4
+  T7 -->|"pk_pais → codpais"| T6
+  T8 -->|"pk_ocupac → codocupac"| T9
+  T10 -->|"pk_nivel → key_03"| T11
+  T12 -->|"pk_ctacte → key_01"| T13
+  T14 -->|"pk_trabaj → codtrabaj"| T15
+  T16 -->|"pk_trabaj → codtrabaj"| T17

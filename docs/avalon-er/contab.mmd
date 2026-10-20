@@ -1,0 +1,22 @@
+flowchart LR
+  T0["fcon0019"]
+  T1["fcon0009"]
+  T0 -->|"balance → codigo"| T1
+  T2["fcon0020"]
+  T3["fcon0004"]
+  T2 -->|"pk_docitem → docitem"| T3
+  T4["fcon0014"]
+  T4 -->|"pk_codigo → origen"| T2
+  T5["fcon0024"]
+  T4 -->|"pk_codigo → origen"| T5
+  T6["fcon0037"]
+  T6 -->|"pk_tipo → coddoc"| T5
+  T6 -->|"pk_tipo → dcmto"| T2
+  T7["fcon0032"]
+  T8["fcon0033"]
+  T7 -->|"pk_ysuccmp → ysuccmp"| T8
+  T9["fcon0029"]
+  T10["fcon0040"]
+  T9 -->|"pk_variab → variable"| T10
+  T11["fcon0027"]
+  T0 -->|"balance → balance"| T11
