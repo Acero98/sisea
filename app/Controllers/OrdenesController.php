@@ -6,7 +6,7 @@ final class OrdenesController
     private function validarAcceso(): array
     {
         requiereLogin();
-        if (!tienePermiso('seguimiento')) {
+        if (!tienePermiso('ordenes')) {
             http_response_code(403);
             exit('No tiene acceso al módulo de órdenes.');
         }
@@ -21,8 +21,8 @@ final class OrdenesController
         $breadcrumb = 'Logística / Órdenes';
         $activeNav = 'ordenes';
         $useDataTables = true;
-        $mostrarMontos = tienePermiso('ver_montos', $acceso);
-        $puedeVerDetalle = tienePermiso('ver_detalle', $acceso);
+        $mostrarMontos = tienePermiso('ordenes_montos', $acceso);
+        $puedeVerDetalle = tienePermiso('ordenes_detalle', $acceso);
         $ordenesIniciales = array_values(array_unique(array_filter(array_map(static function ($valor): string {
             $valor = trim((string)$valor);
             return preg_match('/^(orden_compra|orden_servicio)\|[A-Za-z0-9._-]{1,40}$/', $valor) ? $valor : '';

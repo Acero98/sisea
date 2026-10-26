@@ -237,17 +237,11 @@
   .resize {
     resize: both;
   }
-  .place-items-center {
-    place-items: center;
-  }
   .items-center {
     align-items: center;
   }
   .gap-3 {
     gap: calc(var(--spacing) * 3);
-  }
-  .rounded-xl {
-    border-radius: var(--radius-xl);
   }
   .border {
     border-style: var(--tw-border-style);

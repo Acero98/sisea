@@ -45,8 +45,8 @@ $detalleLink = function (string $tipoDocumento, string $numeroDocumento) use ($r
     $href = url('detalle_documento',['pedido'=>$result['pedido']['NRO_PEDIDO'],'tipo'=>$tipoDocumento,'numero'=>$numeroDocumento]);
     return '<a class="table-action icon-action" href="'.e($href).'" title="Ver detalle" aria-label="Ver detalle"><img src="'.e(APP_URL).'assets/icons/bootstrap-eye.svg" alt=""></a>';
 };
-$celdaMonto = static function ($centavos, string $moneda = '') use ($mostrarMontos, $montoDocumento): string {
-    return $mostrarMontos ? '<td>'.e($montoDocumento($centavos, $moneda)).'</td>' : '';
+$celdaMonto = static function ($centavos, string $moneda = '', bool $sinIgv = false) use ($mostrarMontos, $montoDocumento): string {
+    return $mostrarMontos ? '<td>'.e($montoDocumento($centavos, $moneda)).($sinIgv && $centavos !== null ? '<br><small>Sin IGV</small>' : '').'</td>' : '';
 };
 $celdaDetalle = static function (string $tipoDocumento, string $numeroDocumento) use ($puedeVerDetalle, $detalleLink): string {
     return $puedeVerDetalle ? '<td>'.$detalleLink($tipoDocumento, $numeroDocumento).'</td>' : '';
@@ -130,7 +130,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 </section>
                 <section class="card">
                     <h2>Documentos vinculados</h2>
-                    <?php if($mostrarMontos): ?><p>Los montos muestran el importe registrado para cada documento; “—” indica que Avalon no tiene un importe asociado.</p><?php endif; ?>
+                    <?php if($mostrarMontos): ?><p>Las órdenes de compra y servicio muestran el importe sin IGV. Los demás documentos conservan su monto registrado; “—” indica que el importe no está disponible.</p><?php endif; ?>
                     <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de documentos; desplazamiento horizontal disponible"><table>
                         <thead>
                             <tr>
@@ -155,21 +155,21 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                     <td><b><?= e($cotizacion['NRO_EXPE']) ?></b></td>
                                     <td><?= e($date($cotizacion['FEC_COTIZA'])) ?></td>
                                     <?= $celdaMonto($cotizacion['MONTO_CENTS'] ?? null, $cotizacion['MONEDA'] ?? '') ?>
-                                    <td><?= e('Código Avalon: ' . ($cotizacion['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= e(EstadoDocumentoService::etiqueta('expediente', $cotizacion['ESTADO'] ?? '')) ?></td>
                                     <?= $celdaDetalle('cotizacion',$cotizacion['NRO_EXPE']) ?>
                                 </tr><?php foreach ($cotizacion['CERTIFICACIONES'] as $certificacion): ?><tr>
                                     <td>↳ Certificación</td>
                                     <td><?= e($certificacion['CODCER']) ?></td>
                                     <td><?= e($date($certificacion['FECHA'])) ?></td>
                                     <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
-                                    <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                                    <td><?= e(EstadoDocumentoService::etiqueta('certificacion', $certificacion['ESTADO'] ?? '')) ?></td>
                                     <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
                                 </tr><?php endforeach; ?><?php foreach ($cotizacion['ORDENES'] as $orden): ?><tr>
                                     <td>↳ <b><?= e($orden['TIPO']) ?></b></td>
                                     <td><b><?= e($orden['NUMERO']) ?></b></td>
                                     <td><?= e($date($orden['FECHA'])) ?></td>
-                                    <?= $celdaMonto($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '') ?>
-                                    <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                                    <?= $celdaMonto($orden['MONTO_SIN_IGV_CENTS'] ?? null, $orden['MONEDA'] ?? '', true) ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta('orden', $orden['ESTADO'] ?? '')) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta('pago_orden', $orden['ESTFACTU'] ?? '')) ?></small></td>
                                     <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
                                 </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
                                     <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
@@ -178,7 +178,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                     <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($comprobante['FECCOMP'])) ?></td>
                                     <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
-                                    <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= e(EstadoDocumentoService::etiqueta('comprobante', $comprobante['ESTADO'] ?? '')) ?></td>
                                     <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
                                 </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                     <td>　　　↳ Devengado</td>
@@ -192,7 +192,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                     <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                     <td><?= e($date($pago['FCONTABLE'])) ?></td>
                                     <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
-                                    <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                                    <td><?= e(EstadoDocumentoService::etiqueta('pago', $pago['ESTADO'] ?? '')) ?></td>
                                     <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                     <td>　↳ Devengado sin comprobante asociado</td>
@@ -206,14 +206,14 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td><?= e($certificacion['CODCER']) ?></td>
                                 <td><?= e($date($certificacion['FECHA'])) ?></td>
                                 <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
-                                <td><?= e('Código Avalon: ' . ($certificacion['ESTADO'] ?? '—')) ?></td>
+                                <td><?= e(EstadoDocumentoService::etiqueta('certificacion', $certificacion['ESTADO'] ?? '')) ?></td>
                                 <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
                             </tr><?php endforeach; ?><?php foreach ($ordenes as $orden): ?><tr>
                                 <td><b><?= e($orden['TIPO']) ?></b></td>
                                 <td><b><?= e($orden['NUMERO']) ?></b></td>
                                 <td><?= e($date($orden['FECHA'])) ?></td>
-                                <?= $celdaMonto($orden['MONTO_CENTS'] ?? null, $orden['MONEDA'] ?? '') ?>
-                                <td><?= e('Código Avalon: ' . ($orden['ESTADO'] ?: '—')) ?></td>
+                                <?= $celdaMonto($orden['MONTO_SIN_IGV_CENTS'] ?? null, $orden['MONEDA'] ?? '', true) ?>
+                                <td><?= e(EstadoDocumentoService::etiqueta('orden', $orden['ESTADO'] ?? '')) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta('pago_orden', $orden['ESTFACTU'] ?? '')) ?></small></td>
                                 <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
                             </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
                                 <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
@@ -222,7 +222,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($comprobante['FECCOMP'])) ?></td>
                                 <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
-                                <td><?= e('Código Avalon: ' . ($comprobante['ESTADO'] ?: '—')) ?></td>
+                                <td><?= e(EstadoDocumentoService::etiqueta('comprobante', $comprobante['ESTADO'] ?? '')) ?></td>
                                 <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
                             </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
                                 <td>　↳ Devengado</td>
@@ -236,7 +236,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
                                 <td><?= e($date($pago['FCONTABLE'])) ?></td>
                                 <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
-                                <td><?= e('Código Avalon: ' . ($pago['ESTADO'] ?: '—')) ?></td>
+                                <td><?= e(EstadoDocumentoService::etiqueta('pago', $pago['ESTADO'] ?? '')) ?></td>
                                 <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
                                 <td>↳ Devengado sin comprobante asociado</td>

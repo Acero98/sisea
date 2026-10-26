@@ -17,7 +17,9 @@ final class NotasController
         $tieneCodigoAvalon =
             trim((string) ($acceso['avalon_codigo'] ?? '')) !== '';
 
-        if ($vistaSolicitada === 'unidad') {
+        if (alcanceModulo('seguimiento',$acceso)==='PROPIO') {
+            $alcance='mis';
+        } elseif ($vistaSolicitada === 'unidad') {
             $alcance = 'unidad';
         } elseif ($vistaSolicitada === 'mis' && $tieneCodigoAvalon) {
             $alcance = 'mis';
@@ -93,6 +95,7 @@ final class NotasController
             $vistaRedireccion = 'unidad';
             $descripcion = 'todas las notas';
         } elseif ($tipo === 'unidad') {
+            if(alcanceModulo('seguimiento',$acceso)==='PROPIO'){http_response_code(403);exit('Su rol solo permite actualizar sus propias notas.');}
             if ($unidadOrganica === '' || $unidadOrganica === '0000') {
                 $this->errorAlcance(
                     'No se puede determinar la unidad orgánica de este usuario.',
@@ -241,7 +244,7 @@ final class NotasController
             && !empty($acceso['id'])
         ) {
             $stmt = db()->prepare(
-                'SELECT avalon_codigo, unidad_organica, rol, alcance
+                'SELECT avalon_codigo, unidad_organica
                  FROM usuarios
                  WHERE id = :id'
             );

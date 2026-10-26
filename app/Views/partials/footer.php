@@ -1,18 +1,25 @@
     </main>
+    <script src="<?= e(APP_URL) ?>assets/js/navegacion.js?v=20261025a"></script>
     <footer class="app-footer">Avalon Seguimiento · Consulta de solo lectura</footer>
     <script src="<?= e(APP_URL) ?>assets/vendor/select2/select2.full.min.js"></script>
     <script src="<?= e(APP_URL) ?>assets/vendor/select2/es.js"></script>
     <script src="<?= e(APP_URL) ?>assets/js/sweetalert2.all.min.js"></script>
     <script>
     (function () {
-        $('.js-select2, .budget-filter select, #modal-role, #modal-tracking-scope, #modal-budget-scope').each(function () {
+        $('.js-select2, .budget-filter select, #modal-role, .role-permission-settings select').each(function () {
             var $select = $(this);
             if ($select.hasClass('select2-hidden-accessible')) return;
             var $modal = $select.closest('.access-modal');
             $select.select2({
                 width:'100%',
                 language:'es',
-                minimumResultsForSearch:Infinity,
+                minimumResultsForSearch:$select.is('[data-searchable]') ? 0 : Infinity,
+                matcher:function(params, data) {
+                    var match = $.fn.select2.defaults.defaults.matcher(params, data);
+                    if (match || !$select.is('[data-searchable]')) return match;
+                    var term = (params.term || '').replace(/[.\s]/g, '');
+                    return /^\d+$/.test(term) && (data.text || '').replace(/[.\s]/g, '').indexOf(term) !== -1 ? data : null;
+                },
                 dropdownParent:$modal.length ? $modal : $(document.body)
             });
         });

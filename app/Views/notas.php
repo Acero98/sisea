@@ -160,7 +160,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             >
                 ⌂ Todas las unidades
             </a>
-        <?php elseif ($tieneUnidad): ?>
+        <?php elseif ($tieneUnidad && alcanceModulo('seguimiento',$acceso)!=='PROPIO'): ?>
             <a
                 class="<?= $alcance === 'unidad' ? 'selected' : '' ?>"
                 href="<?= e(url('notas', ['vista' => 'unidad'])) ?>"

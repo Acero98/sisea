@@ -1,6 +1,7 @@
 -- Estructura completa para instalaciones nuevas; sin datos ni nombre de base fijo.
 CREATE TABLE `usuarios` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `rol_id` int unsigned DEFAULT NULL,
   `avalon_codigo` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `usuario` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
   `nombre` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -18,6 +19,10 @@ CREATE TABLE `usuarios` (
   `rol_acceso` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',
   `alcance` enum('GLOBAL','UNIDAD','PROPIO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
   `permiso_seguimiento` tinyint(1) NOT NULL DEFAULT '1',
+  `permiso_ordenes` tinyint(1) NOT NULL DEFAULT '0',
+  `alcance_ordenes` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
+  `permiso_ordenes_montos` tinyint(1) NOT NULL DEFAULT '0',
+  `permiso_ordenes_detalle` tinyint(1) NOT NULL DEFAULT '0',
   `alcance_seguimiento` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNIDAD',
   `permiso_patrimonio` tinyint(1) NOT NULL DEFAULT '0',
   `permiso_presupuesto` tinyint(1) NOT NULL DEFAULT '0',
@@ -32,6 +37,7 @@ CREATE TABLE `usuarios` (
   `permiso_ver_montos` tinyint(1) NOT NULL DEFAULT '1',
   `permiso_ver_detalle` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
+  KEY `idx_usuario_rol` (`rol_id`),
   UNIQUE KEY `usuario` (`usuario`),
   UNIQUE KEY `avalon_codigo` (`avalon_codigo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -178,3 +184,14 @@ CREATE TABLE `avalon_cache_fuentes` (
 
 
 INSERT INTO sincronizacion_control (id, estado) VALUES (1, 'LIBRE');
+
+CREATE TABLE `roles_acceso` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(120) NOT NULL,
+  `descripcion` varchar(1000) NOT NULL DEFAULT '',
+  `permisos_json` text NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`), UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/config/app.php';
 require APP_ROOT . '/config/database.php';
+require APP_ROOT . '/app/Helpers.php';
 require_once APP_ROOT . '/app/Models/NotasModel.php';
 require_once APP_ROOT . '/app/Controllers/NotasController.php';
 

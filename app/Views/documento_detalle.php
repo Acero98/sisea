@@ -3,8 +3,8 @@ declare(strict_types=1);
 $esOrden = in_array($detalle['tipo'] ?? '', ['orden_compra','orden_servicio'], true);
 $pageTitle = $detalle['titulo'] ?? 'Detalle documental';
 $pageDescription = $esOrden ? 'Detalle de la orden según el formato de Avalon.' : 'Consulta de solo lectura desde la copia local de Avalon.';
-$breadcrumb = 'Logística / Seguimiento documental / Detalle';
-$activeNav = 'seguimiento';
+$breadcrumb = !empty($desdeOrdenes) ? 'Logística / Órdenes / Detalle' : 'Logística / Seguimiento documental / Detalle';
+$activeNav = !empty($desdeOrdenes) ? 'ordenes' : 'seguimiento';
 $hidePageHeader = true;
 $date = static function ($value): string {
     $value = trim((string)$value);
@@ -23,7 +23,7 @@ require APP_ROOT.'/app/Views/partials/header.php';
 <?php else: ?>
     <header>
         <div><div class="breadcrumb"><?= e($breadcrumb) ?></div><h1><?= e($pageTitle) ?></h1><p><?= e($detalle['nota']['unidad_organica'].' · '.$detalle['nota']['unidad_nombre']) ?></p></div>
-        <a class="clear-search" href="<?= e(url('seguimiento',['q'=>$detalle['pedido'],'tipo'=>'pedido'])) ?>">← Volver al expediente</a>
+        <a class="clear-search" href="<?= e(!empty($desdeOrdenes)?url('ordenes'):url('seguimiento',['q'=>$detalle['pedido'],'tipo'=>'pedido'])) ?>"><?= !empty($desdeOrdenes)?'← Volver a órdenes':'← Volver al expediente' ?></a>
     </header>
     <?php if ($esOrden): ?>
         <?php $datos = $detalle['meta'][0] ?? []; $orden = $detalle['orden']; ?>

@@ -7,7 +7,11 @@ $useDataTables = true;
 if (!isset($ordenesIniciales)) $ordenesIniciales = [];
 require APP_ROOT . '/app/Views/partials/header.php';
 ?>
-<?php if ($ordenesIniciales): ?><section class="card orders-budget-context"><div><strong>Órdenes seleccionadas desde Presupuesto</strong><p>El listado conserva los filtros de acceso de tu usuario.</p></div><a class="orders-clear" href="<?= e(url('ordenes')) ?>">Ver todas las órdenes</a></section><?php endif; ?>
+<?php if ($ordenesIniciales): ?><section class="card orders-budget-context">
+        <div><strong>Órdenes seleccionadas desde Presupuesto</strong>
+            <p>El listado conserva los filtros de acceso de tu usuario.</p>
+        </div><a class="orders-clear" href="<?= e(url('ordenes')) ?>">Ver todas las órdenes</a>
+    </section><?php endif; ?>
 <section class="card orders-filter-card min-w-0">
     <div class="orders-heading flex items-center gap-3">
         <span class="orders-heading-icon"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i></span>
@@ -40,102 +44,179 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
 <section class="card orders-list-card min-w-0">
     <div class="section-heading orders-list-heading">
-        <div><h2>Órdenes vinculadas</h2><p>Usa la búsqueda para encontrar por orden, pedido, unidad, responsable o descripción.</p></div>
+        <div>
+            <h2>Órdenes vinculadas</h2>
+            <p>Usa la búsqueda para encontrar por orden, pedido, unidad, responsable o descripción.</p>
+        </div>
     </div>
     <div class="table-scroll orders-table-scroll">
         <table id="tabla-ordenes" class="display orders-table" aria-label="Listado de órdenes de compra y servicio">
-            <thead><tr><th>Orden</th><th>Tipo</th><th>Fecha</th><th>Pedidos vinculados</th><th>Unidad / descripción</th><th>Estado</th><?php if($mostrarMontos): ?><th>Importe</th><?php endif; ?><?php if($puedeVerDetalle): ?><th>Detalle</th><?php endif; ?></tr></thead>
+            <thead>
+                <tr>
+                    <th class="order-identity">Orden</th>
+                    <th class="order-date">Fecha</th>
+                    <th class="order-pedidos">Pedidos vinculados</th>
+                    <th class="order-description">Unidad / descripción</th>
+                    <th class="order-status">Estado</th><?php if ($mostrarMontos): ?><th class="order-amount">Importe sin IGV</th>
+                        <th class="order-amount">Importe total</th><?php endif; ?><?php if ($puedeVerDetalle): ?><th class="order-action">Detalle</th><?php endif; ?>
+                </tr>
+            </thead>
         </table>
     </div>
 </section>
 
 <script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
 <script>
-(function () {
-    var escapeHtml = function (value) { return $('<span>').text(value == null ? '' : String(value)).html(); };
-    var table = $('#tabla-ordenes').DataTable({
-        processing: true,
-        serverSide: true,
-        searchDelay: 350,
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-        order: [[2, 'desc']],
-        autoWidth: false,
-        ajax: {
-            url: <?= json_encode(url('ordenes_datos'), JSON_UNESCAPED_SLASHES) ?>,
-            data: function (request) {
-                request.tipo = $('#orders-type').val();
-                request.estado = $('#orders-state').val();
-                request.desde = $('#orders-from').val();
-                request.hasta = $('#orders-to').val();
-                request.ordenes = <?= json_encode($ordenesIniciales, JSON_UNESCAPED_SLASHES) ?>;
+    (function() {
+        var escapeHtml = function(value) {
+            return $('<span>').text(value == null ? '' : String(value)).html();
+        };
+        var table = $('#tabla-ordenes').DataTable({
+            processing: true,
+            serverSide: true,
+            searchDelay: 350,
+            pageLength: 10,
+            lengthMenu: [
+                [10, 25, 50, 100],
+                [10, 25, 50, 100]
+            ],
+            order: [
+                [1, 'desc']
+            ],
+            autoWidth: false,
+            ajax: {
+                url: <?= json_encode(url('ordenes_datos'), JSON_UNESCAPED_SLASHES) ?>,
+                data: function(request) {
+                    request.tipo = $('#orders-type').val();
+                    request.estado = $('#orders-state').val();
+                    request.desde = $('#orders-from').val();
+                    request.hasta = $('#orders-to').val();
+                    request.ordenes = <?= json_encode($ordenesIniciales, JSON_UNESCAPED_SLASHES) ?>;
+                }
+            },
+            columns: [{
+                    data: 'numero_label',
+                    className: 'order-identity',
+                    render: function(value, type, row) {
+                        return type === 'display' ? '<strong class="order-number-label">' + escapeHtml(value) + '</strong><div><span class="order-type-tag">' + escapeHtml(row.tipo_label) + '</span></div>' : value;
+                    }
+                },
+                {
+                    data: 'fecha',
+                    className: 'order-date',
+                    render: function(value, type, row) {
+                        return type === 'display' ? escapeHtml(row.fecha_label) : (value || '');
+                    }
+                },
+                {
+                    data: 'pedidos_relacionados',
+                    className: 'order-pedidos',
+                    render: function(value, type, row) {
+                        if (type !== 'display') return value;
+                        var pedidos = String(value || row.nro_pedido || '').split(', ').filter(Boolean);
+                        var visible = pedidos.slice(0, 2).join(', ');
+                        var restantes = pedidos.length - 2;
+                        var resumen = restantes > 0 ? visible + ' (+' + restantes + ')' : pedidos.join(', ');
+                        return '<span class="order-pedido" title="Pedidos vinculados: ' + escapeHtml(pedidos.join(', ')) + '">' + escapeHtml(resumen || '—') + '</span>';
+                    }
+                },
+                {
+                    data: 'busqueda_unidad',
+                    className: 'order-description',
+                    render: function(value, type, row) {
+                        if (type !== 'display') return [value, row.sustentacion].filter(Boolean).join(' ');
+                        var description = row.sustentacion ? '<small>' + escapeHtml(row.sustentacion) + '</small>' : '';
+                        return '<span class="order-unit">' + escapeHtml(value || 'Unidad no identificada') + '</span>' + description;
+                    }
+                },
+                {
+                    data: 'estado_label',
+                    className: 'order-status',
+                    render: function(value, type, row) {
+                        if (type !== 'display') return value;
+                        var cancelled = String(row.estado || '').trim().toUpperCase() === 'A';
+                        return '<span class="order-state ' + (cancelled ? 'is-cancelled' : 'is-current') + '">' + escapeHtml(value) + '</span>';
+                    }
+                },
+                <?php if ($mostrarMontos): ?> {
+                        data: 'importe_sin_igv',
+                        orderable: false,
+                        className: 'order-amount',
+                        render: $.fn.dataTable.render.text()
+                    },
+                    {
+                        data: 'importe',
+                        orderable: false,
+                        className: 'order-amount',
+                        render: $.fn.dataTable.render.text()
+                    },
+                <?php endif; ?>
+                <?php if ($puedeVerDetalle): ?> {
+                        data: 'detalle_url',
+                        orderable: false,
+                        searchable: false,
+                        className: 'order-action',
+                        render: function(value, type, row) {
+                            if (type !== 'display') return value;
+                            return '<a class="table-action order-view-action" href="' + escapeHtml(value) + '" aria-label="Ver detalle de ' + escapeHtml(row.numero_label) + '" title="Ver detalle"><i class="bi bi-eye" aria-hidden="true"></i></a>';
+                        }
+                    }
+                <?php endif; ?>
+            ],
+            createdRow: function(row) {
+                var labels = <?= json_encode(array_merge(['Orden', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Estado'], $mostrarMontos ? ['Importe sin IGV', 'Importe total'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
+                $('td', row).each(function(index) {
+                    this.setAttribute('data-label', labels[index] || '');
+                });
+            },
+            language: {
+                processing: 'Consultando órdenes…',
+                search: 'Buscar:',
+                searchPlaceholder: 'Orden, pedido, unidad o descripción',
+                lengthMenu: 'Mostrar _MENU_ por página',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ órdenes',
+                infoEmpty: 'No hay órdenes disponibles',
+                infoFiltered: '(filtradas de _MAX_ en total)',
+                zeroRecords: 'No encontramos órdenes con esos criterios.',
+                emptyTable: 'No hay órdenes vinculadas dentro del alcance disponible.',
+                paginate: {
+                    first: '«',
+                    last: '»',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                }
             }
-        },
-        columns: [
-            {data: 'numero_label', render: function (value, type) { return type === 'display' ? '<strong class="order-number-label">' + escapeHtml(value) + '</strong>' : value; }},
-            {data: 'tipo_label', render: function (value, type) { return type === 'display' ? '<span class="order-type-tag">' + escapeHtml(value) + '</span>' : value; }},
-            {data: 'fecha', render: function (value, type, row) { return type === 'display' ? escapeHtml(row.fecha_label) : (value || ''); }},
-            {data: 'pedidos_relacionados', render: function (value, type, row) {
-                if (type !== 'display') return value;
-                var pedidos = String(value || row.nro_pedido || '').split(', ').filter(Boolean);
-                var visible = pedidos.slice(0, 2).join(', ');
-                var restantes = pedidos.length - 2;
-                var resumen = restantes > 0 ? visible + ' (+' + restantes + ')' : pedidos.join(', ');
-                return '<span class="order-pedido" title="Pedidos vinculados: ' + escapeHtml(pedidos.join(', ')) + '">' + escapeHtml(resumen || '—') + '</span>';
-            }},
-            {data: 'busqueda_unidad', render: function (value, type, row) {
-                if (type !== 'display') return [value, row.sustentacion].filter(Boolean).join(' ');
-                var description = row.sustentacion ? '<small>' + escapeHtml(row.sustentacion) + '</small>' : '';
-                return '<span class="order-unit">' + escapeHtml(value || 'Unidad no identificada') + '</span>' + description;
-            }},
-            {data: 'estado_label', render: function (value, type, row) {
-                if (type !== 'display') return value;
-                var cancelled = String(row.estado || '').trim().toUpperCase() === 'A';
-                return '<span class="order-state ' + (cancelled ? 'is-cancelled' : 'is-current') + '">' + escapeHtml(value) + '</span>';
-            }},
-            <?php if($mostrarMontos): ?>{data: 'importe', orderable: false, className: 'order-amount', render: $.fn.dataTable.render.text()},<?php endif; ?>
-            <?php if($puedeVerDetalle): ?>
-            {data: 'detalle_url', orderable: false, searchable: false, className: 'order-action', render: function (value, type, row) {
-                if (type !== 'display') return value;
-                return '<a class="table-action order-view-action" href="' + escapeHtml(value) + '" aria-label="Ver detalle de ' + escapeHtml(row.numero_label) + '" title="Ver detalle"><i class="bi bi-eye" aria-hidden="true"></i></a>';
-            }}
-            <?php endif; ?>
-        ],
-        createdRow: function (row) {
-            var labels = <?= json_encode(array_merge(['Orden','Tipo','Fecha','Pedidos vinculados','Unidad / descripción','Estado'], $mostrarMontos ? ['Importe'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
-            $('td', row).each(function (index) { this.setAttribute('data-label', labels[index] || ''); });
-        },
-        language: {
-            processing: 'Consultando órdenes…',
-            search: 'Buscar:',
-            searchPlaceholder: 'Orden, pedido, unidad o descripción',
-            lengthMenu: 'Mostrar _MENU_ por página',
-            info: 'Mostrando _START_ a _END_ de _TOTAL_ órdenes',
-            infoEmpty: 'No hay órdenes disponibles',
-            infoFiltered: '(filtradas de _MAX_ en total)',
-            zeroRecords: 'No encontramos órdenes con esos criterios.',
-            emptyTable: 'No hay órdenes vinculadas dentro del alcance disponible.',
-            paginate: {first: '«', last: '»', next: 'Siguiente', previous: 'Anterior'}
-        }
-    });
-
-    $('#tabla-ordenes').on('xhr.dt', function (event, settings, response, xhr) {
-        var message = (response && response.error) || (xhr && xhr.responseJSON && xhr.responseJSON.error);
-        if (!message) return;
-        if (window.Swal) Swal.mixin({toast:true, position:'top-end', showConfirmButton:false, timer:6000}).fire({icon:'error', title:message});
-    });
-
-    $('#orders-type, #orders-state').on('change', function () { table.ajax.reload(); });
-    $('#orders-from, #orders-to').on('change', function () { table.ajax.reload(); });
-    $('#orders-clear').on('click', function () {
-        ['orders-type', 'orders-state'].forEach(function (id) {
-            var element = document.getElementById(id);
-            element.value = id === 'orders-type' ? 'todas' : 'todos';
-            $(element).trigger('change.select2');
         });
-        $('#orders-from, #orders-to').val('');
-        table.search('').draw();
-    });
-}());
+
+        $('#tabla-ordenes').on('xhr.dt', function(event, settings, response, xhr) {
+            var message = (response && response.error) || (xhr && xhr.responseJSON && xhr.responseJSON.error);
+            if (!message) return;
+            if (window.Swal) Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 6000
+            }).fire({
+                icon: 'error',
+                title: message
+            });
+        });
+
+        $('#orders-type, #orders-state').on('change', function() {
+            table.ajax.reload();
+        });
+        $('#orders-from, #orders-to').on('change', function() {
+            table.ajax.reload();
+        });
+        $('#orders-clear').on('click', function() {
+            ['orders-type', 'orders-state'].forEach(function(id) {
+                var element = document.getElementById(id);
+                element.value = id === 'orders-type' ? 'todas' : 'todos';
+                $(element).trigger('change.select2');
+            });
+            $('#orders-from, #orders-to').val('');
+            table.search('').draw();
+        });
+    }());
 </script>
 <?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>

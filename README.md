@@ -1,3 +1,5 @@
+npx @tailwindcss/cli -i ./resources/css/input.css -o ./public/assets/tailwind.css --watch
+
 # SISEA · Seguimiento de Avalon
 
 Consulta documental y presupuestal de Avalon, con usuarios y permisos locales.

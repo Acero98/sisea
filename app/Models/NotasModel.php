@@ -4,6 +4,7 @@ final class NotasModel
 {
     public function listar(array $acceso,string $alcance,string $busqueda,int $pagina,int $porPagina,string $desde='',string $hasta=''):array
     {
+        if(alcanceModulo('seguimiento',$acceso)==='PROPIO')$alcance='mis';
         $alcance=$alcance==='mis'?'mis':'unidad';$unidad=trim((string)($acceso['unidad_organica']??''));$codigo=trim((string)($acceso['avalon_codigo']??''));
         if(($alcance==='mis'&&$codigo==='')||($alcance==='unidad'&&(($acceso['alcance']??'')!=='GLOBAL')&&($unidad===''||$unidad==='0000')))return['items'=>[],'total'=>0,'pagina'=>1,'por_pagina'=>$porPagina,'paginas'=>1];
         $where=[];$params=[];
@@ -17,6 +18,7 @@ final class NotasModel
     public function ultimaSincronizacion():?array{return db()->query("SELECT terminado_en,notas_procesadas,estado,mensaje FROM seguimiento_sincronizaciones WHERE estado='COMPLETADO' ORDER BY id DESC LIMIT 1")->fetch()?:null;}
     public function exportar(array $acceso,string $alcance,string $busqueda,string $desde='',string $hasta=''):array
     {
+        if(alcanceModulo('seguimiento',$acceso)==='PROPIO')$alcance='mis';
         $alcance=$alcance==='mis'?'mis':'unidad';$unidad=trim((string)($acceso['unidad_organica']??''));$codigo=trim((string)($acceso['avalon_codigo']??''));
         if(($alcance==='mis'&&$codigo==='')||($alcance==='unidad'&&(($acceso['alcance']??'')!=='GLOBAL')&&($unidad===''||$unidad==='0000')))return[];
         $where=[];$params=[];

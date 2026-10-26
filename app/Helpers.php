@@ -6,6 +6,10 @@ function url(string $route = '', array $params = []): string { return APP_URL . 
 function csrf(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(24)); return $_SESSION['csrf']; }
 function validarCsrf(): void { if (!hash_equals(csrf(), (string)($_POST['csrf'] ?? ''))) throw new DomainException('La sesión del formulario venció. Actualice la página e inténtelo nuevamente.'); }
 function usuario(): ?array { return $_SESSION['usuario'] ?? null; }
+function rutaInicio(?array $cuenta = null): string {
+    foreach(['seguimiento'=>'seguimiento','ordenes'=>'ordenes','patrimonio'=>'patrimonio','presupuesto'=>'presupuesto','presupuesto_responsabilidades'=>'responsabilidades','usuarios'=>'usuarios'] as$ruta=>$permiso)if(tienePermiso($permiso,$cuenta))return $ruta;
+    return 'sin_acceso';
+}
 function tienePermiso(string $modulo, ?array $cuenta = null): bool {
     $cuenta = $cuenta ?? usuario() ?? [];
     $campo = 'permiso_' . $modulo;
@@ -22,7 +26,8 @@ function requiereLogin(): void {
     if ($token === '') {
         $token=bin2hex(random_bytes(32));
         (new AuthModel())->registrarSesion((int)$actual['id'],$token);
-        $_SESSION['usuario']['sesion_token']=$token;
+        $datos=(new AuthModel())->datosSesion((int)$actual['id']);
+        $_SESSION['usuario']=array_merge($datos??$actual,['sesion_token'=>$token]);
         return;
     }
     if (!(new AuthModel())->sesionVigente((int)$actual['id'],$token)) {

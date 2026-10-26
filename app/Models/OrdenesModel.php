@@ -28,13 +28,19 @@ final class OrdenesModel
             return preg_match('/^(orden_compra|orden_servicio)\|[A-Za-z0-9._-]{1,40}$/', $valor) ? $valor : '';
         }, (array)($entrada['ordenes'] ?? [])))));
 
-        $global = alcanceModulo('seguimiento', $acceso) === 'GLOBAL';
+        if (!tienePermiso('ordenes', $acceso)) return ['draw'=>$draw,'recordsTotal'=>0,'recordsFiltered'=>0,'data'=>[]];
+        $alcance = alcanceModulo('ordenes', $acceso);
+        $global = $alcance === 'GLOBAL';
         $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
         $sinAlcance = !$global && ($unidad === '' || $unidad === '0000');
 
         $where = ["d.tipo IN ('orden_compra','orden_servicio')"];
         $params = [];
-        if (!$global) {
+        if ($alcance === 'PROPIO') {
+            $codigo = trim((string)($acceso['avalon_codigo'] ?? ''));
+            if ($codigo === '') $where[] = '1=0';
+            else { $where[] = "TRIM(n.usuario_codigo)<>'' AND TRIM(LEADING '0' FROM TRIM(n.usuario_codigo))=:usuario_codigo"; $params['usuario_codigo'] = ltrim($codigo, '0'); }
+        } elseif (!$global) {
             if ($sinAlcance) $where[] = '1=0';
             else { $where[] = 'n.unidad_organica=:unidad'; $params['unidad'] = $unidad; }
         }
@@ -65,8 +71,8 @@ final class OrdenesModel
         }
         $filtrados = $this->contar($filtroBusqueda, $parametrosBusqueda);
 
-        $ordenes = [0 => 'd.numero', 1 => 'd.tipo', 2 => 'fecha', 3 => 'MIN(d.nro_pedido)', 4 => 'unidad_label', 5 => 'estado'];
-        $columna = (int)($entrada['order'][0]['column'] ?? 2);
+        $ordenes = [0 => 'd.numero', 1 => 'fecha', 2 => 'MIN(d.nro_pedido)', 3 => 'unidad_label', 4 => 'estado'];
+        $columna = (int)($entrada['order'][0]['column'] ?? 1);
         $ordenSql = $ordenes[$columna] ?? 'd.fecha';
         $direccion = strtolower((string)($entrada['order'][0]['dir'] ?? 'desc')) === 'asc' ? 'ASC' : 'DESC';
         $sql = 'SELECT MIN(d.nro_pedido) AS nro_pedido,d.tipo,d.numero,MAX(d.estado) AS estado,MAX(d.fecha) AS fecha,'
@@ -82,7 +88,7 @@ final class OrdenesModel
         $stmt->bindValue(':inicio', $start, PDO::PARAM_INT);
         $stmt->execute();
         $filas = $stmt->fetchAll();
-        $this->completarImportes($filas, tienePermiso('ver_montos', $acceso), tienePermiso('ver_detalle', $acceso));
+        $this->completarImportes($filas, tienePermiso('ordenes_montos', $acceso), tienePermiso('ordenes_detalle', $acceso));
 
         return ['draw' => $draw, 'recordsTotal' => $total, 'recordsFiltered' => $filtrados, 'data' => $filas];
     }
@@ -123,13 +129,16 @@ final class OrdenesModel
                 $moneda = trim((string)($cabecera['MONEDA'] ?? ''));
                 $prefijo = $moneda === '01' ? 'S/ ' : ($moneda !== '' ? $moneda . ' ' : '');
                 $fila['importe'] = is_numeric($total) ? $prefijo . number_format((float)$total, 2, '.', ',') : '—';
+                // Usar el subtotal registrado, sin asumir una tasa de impuesto.
+                $subtotal = $cabecera['VAL_TOTORD'] ?? '';
+                $fila['importe_sin_igv'] = is_numeric($subtotal) ? $prefijo . number_format((float)$subtotal, 2, '.', ',') : '—';
             }
             $fila['tipo_label'] = $fila['tipo'] === 'orden_compra' ? 'Compra' : 'Servicio';
             $fila['numero_label'] = $fila['tipo'] === 'orden_compra' ? 'OC ' . $fila['numero'] : 'OS ' . $fila['numero'];
             $fila['estado_label'] = trim((string)$fila['estado']) === '' ? 'Sin estado' : (strtoupper(trim((string)$fila['estado'])) === 'A' ? 'Anulada' : 'Avalon: ' . trim((string)$fila['estado']));
             $instante = $fila['fecha'] ? strtotime((string)$fila['fecha']) : false;
             $fila['fecha_label'] = $instante !== false ? date('d/m/Y', $instante) : '—';
-            if ($puedeVerDetalle) $fila['detalle_url'] = url('detalle_documento', ['pedido' => $fila['nro_pedido'], 'tipo' => $fila['tipo'], 'numero' => $fila['numero']]);
+            if ($puedeVerDetalle) $fila['detalle_url'] = url('detalle_documento', ['origen'=>'ordenes', 'pedido' => $fila['nro_pedido'], 'tipo' => $fila['tipo'], 'numero' => $fila['numero']]);
             $fila['busqueda_unidad'] = trim((string)($fila['unidad_label'] ?? 'Unidad no identificada'));
             $fila['sustentacion'] = trim((string)$fila['sustentacion']);
         }

@@ -4,11 +4,15 @@ final class SeguimientoController
 {
     public function detalleDocumento(): void
     {
-        requiereLogin(); if(!tienePermiso('seguimiento')){http_response_code(403);exit('No tiene acceso al módulo de Seguimiento.');}
-        if(!tienePermiso('ver_detalle')){http_response_code(403);exit('No tiene permiso para abrir el detalle de documentos.');}
+        requiereLogin();
+        $desdeOrdenes=($_GET['origen']??'')==='ordenes';
+        if(!tienePermiso($desdeOrdenes?'ordenes':'seguimiento')){http_response_code(403);exit('No tiene acceso a este módulo.');}
+        if(!tienePermiso($desdeOrdenes?'ordenes_detalle':'ver_detalle')){http_response_code(403);exit('No tiene permiso para abrir el detalle de documentos.');}
         $pedido=trim((string)($_GET['pedido']??'')); $tipo=trim((string)($_GET['tipo']??'')); $numero=trim((string)($_GET['numero']??''));
-        $mostrarMontos=tienePermiso('ver_montos');
-        try { $detalle=(new SeguimientoModel())->detalleDocumento($pedido,$tipo,$numero,usuario()??[],$mostrarMontos); }
+        if($desdeOrdenes&&!in_array($tipo,['orden_compra','orden_servicio'],true)){http_response_code(403);exit('El permiso de órdenes no permite abrir este tipo de documento.');}
+        $mostrarMontos=tienePermiso($desdeOrdenes?'ordenes_montos':'ver_montos');
+        $acceso=usuario()??[];$acceso['alcance']=alcanceModulo($desdeOrdenes?'ordenes':'seguimiento',$acceso);
+        try { $detalle=(new SeguimientoModel())->detalleDocumento($pedido,$tipo,$numero,$acceso,$mostrarMontos); }
         catch(RuntimeException $e){ http_response_code(404); $error=$e->getMessage(); $detalle=null; }
         require APP_ROOT.'/app/Views/documento_detalle.php';
     }

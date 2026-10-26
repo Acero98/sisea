@@ -3,7 +3,7 @@
 ## Qué se traslada
 
 El ZIP contiene el sistema y los recursos visuales compilados. No necesita ejecutar Node ni Tailwind en el servidor.
-El archivo de configuración comprimido conserva usuarios, hashes de contraseñas, permisos, alcances y responsabilidades presupuestales. No transporta sesiones.
+El archivo de configuración comprimido conserva usuarios, hashes de contraseñas, roles, asignaciones, permisos, alcances y responsabilidades presupuestales. No transporta sesiones. El formato actual es `sisea-config-v2`; el instalador también acepta el formato anterior `sisea-config-v1`.
 Las tablas de caché y seguimiento actual se reconstruyen desde Avalon. **El historial antiguo de cambios y consultas no se conserva en este modo**: para conservarlo use el respaldo completo descrito abajo.
 
 La copia actual tiene aproximadamente 920 MB solo en las dos tablas principales de caché. La base volverá a crecer al sincronizar. Reserve espacio para la base completa, sus índices, archivos temporales, Avalon y respaldos; el ZIP pequeño no reduce el almacenamiento final.

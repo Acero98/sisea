@@ -5,6 +5,32 @@ final class PresupuestoModel
 {
     private const MESES = ['ENE'=>'Enero','FEB'=>'Febrero','MAR'=>'Marzo','ABR'=>'Abril','MAY'=>'Mayo','JUN'=>'Junio','JUL'=>'Julio','AGO'=>'Agosto','SET'=>'Setiembre','OCT'=>'Octubre','NOV'=>'Noviembre','DIC'=>'Diciembre'];
 
+    public function opcionesFiltros(string $unidad, bool $global): array
+    {
+        $reader = new DbfReader(false);
+        $unidades = [];
+        foreach ($reader->rows(AVALON_PLANIF_DATA . '/unidad.dbf', ['COD_UNIDAD','DES_UNIDAD']) as $fila) {
+            $codigo = trim($fila['COD_UNIDAD']);
+            if ($codigo !== '' && $codigo !== '0000' && ($global || $codigo === $unidad)) {
+                $unidades[$codigo] = $codigo . ' · ' . trim($fila['DES_UNIDAD']);
+            }
+        }
+        $fuentes = $this->fuentes($unidad, $this->catalogo($unidad), false, $global);
+        $actividades = []; $cuentas = [];
+        foreach ($fuentes as $fila) {
+            $actividades[$fila['actividad_presupuestal']] = $fila['actividad_presupuestal'] . ' · ' . $fila['actividad_nombre'];
+            if ($fila['cuenta'] !== '') $cuentas[$fila['cuenta']] = $fila['cuenta'];
+        }
+        foreach ($reader->rows(AVALON_PLANIF_DATA . '/tab_recu.dbf', ['COD_CCP1','DESCRIP','ORIGEN']) as $fila) {
+            $codigo = trim($fila['COD_CCP1']);
+            if (isset($cuentas[$codigo]) && trim($fila['ORIGEN']) === 'O' && trim($fila['DESCRIP']) !== '') {
+                $cuentas[$codigo] = $codigo . ' · ' . trim($fila['DESCRIP']);
+            }
+        }
+        ksort($unidades); ksort($actividades); ksort($cuentas);
+        return ['unidades'=>$unidades, 'actividades'=>$actividades, 'cuentas'=>$cuentas];
+    }
+
     public function consultar(string $unidad, array $filtro = [], bool $global = false): array
     {
         $cache = APP_ROOT . '/storage/cache/presupuesto-v5-' . sha1($unidad . '|' . (int)$global . '|' . json_encode($filtro)) . '.json';

@@ -27,23 +27,23 @@ final class UsuarioModel
         $this->instalarPermisos();
         $this->instalarRolesAcceso();
         self::instalarPermisosDocumentales();
-        return db()->query('SELECT id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_patrimonio,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
+        RolModel::instalar();
+        $rows=db()->query('SELECT id,rol_id,usuario,nombre,avalon_codigo,rol,perfil_portal,rol_acceso,perfil_nombre,unidad_organica,unidad_nombre,alcance,permiso_seguimiento,permiso_ver_montos,permiso_ver_detalle,alcance_seguimiento,permiso_ordenes,alcance_ordenes,permiso_ordenes_montos,permiso_ordenes_detalle,permiso_patrimonio,permiso_presupuesto,alcance_presupuesto,permiso_responsabilidades,permiso_usuarios,activo,clave_hash IS NOT NULL AS tiene_clave FROM usuarios ORDER BY nombre')->fetchAll();
+        $roles=[];foreach(db()->query('SELECT id,nombre,activo,permisos_json FROM roles_acceso')->fetchAll()as$r)$roles[$r['id']]=$r;
+        return array_map(static fn($u)=>RolModel::aplicar($u,$roles[$u['rol_id']]??[]),$rows);
     }
-    public function guardarAcceso(int $id, string $clave, array $datos): void
+    public function asignarRol(int $id,int $rolId,bool $activo,string $clave):void
     {
-        $this->instalarPermisos();
-        $this->instalarAlcancePropio();
-        $this->instalarRolesAcceso();
-        self::instalarPermisosDocumentales();
-        $roles=['USUARIO','LOGISTICA','PRESUPUESTO','CONTABILIDAD','FINANZAS','ADMINISTRADOR'];
-        $rolAcceso=in_array($datos['rol_acceso']??'', $roles,true)?$datos['rol_acceso']:'USUARIO';
-        $perfil=$rolAcceso==='ADMINISTRADOR'?'ADMINISTRADOR':($rolAcceso==='USUARIO'?'USUARIO':'SUPERVISOR');
-        $scope=static fn($v)=>in_array($v,['PROPIO','UNIDAD','GLOBAL'],true)?$v:'UNIDAD';
-        $sql = 'UPDATE usuarios SET perfil_portal=:perfil,rol_acceso=:rol_acceso,rol=:rol,alcance=:alcance,permiso_seguimiento=:ps,permiso_ver_montos=:pm,permiso_ver_detalle=:pd,alcance_seguimiento=:as_,permiso_patrimonio=:pat,permiso_presupuesto=:pp,alcance_presupuesto=:ap,permiso_responsabilidades=:pr,permiso_usuarios=:pu,activo=:activo' . ($clave !== '' ? ', clave_hash=:clave' : '') . ' WHERE id=:id';
-        $seguimiento=!empty($datos['permiso_seguimiento']);
-        $params=['pat'=>!empty($datos['permiso_patrimonio'])?1:0,'perfil'=>$perfil,'rol_acceso'=>$rolAcceso,'rol'=>$perfil==='ADMINISTRADOR'?'ADMIN':'CONSULTA','alcance'=>$scope($datos['alcance_seguimiento']??''),'ps'=>$seguimiento?1:0,'pm'=>$seguimiento&&!empty($datos['permiso_ver_montos'])?1:0,'pd'=>$seguimiento&&!empty($datos['permiso_ver_detalle'])?1:0,'as_'=>$scope($datos['alcance_seguimiento']??''),'pp'=>!empty($datos['permiso_presupuesto'])?1:0,'ap'=>$scope($datos['alcance_presupuesto']??''),'pr'=>!empty($datos['permiso_responsabilidades'])?1:0,'pu'=>!empty($datos['permiso_usuarios'])?1:0,'activo'=>!empty($datos['activo'])?1:0,'id'=>$id];
-        if ($clave !== '') $params['clave'] = password_hash($clave, PASSWORD_DEFAULT);
-        db()->prepare($sql)->execute($params);
+        RolModel::instalar();$pdo=db();$pdo->beginTransaction();
+        try{
+            RolModel::bloquearAdministracion();
+            $q=$pdo->prepare('SELECT id FROM usuarios WHERE id=?');$q->execute([$id]);if(!$q->fetch())throw new DomainException('La cuenta ya no existe.');
+            $q=$pdo->prepare('SELECT id FROM roles_acceso WHERE id=? AND activo=1');$q->execute([$rolId]);if(!$q->fetch())throw new DomainException('Seleccione un rol activo.');
+            $params=[$rolId,$activo?1:0];$sql='UPDATE usuarios SET rol_id=?,activo=?';
+            if($clave!==''){$sql.=',clave_hash=?';$params[]=password_hash($clave,PASSWORD_DEFAULT);}
+            $params[]=$id;$pdo->prepare($sql.' WHERE id=?')->execute($params);
+            RolModel::asegurarAdministrador();$pdo->commit();
+        }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
     }
     private function instalarPermisos(): void {
         if(db()->query("SHOW COLUMNS FROM usuarios LIKE 'permiso_seguimiento'")->fetch())return;
@@ -62,7 +62,23 @@ final class UsuarioModel
             db()->exec('ALTER TABLE usuarios ADD COLUMN permiso_patrimonio TINYINT(1) NOT NULL DEFAULT 0');
             db()->exec("UPDATE usuarios SET permiso_patrimonio=1 WHERE rol='ADMIN'");
         }
+        self::instalarPermisosOrdenes();
         $instalado = true;
+    }
+    private static function instalarPermisosOrdenes(): void
+    {
+        $columnas = [
+            'permiso_ordenes'=>['TINYINT(1) NOT NULL DEFAULT 0', 'permiso_seguimiento'],
+            'alcance_ordenes'=>["VARCHAR(15) NOT NULL DEFAULT 'UNIDAD'", "IF(alcance_seguimiento='GLOBAL','GLOBAL','UNIDAD')"],
+            'permiso_ordenes_montos'=>['TINYINT(1) NOT NULL DEFAULT 0', 'IF(permiso_seguimiento=1,permiso_ver_montos,0)'],
+            'permiso_ordenes_detalle'=>['TINYINT(1) NOT NULL DEFAULT 0', 'IF(permiso_seguimiento=1,permiso_ver_detalle,0)'],
+        ];
+        foreach ($columnas as $nombre=>[$definicion,$valorAnterior]) {
+            if (!db()->query("SHOW COLUMNS FROM usuarios LIKE '".$nombre."'")->fetch()) {
+                db()->exec('ALTER TABLE usuarios ADD COLUMN '.$nombre.' '.$definicion);
+                db()->exec('UPDATE usuarios SET '.$nombre.'='.$valorAnterior);
+            }
+        }
     }
     private function instalarAlcancePropio(): void
     {

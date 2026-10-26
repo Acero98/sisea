@@ -15,8 +15,9 @@ try {
     exec($command.' 2>&1',$output,$status);
     checkInstall($status===0,'instalacion en base aislada');
     $server->exec('USE `'.$name.'`');
-    checkInstall(count($server->query('SHOW TABLES')->fetchAll())===11,'estructura completa de 11 tablas');
-    checkInstall((int)$server->query('SELECT COUNT(*) FROM usuarios WHERE permiso_usuarios=1 AND activo=1')->fetchColumn()>0,'administracion disponible');
+    checkInstall(count($server->query('SHOW TABLES')->fetchAll())===12,'estructura completa de 12 tablas');
+    $admins=$server->query('SELECT r.permisos_json FROM usuarios u INNER JOIN roles_acceso r ON r.id=u.rol_id WHERE u.activo=1 AND r.activo=1')->fetchAll(PDO::FETCH_COLUMN);
+    checkInstall(count(array_filter($admins,static fn($p)=>!empty((json_decode($p,true)??[])['permiso_usuarios'])))>0,'administracion heredada disponible');
     checkInstall((int)$server->query('SELECT COUNT(*) FROM usuarios WHERE sesion_token IS NOT NULL')->fetchColumn()===0,'sin sesiones trasladadas');
     if($backup!=='') {
         $data=json_decode(gzdecode(file_get_contents($backup)),true);

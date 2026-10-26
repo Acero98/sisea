@@ -3,7 +3,24 @@ declare(strict_types=1);
 final class PresupuestoController
 {
  private function unidad(): string { requiereLogin(); $user=usuario()??[]; $global=alcanceModulo('presupuesto',$user)==='GLOBAL'; $unidad=trim((string)($global?($_REQUEST['unidad']??($user['unidad_organica']??'')):($user['unidad_organica']??''))); if($unidad==='0000')$unidad=''; return preg_match('/^\d{4}$/',$unidad)?$unidad:''; }
- public function index():void{requiereLogin();if(!tienePermiso('presupuesto')){http_response_code(403);exit('No tiene acceso al módulo de Presupuesto.');}$puedeVerListadoOrdenes=tienePermiso('seguimiento');$unidad=$this->unidad();$esAdmin=alcanceModulo('presupuesto')==='GLOBAL';$tipo=(string)($_GET['tipo']??'todos');$filtro=['actividad'=>trim((string)($_GET['actividad']??'')),'cuenta'=>trim((string)($_GET['cuenta']??'')),'tipo'=>in_array($tipo,['todos','operativo','inversion'],true)?$tipo:'todos'];$global=$esAdmin&&$unidad==='';$consultar=(($_GET['consultar']??'')==='1')&&($unidad!==''||($global&&($filtro['actividad']!==''||$filtro['cuenta']!=='')));$datos=$consultar?(new PresupuestoModel())->consultar($unidad,$filtro,$global):null;require APP_ROOT.'/app/Views/presupuesto.php';}
+ public function index():void
+ {
+  requiereLogin();
+  if(!tienePermiso('presupuesto')){http_response_code(403);exit('No tiene acceso al módulo de Presupuesto.');}
+  $puedeVerListadoOrdenes=tienePermiso('ordenes');
+  $unidad=$this->unidad();$esAdmin=alcanceModulo('presupuesto')==='GLOBAL';
+  $tipo=(string)($_GET['tipo']??'todos');
+  $filtro=['actividad'=>trim((string)($_GET['actividad']??'')),'cuenta'=>trim((string)($_GET['cuenta']??'')),'tipo'=>in_array($tipo,['todos','operativo','inversion'],true)?$tipo:'todos'];
+  $global=$esAdmin&&$unidad==='';
+  $consultar=(($_GET['consultar']??'')==='1')&&($unidad!==''||($global&&($filtro['actividad']!==''||$filtro['cuenta']!=='')));
+  $model=new PresupuestoModel();
+  $opcionesFiltros=$model->opcionesFiltros($unidad,$esAdmin);
+  $actividadNumerica=preg_replace('/\D/','',$filtro['actividad']);
+  if(strlen($actividadNumerica)===4)$actividadNumerica='0101'.$actividadNumerica;
+  if(strlen($actividadNumerica)===8)$filtro['actividad']=implode('.',str_split($actividadNumerica,2));
+  $datos=$consultar?$model->consultar($unidad,$filtro,$global):null;
+  require APP_ROOT.'/app/Views/presupuesto.php';
+ }
  public function ordenesComprometidas():void
  {
   requiereLogin();if(!tienePermiso('presupuesto')){http_response_code(403);exit;}

@@ -13,11 +13,11 @@ final class SeguimientoModel
         $cached = $this->cache($cacheKey);
         if ($cached !== null && $this->puedeVerPedido($cached['pedido'], $acceso)) return $cached;
         $documentoBuscado = null;
-        $headers = in_array($tipo, ['todo', 'pedido'], true) ? $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $term) : [];
+        $headers = in_array($tipo, ['todo', 'pedido'], true) ? $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','USR_COD','USRCODIGO','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $term) : [];
         if (!$headers && $tipo !== 'pedido') {
             $documentoBuscado = $this->documentoDesdeCopiaLocal($term, $tipo, $pedidoSeleccionado);
             $pedidoResuelto = ($documentoBuscado['nro_pedido'] ?? null) ?? $this->pedidoDesdeOrden($term, $tipo);
-            if ($pedidoResuelto !== null) $headers = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $pedidoResuelto);
+            if ($pedidoResuelto !== null) $headers = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40014.DBF', ['NRO_PEDIDO','CODUNIORG','USR_COD','USRCODIGO','EST_PEDIDO','FEC_EMISIO','PRIORIDAD','TIPO_PED','COMENTARIO','TOTCANTSAL','CERTIFICA','DOCCERTI'], 'NRO_PEDIDO', $pedidoResuelto);
         }
         $header = $headers[0] ?? null;
         if (!$header) return null;
@@ -58,6 +58,19 @@ final class SeguimientoModel
         $cotizaciones = []; $certificaciones = []; $ordenCompra = null; $ordenServicio = null; $ordenCompraRows = []; $ordenServicioRows = [];
         if (!$header['ES_RETIRO_ALMACEN']) {
             $cotizaciones = $this->reader->findContains(AVALON_LOGISTICA_DATA . '/sum40025.DBF', ['NRO_EXPE','FEC_COTIZA','REFERENCIA','ESTADO'], 'REFERENCIA', $pedido);
+            // La cabecera del expediente define su estado; las filas por proveedor
+            // pueden conservar P incluso cuando el expediente ya fue atendido.
+            $lectorExpedientes = new DbfReader(false);
+            foreach ($cotizaciones as &$cotizacionEstado) {
+                $filasProveedor = $lectorExpedientes->findExact(AVALON_LOGISTICA_DATA . '/sum40025.DBF', ['NRO_EXPE','ZONA','LOCA','REFERENCIA'], 'NRO_EXPE', $cotizacionEstado['NRO_EXPE']);
+                $claves = [];
+                foreach ($filasProveedor as $proveedor) {
+                    if ($proveedor['REFERENCIA'] === $cotizacionEstado['REFERENCIA']) $claves[$proveedor['ZONA'].'|'.$proveedor['LOCA']] = $proveedor;
+                }
+                $cabecerasExpediente = $lectorExpedientes->findExact(AVALON_LOGISTICA_DATA . '/sum40022.DBF', ['NRO_EXPE','ZONA','LOCA','ESTADO'], 'NRO_EXPE', $cotizacionEstado['NRO_EXPE']);
+                $cotizacionEstado['ESTADO'] = count($claves) === 1 ? EstadoDocumentoService::estadoExpediente(reset($claves), $cabecerasExpediente) : '';
+            }
+            unset($cotizacionEstado);
             // Un expediente puede tener varias líneas internas en Avalon. Para el
             // seguimiento documental representa una sola cotización/expediente.
             $cotizacionesPorExpediente = [];
@@ -124,11 +137,13 @@ final class SeguimientoModel
         foreach ($ordenes as &$orden) {
             $campoTotal = $orden['PREFIJO'] === 'OC' ? 'TOTALOC' : 'TOTALOS';
             $archivoOrden = $orden['PREFIJO'] === 'OC' ? '/sum40015.DBF' : '/sum40017.DBF';
-            $cabeceraFinanciera = $this->reader->findExact(AVALON_LOGISTICA_DATA . $archivoOrden, [$orden['CAMPO_COMPROBANTE'], $campoTotal, 'MONEDA'], $orden['CAMPO_COMPROBANTE'], $orden['NUMERO']);
+            $cabeceraFinanciera = $this->reader->findExact(AVALON_LOGISTICA_DATA . $archivoOrden, [$orden['CAMPO_COMPROBANTE'], $campoTotal, 'VAL_TOTORD', 'MONEDA', 'ESTFACTU'], $orden['CAMPO_COMPROBANTE'], $orden['NUMERO']);
             $orden['COMPROBANTES'] = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40030.DBF', ['COMPROB','NRO_SERVIC','NRO_ORDCMP','DOCSER','DOCNRO','FECCOMP','ESTADO','PAGADO','FECPAGO','NOMPROV','PREVENT','MONEDA'], $orden['CAMPO_COMPROBANTE'], $orden['NUMERO']);
             $orden['FINANCIERO'] = ResumenFinancieroService::calcular($cabeceraFinanciera[0] ?? [], $orden['COMPROBANTES'], $campoTotal);
             $orden['MONEDA'] = $orden['FINANCIERO']['moneda'];
+            $orden['ESTFACTU'] = $cabeceraFinanciera[0]['ESTFACTU'] ?? '';
             $orden['MONTO_CENTS'] = $orden['FINANCIERO']['total'];
+            $orden['MONTO_SIN_IGV_CENTS'] = $this->centavos($cabeceraFinanciera[0]['VAL_TOTORD'] ?? null);
             $orden['DEVENGADOS'] = $this->reader->findContains(AVALON_CONTAB_DATA . '/FCON0024.DBF', ['FCONTABLE','DOC1','FECT','OCOS','SERIE','NUMERO','MON_SOL'], 'OCOS', $orden['PREFIJO'] . $orden['NUMERO']);
             foreach ($orden['DEVENGADOS'] as &$devengadoMonto) {
                 $devengadoMonto['MONTO_CENTS'] = $this->centavos($devengadoMonto['MON_SOL']);
@@ -285,11 +300,16 @@ final class SeguimientoModel
     {
         $tipos=['pedido','cotizacion','certificacion','orden_compra','orden_servicio','comprobante','devengado','pago'];
         if ($pedido==='' || $numero==='' || !in_array($tipo,$tipos,true)) throw new RuntimeException('El documento solicitado no es válido.');
-        $nota=db()->prepare('SELECT nro_pedido,unidad_organica,unidad_nombre FROM seguimiento_notas WHERE nro_pedido=? LIMIT 1'); $nota->execute([$pedido]); $nota=$nota->fetch();
-        if (!$nota || (
-            ($acceso['alcance'] ?? '') !== 'GLOBAL'
-            && trim((string)($acceso['unidad_organica'] ?? '')) !== trim((string)$nota['unidad_organica'])
-        )) throw new RuntimeException('No tiene acceso a este documento.');
+        $nota=db()->prepare('SELECT nro_pedido,unidad_organica,unidad_nombre,usuario_codigo FROM seguimiento_notas WHERE nro_pedido=? LIMIT 1'); $nota->execute([$pedido]); $nota=$nota->fetch();
+        $scope=$acceso['alcance']??'UNIDAD';$unidad=trim((string)($acceso['unidad_organica']??''));$codigo=trim((string)($acceso['avalon_codigo']??''));
+        $permitido=$nota&&($scope==='GLOBAL'||($scope==='PROPIO'
+            ? $codigo!==''&&trim((string)$nota['usuario_codigo'])!==''&&ltrim($codigo,'0')===ltrim(trim((string)$nota['usuario_codigo']),'0')
+            : $unidad!==''&&$unidad!=='0000'&&$unidad===trim((string)$nota['unidad_organica'])));
+        if (!$permitido) throw new RuntimeException('No tiene acceso a este documento.');
+        if(in_array($tipo,['orden_compra','orden_servicio'],true)){
+            $vinculo=db()->prepare('SELECT 1 FROM seguimiento_documentos WHERE nro_pedido=? AND tipo=? AND numero=? LIMIT 1');$vinculo->execute([$pedido,$tipo,$numero]);
+            if(!$vinculo->fetchColumn())throw new RuntimeException('La orden no está vinculada al pedido solicitado.');
+        }
         $rows=[]; $meta=[]; $titulo='Detalle del documento';
         if($tipo==='pedido'){$titulo='Pedido '.$numero; $rows=$this->reader->findExact(AVALON_LOGISTICA_DATA.'/sum40007.DBF',['NRO_PEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','CAN_ORDENA','CENCOS','COD_PROY','CTA_CON'],'NRO_PEDIDO',$pedido);}
         elseif($tipo==='cotizacion'){$titulo='Cotización / expediente '.$numero; $rows=$this->reader->findExact(AVALON_LOGISTICA_DATA.'/sum40028.DBF',['NRO_EXPE','NRO_PEDIDO','SECPEDIDO','TIPOFAMI','GRUPO','SUBGRUPO','SEC_BIEN','SEC_SERV','CAN_PED','CAN_PRO','PRE_PRO','PRO_TOT','CENCOS','ADJUDIC'],'NRO_EXPE',$numero); $meta=$this->reader->findExact(AVALON_LOGISTICA_DATA.'/sum40026.DBF',['NRO_EXPE','CODPROV','FECOFER','VALOFER','PLAZENTR'],'NRO_EXPE',$numero);}
@@ -417,7 +437,10 @@ final class SeguimientoModel
         $marks = implode(',', array_fill(0, count($tipos), '?'));
         $sql = 'SELECT d.nro_pedido,d.tipo,d.numero,d.estado,d.fecha,d.proveedor,d.orden_tipo,d.orden_numero,n.unidad_organica,n.unidad_nombre,n.usuario_codigo,n.usuario_nombre,n.estado_logistica FROM seguimiento_documentos d INNER JOIN seguimiento_notas n ON n.nro_pedido=d.nro_pedido WHERE (d.numero=? OR (d.tipo=\'pago\' AND d.numero LIKE ?)) AND d.tipo IN (' . $marks . ')';
         $params = array_merge([$numero, '% ' . (ltrim($numero, '0') ?: '0')], $tipos);
-        if (($acceso['alcance'] ?? '') !== 'GLOBAL') {
+        if (($acceso['alcance'] ?? '') === 'PROPIO') {
+            $codigo=trim((string)($acceso['avalon_codigo']??''));if($codigo==='')return [];
+            $sql.=" AND TRIM(n.usuario_codigo)<>'' AND TRIM(LEADING '0' FROM TRIM(n.usuario_codigo))=?";$params[]=ltrim($codigo,'0');
+        } elseif (($acceso['alcance'] ?? '') !== 'GLOBAL') {
             $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
             if ($unidad === '' || $unidad === '0000') return [];
             $sql .= ' AND n.unidad_organica=?';
@@ -468,6 +491,11 @@ final class SeguimientoModel
     private function puedeVerPedido(array $pedido, array $acceso): bool
     {
         if (($acceso['alcance'] ?? '') === 'GLOBAL') return true;
+        if (($acceso['alcance'] ?? '') === 'PROPIO') {
+            $codigo=trim((string)($acceso['avalon_codigo']??''));
+            $propietario=trim((string)($pedido['USRCODIGO']??''))?:trim((string)($pedido['USR_COD']??''));
+            return $codigo!==''&&$propietario!==''&&ltrim($codigo,'0')===ltrim($propietario,'0');
+        }
         $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
         if ($unidad === '' || $unidad === '0000') return false;
         return trim((string)$pedido['CODUNIORG']) === $unidad;
@@ -530,5 +558,5 @@ final class SeguimientoModel
         if (!is_dir($directory)) mkdir($directory, 0775, true);
         @file_put_contents($this->cacheFile($term), json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
-    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v28-' . sha1($term) . '.json'; }
+    private function cacheFile(string $term): string { return APP_ROOT . '/storage/cache/seguimiento-v30-' . sha1($term) . '.json'; }
 }
