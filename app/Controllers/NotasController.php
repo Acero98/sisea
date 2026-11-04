@@ -12,7 +12,7 @@ final class NotasController
         $acceso = $this->acceso();
         $vistaSolicitada = (string) ($_GET['vista'] ?? '');
 
-        $esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
+        $esAdministradorGlobal = alcanceModulo('seguimiento',$acceso) === 'GLOBAL';
 
         $tieneCodigoAvalon =
             trim((string) ($acceso['avalon_codigo'] ?? '')) !== '';
@@ -29,7 +29,10 @@ final class NotasController
             $alcance = 'mis';
         }
 
-        $busqueda = trim((string) ($_GET['q'] ?? ''));
+        $esDatos = isset($_GET['datos']);
+        $busqueda = trim((string) ($esDatos ? ($_GET['search']['value'] ?? '') : ($_GET['q'] ?? '')));
+        $filtroUnidad = trim((string)($_GET['unidad'] ?? ''));
+        $filtroUsuario = trim((string)($_GET['registrado_por'] ?? ''));
         [$desde, $hasta, $errorFechas] = $this->fechas();
         $pagina = max(1, (int) ($_GET['pagina'] ?? 1));
 
@@ -38,6 +41,13 @@ final class NotasController
             ? $porPaginaSolicitado
             : 10;
 
+        if ($esDatos) {
+            $porPagina = in_array((int)($_GET['length']??10),[10,25,50,100],true)?(int)$_GET['length']:10;
+            $pagina = intdiv(max(0,(int)($_GET['start']??0)),$porPagina)+1;
+        }
+        $columnas=['nro_pedido','fecha_emision','unidad_nombre','sustentacion','tipo_pedido','prioridad','etapa','usuario_nombre'];
+        $orden=$columnas[(int)($_GET['order'][0]['column']??1)]??'fecha_emision';
+        $direccion=(string)($_GET['order'][0]['dir']??'desc');
         $modelo = new NotasModel();
 
         $resultado = $errorFechas !== ''
@@ -49,9 +59,17 @@ final class NotasController
             $pagina,
             $porPagina,
             $desde,
-            $hasta
+            $hasta, $filtroUnidad, $filtroUsuario, $orden, $direccion
         );
 
+        if ($esDatos) {
+            $total=$modelo->listar($acceso,$alcance,'',1,10)['total'];
+            foreach($resultado['items'] as &$item){$item['detalle_url']=url('seguimiento',['q'=>$item['NRO_PEDIDO'],'tipo'=>'pedido']);}unset($item);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['draw'=>(int)($_GET['draw']??0),'recordsTotal'=>$total,'recordsFiltered'=>$resultado['total'],'data'=>$resultado['items']]+($errorFechas!==''?['error'=>$errorFechas]:[]),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+            return;
+        }
+        $opcionesFiltros=$modelo->opcionesFiltros($acceso,$alcance);
         $notas = $resultado['items'];
         $ultimaSincronizacion = $modelo->ultimaSincronizacion();
 
@@ -67,7 +85,7 @@ final class NotasController
         $acceso = $this->acceso();
         $tipo = (string) ($_POST['alcance'] ?? '');
 
-        $esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
+        $esAdministradorGlobal = alcanceModulo('seguimiento',$acceso) === 'GLOBAL';
 
         $codigoAvalon = trim(
             (string) ($acceso['avalon_codigo'] ?? '')
@@ -193,7 +211,7 @@ final class NotasController
         $acceso = $this->acceso();
         $vista = (string)($_GET['vista'] ?? 'unidad');
         $alcance = $vista === 'mis' && trim((string)($acceso['avalon_codigo'] ?? '')) !== '' ? 'mis' : 'unidad';
-        $filas = (new NotasModel())->exportar($acceso, $alcance, trim((string)($_GET['q'] ?? '')), $desde, $hasta);
+        $filas = (new NotasModel())->exportar($acceso, $alcance, trim((string)($_GET['q'] ?? '')), $desde, $hasta, trim((string)($_GET['unidad']??'')), trim((string)($_GET['registrado_por']??'')));
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="notas-' . $alcance . '-' . date('Ymd-His') . '.csv"');
         $out = fopen('php://output', 'wb'); fwrite($out, "\xEF\xBB\xBF");

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class RolModel
 {
-    public const CAMPOS = ['permiso_seguimiento','alcance_seguimiento','permiso_ver_montos','permiso_ver_detalle','permiso_ordenes','alcance_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle','permiso_almacen_reportes','permiso_patrimonio','permiso_presupuesto','alcance_presupuesto','permiso_responsabilidades','permiso_usuarios'];
+    public const CAMPOS = ['permiso_seguimiento','alcance_seguimiento','permiso_ver_montos','permiso_ver_detalle','permiso_ordenes','alcance_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle','permiso_cuentas','alcance_cuentas','permiso_cuentas_montos','permiso_proveedores','alcance_proveedores','permiso_proveedores_montos','permiso_almacen_reportes','permiso_patrimonio','permiso_presupuesto','alcance_presupuesto','permiso_responsabilidades','permiso_usuarios'];
 
     public static function modulos(): array
     {
@@ -11,6 +11,8 @@ final class RolModel
             'Logística'=>[
                 ['campo'=>'permiso_seguimiento','nombre'=>'Mis notas y seguimiento','icono'=>'bi-journal-text','alcance'=>'alcance_seguimiento','extras'=>['permiso_ver_montos'=>'Ver montos','permiso_ver_detalle'=>'Abrir detalle']],
                 ['campo'=>'permiso_ordenes','nombre'=>'Órdenes de compra y servicio','icono'=>'bi-receipt-cutoff','alcance'=>'alcance_ordenes','extras'=>['permiso_ordenes_montos'=>'Ver montos','permiso_ordenes_detalle'=>'Abrir detalle']],
+                ['campo'=>'permiso_cuentas','nombre'=>'Consulta por cuenta','icono'=>'bi-journal-text','alcance'=>'alcance_cuentas','extras'=>['permiso_cuentas_montos'=>'Ver montos']],
+                ['campo'=>'permiso_proveedores','nombre'=>'Proveedores','icono'=>'bi-shop','alcance'=>'alcance_proveedores','extras'=>['permiso_proveedores_montos'=>'Ver montos']],
             ],
             'Almacén'=>[['campo'=>'permiso_almacen_reportes','nombre'=>'Reportes de catálogo y movimientos (todos los artículos) · incluye exportación','icono'=>'bi-box-seam']],
             'Patrimonio'=>[['campo'=>'permiso_patrimonio','nombre'=>'Consulta de activos','icono'=>'bi-box-seam']],
@@ -25,6 +27,14 @@ final class RolModel
     public static function permisos(array $entrada, bool $validar = false): array
     {
         if (!$validar && !array_key_exists('permiso_almacen_reportes',$entrada)) $entrada['permiso_almacen_reportes']=!empty($entrada['permiso_usuarios'])?1:0;
+        // Mantener los accesos anteriores, que dependían de Órdenes, al leer roles antiguos.
+        foreach (['cuentas','proveedores'] as $modulo) {
+            if (!$validar && !array_key_exists('permiso_'.$modulo,$entrada)) {
+                $entrada['permiso_'.$modulo]=$entrada['permiso_ordenes']??0;
+                $entrada['alcance_'.$modulo]=$entrada['alcance_ordenes']??'UNIDAD';
+                $entrada['permiso_'.$modulo.'_montos']=$entrada['permiso_ordenes_montos']??0;
+            }
+        }
         $out=[];
         foreach(self::CAMPOS as $campo){
             if(strpos($campo,'alcance_')===0){
@@ -37,6 +47,7 @@ final class RolModel
             }else $out[$campo]=!empty($entrada[$campo])?1:0;
         }
         if($validar){
+            foreach(['cuentas','proveedores'] as $modulo) if(!$out['permiso_'.$modulo]) $out['permiso_'.$modulo.'_montos']=0;
             foreach([['permiso_seguimiento','permiso_ver_montos','permiso_ver_detalle'],['permiso_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle']] as [$modulo,$montos,$detalle]){
                 if(!$out[$modulo])$out[$montos]=$out[$detalle]=0;
             }

@@ -14,6 +14,7 @@ verificarConsulta(ConsultasLogisticaModel::recurso(['TIPOFAMI'=>'S','GRUPO'=>'1'
 if(in_array('--avalon',$argv,true)) {
  $m=new ConsultasLogisticaModel();
  $a=['permiso_ordenes'=>1,'alcance_ordenes'=>'GLOBAL','permiso_ordenes_montos'=>0,'permiso_ordenes_detalle'=>0];
+ $a=array_merge($a,RolModel::permisos($a));
  $r=$m->historial('proveedores','20544637747',$a,'2020',1);
  verificarConsulta($r['total']>0,'Compra real vinculada entre meses distintos');
  $f=$r['filas'][0];

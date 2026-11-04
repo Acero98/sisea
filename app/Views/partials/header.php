@@ -15,8 +15,8 @@ $flash = $flash ?? takeFlash();
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/inter.css">
     <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/vendor/select2/select2.min.css">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20261025d">
-    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/seguridad.css?v=20261025a">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/app.css?v=20261104-filters5">
+    <link rel="stylesheet" href="<?= e(APP_URL) ?>assets/css/seguridad.css?v=20261104b">
     <?php if (!empty($useDataTables)): ?><link rel="stylesheet" href="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.css"><?php endif; ?>
     <script src="<?= e(APP_URL) ?>assets/vendor/jquery-3.7.1.min.js"></script>
     <title><?= e($pageTitle) ?> · Avalon</title>
@@ -28,7 +28,7 @@ $flash = $flash ?? takeFlash();
         <nav class="topbar-links module-navigation" aria-label="Navegación principal">
         <?php
         $navegacion=[
-          ['nombre'=>'Logística','icono'=>'bi-boxes','items'=>[['ruta'=>'seguimiento','nombre'=>'Seguimiento documental','permiso'=>'seguimiento','icono'=>'bi-search'],['ruta'=>'notas','nombre'=>'Mis notas','permiso'=>'seguimiento','icono'=>'bi-journal-text'],['ruta'=>'ordenes','nombre'=>'Órdenes de compra y servicio','permiso'=>'ordenes','icono'=>'bi-receipt-cutoff'],['ruta'=>'cuentas','nombre'=>'Consulta por cuenta','permiso'=>'ordenes','icono'=>'bi-journal-text'],['ruta'=>'proveedores','nombre'=>'Proveedores','permiso'=>'ordenes','icono'=>'bi-shop']]],
+          ['nombre'=>'Logística','icono'=>'bi-boxes','items'=>[['ruta'=>'seguimiento','nombre'=>'Seguimiento documental','permiso'=>'seguimiento','icono'=>'bi-search'],['ruta'=>'notas','nombre'=>'Mis notas','permiso'=>'seguimiento','icono'=>'bi-journal-text'],['ruta'=>'ordenes','nombre'=>'Órdenes de compra y servicio','permiso'=>'ordenes','icono'=>'bi-receipt-cutoff'],['ruta'=>'cuentas','nombre'=>'Consulta por cuenta','permiso'=>'cuentas','icono'=>'bi-journal-text'],['ruta'=>'proveedores','nombre'=>'Proveedores','permiso'=>'proveedores','icono'=>'bi-shop']]],
           ['nombre'=>'Almacén','icono'=>'bi-box-seam','items'=>[['ruta'=>'almacen_reportes','nombre'=>'Altas y artículos sin movimiento','permiso'=>'almacen_reportes','icono'=>'bi-bar-chart'],['ruta'=>'almacen','nombre'=>'Artículos y solicitudes','permiso'=>'ordenes','icono'=>'bi-box-seam']]],
           ['nombre'=>'Patrimonio','icono'=>'bi-box-seam','items'=>[['ruta'=>'patrimonio','nombre'=>'Consulta de activos','permiso'=>'patrimonio','icono'=>'bi-box-seam']]],
           ['nombre'=>'Presupuesto','icono'=>'bi-wallet2','items'=>[['ruta'=>'presupuesto','nombre'=>'Consulta presupuestal','permiso'=>'presupuesto','icono'=>'bi-wallet2'],['ruta'=>'presupuesto_responsabilidades','nombre'=>'Responsabilidades','permiso'=>'responsabilidades','icono'=>'bi-sliders']]],

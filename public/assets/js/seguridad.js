@@ -3,14 +3,14 @@ $(function(){
     if($('#tabla-usuarios').length)$('#tabla-usuarios').DataTable({pageLength:10,columnDefs:[{orderable:false,targets:[3,5]}],language:language});
     if($('#tabla-roles').length)$('#tabla-roles').DataTable({pageLength:10,columnDefs:[{orderable:false,targets:[4]}],language:language});
     var last=null,opened=null,rolesNode=document.getElementById('available-roles'),roles=rolesNode?JSON.parse(rolesNode.textContent):[];
-    function open(modal,button){last=button;opened=modal;modal.hidden=false;document.body.classList.add('modal-open');modal.querySelector('.access-editor-body').scrollTop=0;modal.querySelector('.modal-close').focus();}
+    function open(modal,button){last=button;opened=modal;modal.hidden=false;document.body.classList.add('modal-open');modal.querySelector('.access-editor-body').scrollTop=0;modal.querySelector('.access-modal-dialog').scrollTop=0;modal.querySelector('.modal-close').focus({preventScroll:true});}
     function close(){if(!opened)return;$(opened).find('.select2-hidden-accessible').select2('close');opened.hidden=true;var password=opened.querySelector('input[type=password]');if(password)password.value='';document.body.classList.remove('modal-open');opened=null;if(last)last.focus();}
     function roleSummary(){
         var role=roles.find(function(r){return String(r.id)===$('#modal-role').val();}),list=document.getElementById('assigned-role-permissions');
         if(!list)return;list.replaceChildren();$('#assigned-role-description').text(role?role.descripcion:'Selecciona un rol para ver sus permisos.');
         if(!role)return;
         var scopeNames={PROPIO:'Usuario',UNIDAD:'Unidad',GLOBAL:'Global'};
-        [['permiso_seguimiento','Mis notas y seguimiento','alcance_seguimiento'],['permiso_ordenes','Órdenes','alcance_ordenes'],['permiso_almacen_reportes','Almacén · Reportes'],['permiso_patrimonio','Patrimonio'],['permiso_presupuesto','Presupuesto','alcance_presupuesto'],['permiso_responsabilidades','Responsabilidades'],['permiso_usuarios','Seguridad']].forEach(function(item){
+        [['permiso_seguimiento','Mis notas y seguimiento','alcance_seguimiento'],['permiso_ordenes','Órdenes','alcance_ordenes'],['permiso_cuentas','Consulta por cuenta','alcance_cuentas'],['permiso_proveedores','Proveedores','alcance_proveedores'],['permiso_almacen_reportes','Almacén · Reportes'],['permiso_patrimonio','Patrimonio'],['permiso_presupuesto','Presupuesto','alcance_presupuesto'],['permiso_responsabilidades','Responsabilidades'],['permiso_usuarios','Seguridad']].forEach(function(item){
             if(!role.activo||!role.permisos[item[0]])return;
             var badge=document.createElement('span');badge.textContent=item[1]+(item[2]?': '+scopeNames[role.permisos[item[2]]]:'');list.appendChild(badge);
         });

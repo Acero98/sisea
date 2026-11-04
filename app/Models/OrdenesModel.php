@@ -10,6 +10,61 @@ final class OrdenesModel
         $this->reader = new DbfReader();
     }
 
+    private ?array $proveedoresOrden = null;
+    private function proveedoresOrden(): array
+    {
+        if ($this->proveedoresOrden !== null) return $this->proveedoresOrden;
+        $out=[];
+        foreach (['orden_compra'=>['sum40015.DBF','NRO_ORDCMP'],'orden_servicio'=>['sum40017.DBF','NRO_SERVIC']] as $tipo=>[$file,$key]) {
+            foreach ($this->reader->rows(AVALON_LOGISTICA_DATA.'/'.$file,[$key,'CODPROV']) as $r) {
+                $id=$tipo.'|'.$r[$key];$codigo=trim($r['CODPROV']);
+                if (isset($out[$id]) && $out[$id]!==$codigo) $out[$id]='';
+                else $out[$id]=$codigo;
+            }
+        }
+        return $this->proveedoresOrden=$out;
+    }
+    private function alcance(array $acceso): array
+    {
+        $w=["d.tipo IN ('orden_compra','orden_servicio')"];$p=[];
+        $scope=alcanceModulo('ordenes',$acceso);
+        if(!tienePermiso('ordenes',$acceso))$w[]='1=0';
+        elseif($scope==='PROPIO'){
+            $c=trim((string)($acceso['avalon_codigo']??''));
+            if($c==='')$w[]='1=0';else{$w[]="TRIM(n.usuario_codigo)<>'' AND TRIM(LEADING '0' FROM TRIM(n.usuario_codigo))=:usuario_codigo";$p['usuario_codigo']=ltrim($c,'0');}
+        }elseif($scope!=='GLOBAL'){
+            $u=trim((string)($acceso['unidad_organica']??''));
+            if($u===''||$u==='0000')$w[]='1=0';else{$w[]='n.unidad_organica=:unidad';$p['unidad']=$u;}
+        }
+        return [$w,$p];
+    }
+    public function opcionesFiltros(array $acceso): array
+    {
+        [$w,$p]=$this->alcance($acceso);
+        $q=db()->prepare('SELECT DISTINCT d.tipo,d.numero,n.unidad_organica,n.unidad_nombre FROM seguimiento_documentos d INNER JOIN seguimiento_notas n ON n.nro_pedido=d.nro_pedido WHERE '.implode(' AND ',$w));$q->execute($p);
+        $map=$this->proveedoresOrden();$unidades=[];$proveedores=[];
+        foreach($q->fetchAll() as $r){
+            if(trim((string)$r['unidad_organica'])!=='')$unidades[$r['unidad_organica']]=trim($r['unidad_organica'].' · '.$r['unidad_nombre']);
+            $c=$map[$r['tipo'].'|'.$r['numero']]??'';
+            if($c!==''){$prov=ProveedorService::resolver($c);$proveedores[$c]=$prov['nombre'].' · '.($prov['ruc']?:$c);}
+        }
+        asort($unidades,SORT_NATURAL|SORT_FLAG_CASE);asort($proveedores,SORT_NATURAL|SORT_FLAG_CASE);
+        return ['unidades'=>$unidades,'proveedores'=>$proveedores];
+    }
+    private function filtroProveedor(string $valor,bool $buscar,array &$params,string $prefijo): string
+    {
+        $catalogo=ProveedorService::catalogo();$ids=[];
+        foreach($this->proveedoresOrden() as $id=>$codigo){
+            if($codigo==='')continue;
+            $p=$catalogo[$codigo]??['nombre'=>'Nombre no disponible','ruc'=>''];
+            $coincide=$buscar?mb_stripos($codigo.' '.$p['nombre'].' '.$p['ruc'],$valor)!==false:$codigo===$valor;
+            if($coincide)$ids[]=$id;
+        }
+        if(!$ids)return '1=0';
+        $marcas=[];foreach($ids as $i=>$id){$k=$prefijo.$i;$marcas[]=':'.$k;$params[$k]=$id;}
+        return "CONCAT(d.tipo,'|',d.numero) IN (".implode(',',$marcas).')';
+    }
+
     public function listar(array $acceso, array $entrada): array
     {
         $draw = max(0, (int)($entrada['draw'] ?? 0));
@@ -29,21 +84,11 @@ final class OrdenesModel
         }, (array)($entrada['ordenes'] ?? [])))));
 
         if (!tienePermiso('ordenes', $acceso)) return ['draw'=>$draw,'recordsTotal'=>0,'recordsFiltered'=>0,'data'=>[]];
-        $alcance = alcanceModulo('ordenes', $acceso);
-        $global = $alcance === 'GLOBAL';
-        $unidad = trim((string)($acceso['unidad_organica'] ?? ''));
-        $sinAlcance = !$global && ($unidad === '' || $unidad === '0000');
-
-        $where = ["d.tipo IN ('orden_compra','orden_servicio')"];
-        $params = [];
-        if ($alcance === 'PROPIO') {
-            $codigo = trim((string)($acceso['avalon_codigo'] ?? ''));
-            if ($codigo === '') $where[] = '1=0';
-            else { $where[] = "TRIM(n.usuario_codigo)<>'' AND TRIM(LEADING '0' FROM TRIM(n.usuario_codigo))=:usuario_codigo"; $params['usuario_codigo'] = ltrim($codigo, '0'); }
-        } elseif (!$global) {
-            if ($sinAlcance) $where[] = '1=0';
-            else { $where[] = 'n.unidad_organica=:unidad'; $params['unidad'] = $unidad; }
-        }
+        [$where,$params]=$this->alcance($acceso);
+        $unidadFiltro=trim((string)($entrada['unidad']??''));
+        if($unidadFiltro!==''){$where[]='n.unidad_organica=:unidad_filtro';$params['unidad_filtro']=$unidadFiltro;}
+        $proveedorFiltro=trim((string)($entrada['proveedor']??''));
+        if($proveedorFiltro!=='')$where[]=$this->filtroProveedor($proveedorFiltro,false,$params,'prov_');
         if ($tipo !== 'todas') { $where[] = 'd.tipo=:tipo'; $params['tipo'] = $tipo; }
         if ($estado === 'anuladas') $where[] = "UPPER(TRIM(COALESCE(d.estado,'')))='A'";
         if ($estado === 'vigentes') $where[] = "UPPER(TRIM(COALESCE(d.estado,'')))<>'A'";
@@ -65,13 +110,13 @@ final class OrdenesModel
         $filtroBusqueda = $filtro;
         $parametrosBusqueda = $params;
         if ($busqueda !== '') {
-            $filtroBusqueda .= ' AND (d.numero LIKE :q_numero OR n.nro_pedido LIKE :q_pedido OR n.unidad_organica LIKE :q_unidad OR n.unidad_nombre LIKE :q_nombre_unidad OR n.usuario_nombre LIKE :q_usuario OR n.sustentacion LIKE :q_glosa)';
+            $filtroBusqueda .= ' AND (d.numero LIKE :q_numero OR n.nro_pedido LIKE :q_pedido OR n.unidad_organica LIKE :q_unidad OR n.unidad_nombre LIKE :q_nombre_unidad OR n.usuario_nombre LIKE :q_usuario OR n.sustentacion LIKE :q_glosa OR ' . $this->filtroProveedor($busqueda,true,$parametrosBusqueda,'busprov_') . ')';
             $like = '%' . $busqueda . '%';
             foreach (['numero', 'pedido', 'unidad', 'nombre_unidad', 'usuario', 'glosa'] as $campo) $parametrosBusqueda['q_' . $campo] = $like;
         }
         $filtrados = $this->contar($filtroBusqueda, $parametrosBusqueda);
 
-        $ordenes = [0 => 'd.numero', 1 => 'fecha', 2 => 'MIN(d.nro_pedido)', 3 => 'unidad_label', 4 => 'estado'];
+        $ordenes = [0 => 'd.numero', 1 => 'fecha', 2 => 'MIN(d.nro_pedido)', 3 => 'unidad_label', 5 => 'estado'];
         $columna = (int)($entrada['order'][0]['column'] ?? 1);
         $ordenSql = $ordenes[$columna] ?? 'd.fecha';
         $direccion = strtolower((string)($entrada['order'][0]['dir'] ?? 'desc')) === 'asc' ? 'ASC' : 'DESC';
@@ -121,7 +166,12 @@ final class OrdenesModel
                 }
             }
         }
+        $mapaProveedores=$this->proveedoresOrden();
         foreach ($filas as &$fila) {
+            $proveedor=ProveedorService::resolver($mapaProveedores[$fila['tipo'].'|'.$fila['numero']]??'');
+            $fila['proveedor_nombre']=$proveedor['nombre'];
+            $fila['proveedor_ruc']=$proveedor['ruc'];
+            $fila['proveedor_codigo']=$proveedor['codigo'];
             if ($mostrarMontos) {
                 $cabecera = $cache[$fila['tipo']][(string)$fila['numero']] ?? [];
                 $total = $fila['tipo'] === 'orden_compra' ? ($cabecera['TOTALOC'] ?? '') : ($cabecera['TOTALOS'] ?? '');

@@ -5,9 +5,10 @@ final class ConsultasLogisticaController
     public function index(): void
     {
         requiereLogin();
-        if (!tienePermiso('ordenes')) { http_response_code(403); exit('No tiene acceso a consultas de Logística.'); }
-        $acceso=usuario() ?? []; liberarSesion();
         $modo=(string)($_GET['r'] ?? 'almacen');
+        $permiso=in_array($modo,['cuentas','proveedores'],true)?$modo:'ordenes';
+        if (!tienePermiso($permiso)) { http_response_code(403); exit('No tiene acceso a consultas de Logística.'); }
+        $acceso=usuario() ?? []; liberarSesion();
         $modelo=new ConsultasLogisticaModel();
         $q=trim((string)($_GET['q'] ?? '')); $codigo=trim((string)($_GET['codigo'] ?? ''));
         $anio=trim((string)($_GET['anio'] ?? '')); if (!preg_match('/^\d{4}$/',$anio)) $anio='';
@@ -19,7 +20,7 @@ final class ConsultasLogisticaController
         if ($seleccion) $historial=$modelo->historial($modo,$codigo,$acceso,$anio,$pagina);
         $coincidencias=array_values(array_filter($catalogo,static fn($r)=>$q==='' || mb_stripos($r['codigo'].' '.$r['nombre'],$q)!==false));
         $totalCatalogo=count($coincidencias); $coincidencias=array_slice($coincidencias,($pagina-1)*25,25);
-        $mostrarMontos=tienePermiso('ordenes_montos',$acceso);
+        $mostrarMontos=tienePermiso($permiso.'_montos',$acceso);
         require APP_ROOT.'/app/Views/consultas_logistica.php';
     }
 }

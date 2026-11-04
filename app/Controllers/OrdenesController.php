@@ -16,6 +16,7 @@ final class OrdenesController
     public function index(): void
     {
         $acceso = $this->validarAcceso();
+        $opcionesFiltros=(new OrdenesModel())->opcionesFiltros($acceso);
         $pageTitle = 'Órdenes de compra y servicio';
         $pageDescription = 'Consulta en solo lectura de las órdenes vinculadas a pedidos dentro de tu alcance.';
         $breadcrumb = 'Logística / Órdenes';

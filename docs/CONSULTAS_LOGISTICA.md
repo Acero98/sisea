@@ -18,3 +18,6 @@ Paginación de 25 detalles y filtro por año del pedido. La búsqueda de catálo
 Límites visibles: directorio de proveedores con compras vinculadas a detalles autorizados; órdenes sin enlace inequívoco a pedido no se incluyen. No se presentan invitaciones a cotizar como compras adjudicadas. No se deduce entrega desde existencias por ausencia de orden. Facturas y pagos continúan disponibles en la consulta documental existente.
 
 Verificación: `php tests/consultas_logistica.php`; con fuentes locales `php tests/consultas_logistica.php --avalon`. Se validó proveedor del ejemplo, pedido y compra entre meses distintos, filtros por artículo/cuenta y ausencia de importe/enlace sin permisos. Vista revisada en navegador con datos ficticios.
+
+## Permisos independientes (2026-11-04)
+Consulta por cuenta y Proveedores disponen de permisos propios, alcance Usuario/Unidad/Global y opción de ver montos en Seguridad → Roles → Logística. Roles antiguos que no tienen estas claves conservan el acceso previo de Órdenes al leerse; al guardar, cada checkbox es explícito y puede revocarse. Menús y controladores usan el permiso específico. El detalle de órdenes continúa exigiendo el permiso de Órdenes y su alcance. Prueba: php tests/permisos_consultas.php.

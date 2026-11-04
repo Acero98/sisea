@@ -22,23 +22,34 @@ require APP_ROOT . '/app/Views/partials/header.php';
         <span class="orders-readonly"><i class="bi bi-lock" aria-hidden="true"></i> Solo lectura</span>
     </div>
     <div class="orders-filters" id="orders-filters" role="group" aria-label="Filtros de órdenes">
-        <label><span>Tipo de orden</span>
-            <select class="js-select2" id="orders-type" aria-label="Tipo de orden">
-                <option value="todas">Todas las órdenes</option>
-                <option value="orden_compra">Orden de compra</option>
-                <option value="orden_servicio">Orden de servicio</option>
-            </select>
-        </label>
-        <label><span>Estado</span>
-            <select class="js-select2" id="orders-state" aria-label="Estado de la orden">
-                <option value="todos">Todos los estados</option>
-                <option value="vigentes">Vigentes</option>
-                <option value="anuladas">Anuladas</option>
-            </select>
-        </label>
-        <label><span>Desde</span><input type="date" id="orders-from" aria-label="Fecha desde"></label>
-        <label><span>Hasta</span><input type="date" id="orders-to" aria-label="Fecha hasta"></label>
-        <button type="button" class="orders-clear" id="orders-clear"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar filtros</button>
+        <div class="orders-filter-primary">
+            <label><span>Tipo de orden</span>
+                <select class="js-select2" id="orders-type" aria-label="Tipo de orden">
+                    <option value="todas">Todas las órdenes</option>
+                    <option value="orden_compra">Orden de compra</option>
+                    <option value="orden_servicio">Orden de servicio</option>
+                </select>
+            </label>
+            <label><span>Estado</span>
+                <select class="js-select2" id="orders-state" aria-label="Estado de la orden">
+                    <option value="todos">Todos los estados</option>
+                    <option value="vigentes">Vigentes</option>
+                    <option value="anuladas">Anuladas</option>
+                </select>
+            </label>
+            <label><span>Desde</span><input type="date" id="orders-from" aria-label="Fecha desde"></label>
+            <label><span>Hasta</span><input type="date" id="orders-to" aria-label="Fecha hasta"></label>
+
+        </div>
+        <div class="orders-filter-parties">
+            <label><span>Unidad orgánica</span><select class="js-select2" data-searchable id="orders-unit" aria-label="Unidad orgánica">
+                    <option value="">Todas las unidades permitidas</option><?php foreach ($opcionesFiltros['unidades'] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
+                </select></label>
+            <label><span>Proveedor</span><select class="js-select2" data-searchable id="orders-provider" aria-label="Proveedor">
+                    <option value="">Todos los proveedores</option><?php foreach ($opcionesFiltros['proveedores'] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
+                </select></label>
+            <button type="button" class="orders-clear" id="orders-clear"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar filtros</button>
+        </div>
     </div>
 </section>
 
@@ -57,6 +68,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                     <th class="order-date">Fecha</th>
                     <th class="order-pedidos">Pedidos vinculados</th>
                     <th class="order-description">Unidad / descripción</th>
+                    <th class="order-provider">Proveedor / RUC</th>
                     <th class="order-status">Estado</th><?php if ($mostrarMontos): ?><th class="order-amount">Importe sin IGV</th>
                         <th class="order-amount">Importe total</th><?php endif; ?><?php if ($puedeVerDetalle): ?><th class="order-action">Detalle</th><?php endif; ?>
                 </tr>
@@ -89,6 +101,8 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 data: function(request) {
                     request.tipo = $('#orders-type').val();
                     request.estado = $('#orders-state').val();
+                    request.unidad = $('#orders-unit').val();
+                    request.proveedor = $('#orders-provider').val();
                     request.desde = $('#orders-from').val();
                     request.hasta = $('#orders-to').val();
                     request.ordenes = <?= json_encode($ordenesIniciales, JSON_UNESCAPED_SLASHES) ?>;
@@ -130,6 +144,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
                     }
                 },
                 {
+                    data: 'proveedor_nombre',
+                    orderable: false,
+                    className: 'order-provider',
+                    render: function(value, type, row) {
+                        if (type !== 'display') return [value, row.proveedor_ruc, row.proveedor_codigo].join(' ');
+                        var identificador = row.proveedor_ruc ? 'RUC: ' + row.proveedor_ruc : 'Código: ' + (row.proveedor_codigo || 'No disponible');
+                        return '<span>' + escapeHtml(value) + '</span><small>' + escapeHtml(identificador) + '</small>';
+                    }
+                },
+                {
                     data: 'estado_label',
                     className: 'order-status',
                     render: function(value, type, row) {
@@ -164,7 +188,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <?php endif; ?>
             ],
             createdRow: function(row) {
-                var labels = <?= json_encode(array_merge(['Orden', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Estado'], $mostrarMontos ? ['Importe sin IGV', 'Importe total'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
+                var labels = <?= json_encode(array_merge(['Orden', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Proveedor / RUC', 'Estado'], $mostrarMontos ? ['Importe sin IGV', 'Importe total'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
                 $('td', row).each(function(index) {
                     this.setAttribute('data-label', labels[index] || '');
                 });
@@ -172,7 +196,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             language: {
                 processing: 'Consultando órdenes…',
                 search: 'Buscar:',
-                searchPlaceholder: 'Orden, pedido, unidad o descripción',
+                searchPlaceholder: 'Orden, pedido, unidad, proveedor o RUC',
                 lengthMenu: 'Mostrar _MENU_ por página',
                 info: 'Mostrando _START_ a _END_ de _TOTAL_ órdenes',
                 infoEmpty: 'No hay órdenes disponibles',
@@ -202,16 +226,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
             });
         });
 
-        $('#orders-type, #orders-state').on('change', function() {
+        $('#orders-type, #orders-state, #orders-unit, #orders-provider').on('change', function() {
             table.ajax.reload();
         });
         $('#orders-from, #orders-to').on('change', function() {
             table.ajax.reload();
         });
         $('#orders-clear').on('click', function() {
-            ['orders-type', 'orders-state'].forEach(function(id) {
+            ['orders-type', 'orders-state', 'orders-unit', 'orders-provider'].forEach(function(id) {
                 var element = document.getElementById(id);
-                element.value = id === 'orders-type' ? 'todas' : 'todos';
+                element.value = id === 'orders-type' ? 'todas' : (id === 'orders-state' ? 'todos' : '');
                 $(element).trigger('change.select2');
             });
             $('#orders-from, #orders-to').val('');

@@ -2,7 +2,7 @@
 
 $flash = takeFlash();
 
-$esAdministradorGlobal = ($acceso['alcance'] ?? '') === 'GLOBAL';
+$esAdministradorGlobal = alcanceModulo('seguimiento',$acceso) === 'GLOBAL';
 
 $codigoAvalon = trim(
     (string) ($acceso['avalon_codigo'] ?? '')
@@ -56,46 +56,6 @@ $routeClass = static function (string $route): string {
     ][$route] ?? 'pedido';
 };
 
-$glosaCorta = static function (string $texto): string {
-    $palabras = preg_split(
-        '/\s+/u',
-        trim($texto),
-        -1,
-        PREG_SPLIT_NO_EMPTY
-    ) ?: [];
-
-    return count($palabras) > 4
-        ? implode(' ', array_slice($palabras, 0, 4)) . '…'
-        : implode(' ', $palabras);
-};
-
-$unidadCorta = static function (string $nombre): string {
-    $palabras = preg_split('/\s+/u', trim($nombre), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-    return count($palabras) > 3
-        ? implode(' ', array_slice($palabras, 0, 3)) . '…'
-        : implode(' ', $palabras);
-};
-
-$link = static function (int $pagina) use (
-    $alcance,
-    $busqueda,
-    $desde,
-    $hasta,
-    $resultado
-): string {
-    return url(
-        'notas',
-        [
-            'vista' => $alcance,
-            'q' => $busqueda,
-            'desde' => $desde,
-            'hasta' => $hasta,
-            'pagina' => $pagina,
-            'por_pagina' => $resultado['por_pagina'],
-        ]
-    );
-};
-
 $tipoActualizacion = null;
 $textoActualizar = null;
 $descripcionActualizacion = null;
@@ -117,6 +77,7 @@ if ($alcance === 'mis' && $tieneCodigoAvalon) {
         'Actualiza únicamente las notas correspondientes a su unidad orgánica.';
 }
 
+$useDataTables = true;
 require APP_ROOT . '/app/Views/partials/header.php';
 
 ?>
@@ -184,17 +145,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
             value="<?= e($alcance) ?>"
         >
 
-        <label class="notes-search-field">
-            Buscar notas
-
-            <input
-                type="search"
-                name="q"
-                value="<?= e($busqueda) ?>"
-                placeholder="Número, unidad, usuario, glosa, tipo o estado"
-            >
+        <label>Unidad orgánica
+            <select name="unidad" class="js-select2" data-searchable><option value="">Todas las unidades permitidas</option>
+                <?php foreach($opcionesFiltros['unidades'] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUnidad?'selected':'' ?>><?= e($nombre) ?></option><?php endforeach; ?>
+            </select>
         </label>
-
+        <label>Registrado por
+            <select name="registrado_por" class="js-select2" data-searchable><option value="">Todos los usuarios permitidos</option>
+                <?php foreach($opcionesFiltros['usuarios'] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUsuario?'selected':'' ?>><?= e($nombre) ?></option><?php endforeach; ?>
+            </select>
+        </label>
         <label>
             Desde (emisión)
             <input type="date" name="desde" value="<?= e($desde) ?>" min="1000-01-01" max="9999-12-31">
@@ -204,38 +164,11 @@ require APP_ROOT . '/app/Views/partials/header.php';
             <input type="date" name="hasta" value="<?= e($hasta) ?>" min="1000-01-01" max="9999-12-31">
         </label>
 
-        <label>
-            Mostrar
-
-            <select name="por_pagina">
-                <option
-                    value="10"
-                    <?= $resultado['por_pagina'] === 10 ? 'selected' : '' ?>
-                >
-                    10
-                </option>
-
-                <option
-                    value="25"
-                    <?= $resultado['por_pagina'] === 25 ? 'selected' : '' ?>
-                >
-                    25
-                </option>
-
-                <option
-                    value="50"
-                    <?= $resultado['por_pagina'] === 50 ? 'selected' : '' ?>
-                >
-                    50
-                </option>
-            </select>
-        </label>
-
         <div class="notes-filter-actions">
         <button type="submit">Buscar</button>
 
         <?php if ($errorFechas === ''): ?>
-        <a class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda, 'desde' => $desde, 'hasta' => $hasta])) ?>">Exportar CSV</a>
+        <a id="notes-export" class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda, 'desde' => $desde, 'hasta' => $hasta, 'unidad'=>$filtroUnidad, 'registrado_por'=>$filtroUsuario])) ?>">Exportar CSV</a>
         <?php endif; ?>
 
         <a
@@ -259,18 +192,12 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <?php endif; ?>
             </h2>
 
-            <p>
-                <?= e((string) $resultado['total']) ?>
-                nota(s) encontradas. Página
-                <?= e((string) $resultado['pagina']) ?>
-                de
-                <?= e((string) $resultado['paginas']) ?>.
-            </p>
+<p>Busca por número, unidad, usuario o glosa. Los textos se muestran completos.</p>
         </div>
     </div>
 
     <div class="table-scroll">
-        <table class="notes-table">
+        <table id="tabla-notas" class="display notes-table">
             <thead>
                 <tr>
                     <th>Nota</th>
@@ -285,151 +212,11 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 </tr>
             </thead>
 
-            <tbody>
-                <?php foreach ($notas as $nota): ?>
-                    <?php
-                    $glosa = trim(
-                        (string) ($nota['sustentacion'] ?? '')
-                    );
-                    ?>
-
-                    <tr>
-                        <td>
-                            <b><?= e($nota['NRO_PEDIDO']) ?></b>
-                        </td>
-
-                        <td>
-                            <?= e($date($nota['FEC_EMISIO'])) ?>
-                        </td>
-
-                        <td>
-                            <?php
-                            $codigoUnidad = trim((string)($nota['unidad_organica'] ?? ''));
-                            $nombreUnidad = trim((string)($nota['unidad_nombre'] ?? ''));
-                            $unidadCompleta = trim(($codigoUnidad ?: '—') . ' · ' . ($nombreUnidad ?: 'Unidad no identificada'));
-                            ?>
-                            <span class="unidad-corta" title="<?= e($unidadCompleta) ?>">
-                                <?= e(($codigoUnidad ?: '—') . ' · ' . $unidadCorta($nombreUnidad ?: 'Unidad no identificada')) ?>
-                            </span>
-                        </td>
-
-                        <td>
-                            <span
-                                class="glosa-corta"
-                                title="<?= e(
-                                    $glosa ?: 'Sin sustentación registrada'
-                                ) ?>"
-                            >
-                                <?= e(
-                                    $glosa !== ''
-                                        ? $glosaCorta($glosa)
-                                        : '—'
-                                ) ?>
-                            </span>
-                        </td>
-
-                        <td>
-                            <?= e($nota['TIPO_LABEL']) ?>
-                        </td>
-
-                        <td>
-                            <?= e($nota['PRIORIDAD_LABEL']) ?>
-                        </td>
-
-                        <td>
-                            <span
-                                class="route-stage route-<?= e(
-                                    $routeClass($nota['ULTIMA_RUTA'])
-                                ) ?>"
-                            >
-                                <?= e($nota['ULTIMA_RUTA']) ?>
-                            </span>
-
-                            <br>
-
-                            <small>
-                                <?= e($nota['ESTADO_LABEL']) ?>
-                            </small>
-                        </td>
-
-                        <td>
-                            <?= e(
-                                $nota['USRNOMBRE'] ?: 'No registrado'
-                            ) ?>
-
-                            <br>
-
-                            <small>
-                                <?= e(
-                                    $nota['USRCODIGO']
-                                        ? 'Código ' . $nota['USRCODIGO']
-                                        : ''
-                                ) ?>
-                            </small>
-                        </td>
-
-                        <td>
-                            <a
-                                class="table-action icon-action"
-                                title="Ver seguimiento de la nota <?= e(
-                                    $nota['NRO_PEDIDO']
-                                ) ?>"
-                                aria-label="Ver seguimiento de la nota <?= e(
-                                    $nota['NRO_PEDIDO']
-                                ) ?>"
-                                href="<?= e(
-                                    url(
-                                        'seguimiento',
-                                        [
-                                            'q' => $nota['NRO_PEDIDO'],
-                                            'tipo' => 'pedido',
-                                        ]
-                                    )
-                                ) ?>"
-                            >
-                                <img
-                                    src="<?= e(APP_URL) ?>assets/icons/bootstrap-eye.svg"
-                                    alt=""
-                                >
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-
-                <?php if (!$notas): ?>
-                    <tr>
-                        <td colspan="9">
-                            No se encontraron notas con esos criterios.
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
-    <nav
-        class="pagination"
-        aria-label="Paginación de notas"
-    >
-        <span class="pagination-status" aria-current="page">
-            Página <b><?= e((string) $resultado['pagina']) ?></b>
-            de <b><?= e((string) $resultado['paginas']) ?></b>
-        </span>
-        <div class="pagination-actions">
-            <?php if ($resultado['pagina'] > 1): ?>
-                <a class="pagination-edge" href="<?= e($link(1)) ?>">« Primero</a>
-                <a href="<?= e($link($resultado['pagina'] - 1)) ?>">← Anterior</a>
-            <?php endif; ?>
-            <?php if (
-                $resultado['pagina'] < $resultado['paginas']
-            ): ?>
-                <a href="<?= e($link($resultado['pagina'] + 1)) ?>">
-                    Siguiente →
-                </a>
-                <a class="pagination-edge" href="<?= e($link($resultado['paginas'])) ?>">Último »</a>
-            <?php endif; ?>
-        </div>
-    </nav>
+
 </section>
 
 <?php if ($tipoActualizacion !== null): ?>
@@ -479,4 +266,38 @@ require APP_ROOT . '/app/Views/partials/header.php';
     </section>
 <?php endif; ?>
 
+<script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script>
+<script>
+(function(){
+    var form=$('.notes-date-filter'), escapeHtml=function(v){return $('<span>').text(v==null?'':String(v)).html();};
+    var text=$.fn.dataTable.render.text();
+    var table=$('#tabla-notas').DataTable({
+        processing:true,serverSide:true,autoWidth:false,searchDelay:350,
+        pageLength:10,lengthMenu:[10,25,50,100],order:[[1,'desc']],
+        search:{search:<?= json_encode($busqueda,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>},
+        ajax:{url:<?= json_encode(url('notas')) ?>,data:function(d){
+            d.datos=1;form.serializeArray().forEach(function(f){d[f.name]=f.value;});
+        }},
+        columns:[
+            {data:'NRO_PEDIDO',render:text},
+            {data:'fecha_emision',render:function(v,t){return t==='display'&&v?escapeHtml(v.split('-').reverse().join('/')):escapeHtml(v||'—');}},
+            {data:'UNIDAD_LABEL',className:'notes-unit',render:text},
+            {data:'sustentacion',className:'notes-description',render:function(v){return escapeHtml(v||'Sin sustentación registrada');}},
+            {data:'TIPO_LABEL',render:text},
+            {data:'PRIORIDAD_LABEL',render:text},
+            {data:'ULTIMA_RUTA',render:function(v,t,r){return escapeHtml(v)+'<br><small>'+escapeHtml(r.ESTADO_LABEL)+'</small>';}},
+            {data:'USRNOMBRE',className:'notes-user',render:function(v,t,r){return escapeHtml(v||'No registrado')+'<br><small>'+escapeHtml(r.USRCODIGO?'Código '+r.USRCODIGO:'')+'</small>';}},
+            {data:'detalle_url',orderable:false,searchable:false,render:function(v,t,r){return '<a class="table-action icon-action" href="'+escapeHtml(v)+'" aria-label="Ver seguimiento de la nota '+escapeHtml(r.NRO_PEDIDO)+'"><i class="bi bi-eye" aria-hidden="true"></i></a>';}}
+        ],
+        createdRow:function(row){var labels=['Nota','Fecha de emisión','Unidad orgánica','Glosa / sustentación','Tipo','Prioridad','Etapa registrada','Registrado por','Acción'];$('td',row).each(function(i){this.setAttribute('data-label',labels[i]);});},
+        language:{processing:'Consultando notas…',search:'Buscar:',searchPlaceholder:'Número, unidad, usuario o glosa',lengthMenu:'Mostrar _MENU_ por página',info:'Mostrando _START_ a _END_ de _TOTAL_ notas',infoEmpty:'No hay notas disponibles',infoFiltered:'(filtradas de _MAX_ en total)',zeroRecords:'No encontramos notas con esos criterios.',emptyTable:'No hay notas dentro del alcance disponible.',paginate:{first:'Primero',last:'Último',next:'Siguiente',previous:'Anterior'}}
+    });
+    form.on('submit',function(e){e.preventDefault();table.ajax.reload();});
+    form.find('select,input[type=date]').on('change',function(){table.ajax.reload();});
+    $('#notes-export').on('click',function(){
+        var params=new URLSearchParams(form.serialize());params.set('r','exportar_notas');params.set('q',table.search());
+        this.href=<?= json_encode(APP_URL) ?>+'?'+params.toString();
+    });
+}());
+</script>
 <?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>

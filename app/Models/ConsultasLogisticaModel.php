@@ -8,10 +8,11 @@ final class ConsultasLogisticaModel
     { return implode('|', array_map(static fn($c)=>(string)($r[$c] ?? ''), ['PERIODO','ZONA','LOCA',$ultimo])); }
     public static function recurso(array $r): string
     { return implode('|',[$r['TIPOFAMI'] ?? '',$r['GRUPO'] ?? '',$r['SUBGRUPO'] ?? '',$r['SEC_BIEN'] ?? $r['SEC_SERV'] ?? '']); }
-    public static function permitido(array $r, array $a): bool
+    public static function permitido(array $r, array $a, string $modo = 'almacen'): bool
     {
-        if (!tienePermiso('ordenes',$a)) return false;
-        $scope = alcanceModulo('ordenes',$a);
+        $modulo=in_array($modo,['cuentas','proveedores'],true)?$modo:'ordenes';
+        if (!tienePermiso($modulo,$a)) return false;
+        $scope = alcanceModulo($modulo,$a);
         if ($scope === 'GLOBAL') return true;
         if ($scope === 'PROPIO') {
             $codigo=trim((string)($a['avalon_codigo'] ?? ''));
@@ -43,7 +44,7 @@ final class ConsultasLogisticaModel
         $pedidos=[]; $referencias=[];
         foreach ($this->filas('sum40014.DBF',['PERIODO','ZONA','LOCA','NRO_PEDIDO','CODUNIORG','USRCODIGO','USRNOMBRE','FEC_EMISIO']) as $r) {
             $referencias[$r['ZONA'].'|'.$r['LOCA'].'|'.$r['NRO_PEDIDO']][self::clave($r,'NRO_PEDIDO')]=self::clave($r,'NRO_PEDIDO');
-            if (self::permitido($r,$acceso) && ($anio==='' || substr($r['FEC_EMISIO'],0,4)===$anio)) $pedidos[self::clave($r,'NRO_PEDIDO')]=$r;
+            if (self::permitido($r,$acceso,$modo) && ($anio==='' || substr($r['FEC_EMISIO'],0,4)===$anio)) $pedidos[self::clave($r,'NRO_PEDIDO')]=$r;
         }
         // El período de la orden puede ser distinto al mes del pedido.
         // Resolver la referencia solo cuando identifica una cabecera inequívoca.
@@ -101,8 +102,8 @@ final class ConsultasLogisticaModel
             $r['CUENTA_NOMBRE']=$cuentas[$r['CTA_CON']] ?? '';
             foreach ($ordenes as &$orden) {
                 $orden['proveedor']=ProveedorService::resolver($orden['CODPROV']);
-                if (tienePermiso('ordenes_detalle',$acceso)) $orden['url']=url('detalle_documento',['origen'=>'ordenes','pedido'=>$p['NRO_PEDIDO'],'tipo'=>$orden['tipo'],'numero'=>$orden['numero']]);
-                if (!tienePermiso('ordenes_montos',$acceso)) unset($orden['importe']);
+                if (tienePermiso('ordenes',$acceso) && tienePermiso('ordenes_detalle',$acceso)) $orden['url']=url('detalle_documento',['origen'=>'ordenes','pedido'=>$p['NRO_PEDIDO'],'tipo'=>$orden['tipo'],'numero'=>$orden['numero']]);
+                if (!tienePermiso((in_array($modo,['cuentas','proveedores'],true)?$modo:'ordenes').'_montos',$acceso)) unset($orden['importe']);
             }
             unset($orden);
             $resultados[]=['pedido'=>$p,'detalle'=>$r,'recurso'=>$recursos[$rk] ?? ['codigo'=>$rk,'nombre'=>'Descripción no disponible','unidad'=>''],'ordenes'=>$ordenes];

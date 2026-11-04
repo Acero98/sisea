@@ -21,3 +21,6 @@ Las instalaciones nuevas incluyen los campos en `database/schema.sql`. El trasla
 ## Comprobación
 
 `php tests/permisos_ordenes.php` comprueba alcances, montos, detalle, guardado y refresco de sesión con tablas temporales aisladas. No modifica cuentas ni documentos reales.
+
+## Filtros de unidad y proveedor
+La lista de órdenes incorpora unidad orgánica y proveedor con búsqueda por nombre/código/RUC. Las opciones se obtienen de órdenes del alcance autorizado; los filtros se aplican en servidor antes de paginar y contar. La columna Proveedor muestra razón social y RUC, o código si no consta RUC. La búsqueda general incluye proveedor. No requiere acceso al directorio independiente de Proveedores ni permiso para ver montos. Las cabeceras ambiguas no se asignan a un proveedor. Pruebas en tests/permisos_ordenes.php con tablas temporales.
