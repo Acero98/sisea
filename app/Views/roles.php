@@ -20,5 +20,5 @@ require APP_ROOT.'/app/Views/partials/header.php';
 <?php if(isset($item['alcance'])):?><label class="field"><span>Puede consultar</span><select name="<?= e($item['alcance']) ?>"><?php foreach($alcances as$k=>$v):if($item['alcance']==='alcance_presupuesto'&&$k==='PROPIO')continue;?><option value="<?= e($k) ?>"><?= e($v) ?></option><?php endforeach;?></select></label><?php endif;?>
 <?php foreach($item['extras']??[] as$campo=>$texto):?><label class="role-extra"><input type="checkbox" name="<?= e($campo) ?>"> <?= e($texto) ?></label><?php endforeach;?></div><?php endif;?></div><?php endforeach;?></div></section><?php endforeach;?></div>
 </div><div class="modal-actions access-editor-actions"><span>Se aplica a todas las cuentas del rol.</span><button type="button" class="button-secondary" data-close-modal>Cancelar</button><button type="submit">Guardar rol y permisos</button></div></form></section></div>
-<script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script><script src="<?= e(APP_URL) ?>assets/js/seguridad.js?v=20261025a"></script>
+<script src="<?= e(APP_URL) ?>assets/vendor/jquery.dataTables.min.js"></script><script src="<?= e(APP_URL) ?>assets/js/seguridad.js?v=20261103a"></script>
 <?php require APP_ROOT.'/app/Views/partials/footer.php';?>

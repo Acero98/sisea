@@ -340,11 +340,8 @@ final class SeguimientoModel
                     }
                 }
             }
-            $proveedores = [];
-            foreach ($this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40030.DBF', ['NRO_ORDCMP','NRO_SERVIC','NOMPROV','RUCPROV','COMPROB'], $campoNumero, $numero) as $comprobante) {
-                if (trim($comprobante['NOMPROV']) !== '') $proveedores[$comprobante['NOMPROV']] = ['nombre'=>$comprobante['NOMPROV'],'ruc'=>$comprobante['RUCPROV']];
-            }
-            $proveedor = $proveedores ? reset($proveedores) : ['nombre'=>'','ruc'=>$cabecera['CODPROV'] ?? ''];
+            $comprobantesProveedor = $this->reader->findExact(AVALON_LOGISTICA_DATA . '/sum40030.DBF', ['NRO_ORDCMP','NRO_SERVIC','NOMPROV','RUCPROV','COMPROB'], $campoNumero, $numero);
+            $proveedor = ProveedorService::resolver((string)($cabecera['CODPROV'] ?? ''), $comprobantesProveedor);
             $meta = [[
                 'Fecha de emisión'=>$cabecera['FEC_EMISIO'] ?? '',
                 'Proveedor'=>$proveedor['nombre'],
