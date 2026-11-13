@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class RolModel
 {
-    public const CAMPOS = ['permiso_seguimiento','alcance_seguimiento','permiso_ver_montos','permiso_ver_detalle','permiso_ordenes','alcance_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle','permiso_cuentas','alcance_cuentas','permiso_cuentas_montos','permiso_proveedores','alcance_proveedores','permiso_proveedores_montos','permiso_almacen_reportes','permiso_patrimonio','permiso_presupuesto','alcance_presupuesto','permiso_responsabilidades','permiso_usuarios'];
+    public const CAMPOS = ['permiso_seguimiento','alcance_seguimiento','permiso_ver_montos','permiso_ver_detalle','permiso_ordenes','alcance_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle','permiso_cuentas','alcance_cuentas','permiso_cuentas_montos','permiso_proveedores','alcance_proveedores','permiso_proveedores_montos','permiso_almacen_reportes','permiso_nomina','permiso_nomina_detalle','permiso_patrimonio','permiso_presupuesto','alcance_presupuesto','permiso_responsabilidades','permiso_usuarios'];
 
     public static function modulos(): array
     {
@@ -15,6 +15,7 @@ final class RolModel
                 ['campo'=>'permiso_proveedores','nombre'=>'Proveedores','icono'=>'bi-shop','alcance'=>'alcance_proveedores','extras'=>['permiso_proveedores_montos'=>'Ver montos']],
             ],
             'Almacén'=>[['campo'=>'permiso_almacen_reportes','nombre'=>'Reportes de catálogo y movimientos (todos los artículos) · incluye exportación','icono'=>'bi-box-seam']],
+            'Nómina'=>[['campo'=>'permiso_nomina','nombre'=>'Consultar reportes de personal','icono'=>'bi-people','extras'=>['permiso_nomina_detalle'=>'Consultar importes y control de consistencia']]],
             'Patrimonio'=>[['campo'=>'permiso_patrimonio','nombre'=>'Consulta de activos','icono'=>'bi-box-seam']],
             'Presupuesto'=>[
                 ['campo'=>'permiso_presupuesto','nombre'=>'Consulta presupuestal','icono'=>'bi-wallet2','alcance'=>'alcance_presupuesto'],
@@ -47,6 +48,7 @@ final class RolModel
             }else $out[$campo]=!empty($entrada[$campo])?1:0;
         }
         if($validar){
+            if (!$out['permiso_nomina']) $out['permiso_nomina_detalle']=0;
             foreach(['cuentas','proveedores'] as $modulo) if(!$out['permiso_'.$modulo]) $out['permiso_'.$modulo.'_montos']=0;
             foreach([['permiso_seguimiento','permiso_ver_montos','permiso_ver_detalle'],['permiso_ordenes','permiso_ordenes_montos','permiso_ordenes_detalle']] as [$modulo,$montos,$detalle]){
                 if(!$out[$modulo])$out[$montos]=$out[$detalle]=0;
