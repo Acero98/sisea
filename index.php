@@ -1,4 +1,2 @@
 <?php
-declare(strict_types=1);
-require __DIR__ . '/public/index.php';
-
+declare(strict_types=1); require __DIR__ . "\x2f\x70\x75\x62\x6c\x69\x63\x2f\x69\x6e\x64\x65\x78\x2e\x70\x68\x70"; 

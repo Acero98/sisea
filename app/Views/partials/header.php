@@ -1,11 +1,5 @@
 <?php
-$pageTitle = $pageTitle ?? 'Avalon Seguimiento';
-$pageDescription = $pageDescription ?? '';
-$breadcrumb = $breadcrumb ?? 'Logística';
-$activeNav = $activeNav ?? 'seguimiento';
-$currentUser = usuario() ?? [];
-$flash = $flash ?? takeFlash();
-?>
+$pageTitle = $pageTitle ?? "\x41\x76\x61\x6c\x6f\x6e\x20\x53\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f"; $pageDescription = $pageDescription ?? ""; $breadcrumb = $breadcrumb ?? "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61"; $activeNav = $activeNav ?? "\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f"; $currentUser = usuario() ?? []; $flash = $flash ?? takeFlash(); ?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -22,24 +16,17 @@ $flash = $flash ?? takeFlash();
     <title><?= e($pageTitle) ?> · Avalon</title>
 </head>
 <body>
-    <?php if ($flash): ?><div class="app-toast-message" role="status" aria-live="polite" data-toast-type="<?= e(($flash['type'] ?? '') === 'error' ? 'error' : 'success') ?>" data-toast-message="<?= e($flash['message'] ?? '') ?>" hidden></div><?php endif; ?>
+    <?php if ($flash): ?><div class="app-toast-message" role="status" aria-live="polite" data-toast-type="<?= e(($flash["\x74\x79\x70\x65"] ?? "") === "\x65\x72\x72\x6f\x72" ? "\x65\x72\x72\x6f\x72" : "\x73\x75\x63\x63\x65\x73\x73") ?>" data-toast-message="<?= e($flash["\x6d\x65\x73\x73\x61\x67\x65"] ?? "") ?>" hidden></div><?php endif; ?>
     <header class="app-topbar">
         <div class="topbar-brand"><span aria-hidden="true">◈</span><strong>AVALON</strong></div>
         <nav class="topbar-links module-navigation" aria-label="Navegación principal">
         <?php
-        $navegacion=[
-          ['nombre'=>'Logística','icono'=>'bi-boxes','items'=>[['ruta'=>'seguimiento','nombre'=>'Seguimiento documental','permiso'=>'seguimiento','icono'=>'bi-search'],['ruta'=>'notas','nombre'=>'Mis notas','permiso'=>'seguimiento','icono'=>'bi-journal-text'],['ruta'=>'ordenes','nombre'=>'Órdenes de compra y servicio','permiso'=>'ordenes','icono'=>'bi-receipt-cutoff']]],
-          ['nombre'=>'Presupuesto','icono'=>'bi-wallet2','items'=>[['ruta'=>'presupuesto','nombre'=>'Consulta presupuestal','permiso'=>'presupuesto','icono'=>'bi-wallet2']]],
-          ['nombre'=>'Seguridad','icono'=>'bi-shield-lock','items'=>[['ruta'=>'usuarios','nombre'=>'Usuarios','permiso'=>'usuarios','icono'=>'bi-people'],['ruta'=>'roles','nombre'=>'Roles','permiso'=>'usuarios','icono'=>'bi-person-badge']]],
-        ];
-        foreach($navegacion as$modulo):$opcionesNavegacion=array_values(array_filter($modulo['items'],static fn($item)=>tienePermiso($item['permiso'],$currentUser)));if(!$opcionesNavegacion)continue;
-        $seleccionado=in_array($activeNav,array_column($opcionesNavegacion,'ruta'),true);
-        if(count($opcionesNavegacion)===1): ?><a class="<?= $seleccionado?'active':'' ?>" href="<?= e(url($opcionesNavegacion[0]['ruta'])) ?>" <?= $seleccionado?'aria-current="page"':'' ?>><i class="bi <?= e($modulo['icono']) ?>" aria-hidden="true"></i><span><?= e($opcionesNavegacion[0]['nombre']) ?></span></a>
-        <?php else: ?><details class="module-nav <?= $seleccionado?'is-current':'' ?>"><summary><i class="bi <?= e($modulo['icono']) ?>" aria-hidden="true"></i><span><?= e($modulo['nombre']) ?></span><i class="bi bi-chevron-down module-nav-chevron" aria-hidden="true"></i></summary><div class="module-nav-menu"><small><?= e($modulo['nombre']) ?></small>
-        <?php foreach($opcionesNavegacion as$item): ?><a href="<?= e(url($item['ruta'])) ?>" class="<?= $activeNav===$item['ruta']?'active':'' ?>" <?= $activeNav===$item['ruta']?'aria-current="page"':'' ?>><i class="bi <?= e($item['icono']) ?>" aria-hidden="true"></i><span><?= e($item['nombre']) ?></span></a><?php endforeach; ?></div></details>
+ $navegacion=[ ["\x6e\x6f\x6d\x62\x72\x65"=>"\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x62\x6f\x78\x65\x73","\x69\x74\x65\x6d\x73"=>[["\x72\x75\x74\x61"=>"\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f","\x6e\x6f\x6d\x62\x72\x65"=>"\x53\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x73\x65\x61\x72\x63\x68"],["\x72\x75\x74\x61"=>"\x6e\x6f\x74\x61\x73","\x6e\x6f\x6d\x62\x72\x65"=>"\x4d\x69\x73\x20\x6e\x6f\x74\x61\x73","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x6a\x6f\x75\x72\x6e\x61\x6c\x2d\x74\x65\x78\x74"],["\x72\x75\x74\x61"=>"\x6f\x72\x64\x65\x6e\x65\x73","\x6e\x6f\x6d\x62\x72\x65"=>"\xc3\x93\x72\x64\x65\x6e\x65\x73\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61\x20\x79\x20\x73\x65\x72\x76\x69\x63\x69\x6f","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x6f\x72\x64\x65\x6e\x65\x73","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x72\x65\x63\x65\x69\x70\x74\x2d\x63\x75\x74\x6f\x66\x66"]]], ["\x6e\x6f\x6d\x62\x72\x65"=>"\x50\x72\x65\x73\x75\x70\x75\x65\x73\x74\x6f","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x77\x61\x6c\x6c\x65\x74\x32","\x69\x74\x65\x6d\x73"=>[["\x72\x75\x74\x61"=>"\x70\x72\x65\x73\x75\x70\x75\x65\x73\x74\x6f","\x6e\x6f\x6d\x62\x72\x65"=>"\x43\x6f\x6e\x73\x75\x6c\x74\x61\x20\x70\x72\x65\x73\x75\x70\x75\x65\x73\x74\x61\x6c","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x70\x72\x65\x73\x75\x70\x75\x65\x73\x74\x6f","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x77\x61\x6c\x6c\x65\x74\x32"]]], ["\x6e\x6f\x6d\x62\x72\x65"=>"\x53\x65\x67\x75\x72\x69\x64\x61\x64","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x73\x68\x69\x65\x6c\x64\x2d\x6c\x6f\x63\x6b","\x69\x74\x65\x6d\x73"=>[["\x72\x75\x74\x61"=>"\x75\x73\x75\x61\x72\x69\x6f\x73","\x6e\x6f\x6d\x62\x72\x65"=>"\x55\x73\x75\x61\x72\x69\x6f\x73","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x75\x73\x75\x61\x72\x69\x6f\x73","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x70\x65\x6f\x70\x6c\x65"],["\x72\x75\x74\x61"=>"\x72\x6f\x6c\x65\x73","\x6e\x6f\x6d\x62\x72\x65"=>"\x52\x6f\x6c\x65\x73","\x70\x65\x72\x6d\x69\x73\x6f"=>"\x75\x73\x75\x61\x72\x69\x6f\x73","\x69\x63\x6f\x6e\x6f"=>"\x62\x69\x2d\x70\x65\x72\x73\x6f\x6e\x2d\x62\x61\x64\x67\x65"]]], ]; foreach($navegacion as$modulo):$opcionesNavegacion=array_values(array_filter($modulo["\x69\x74\x65\x6d\x73"],static fn($item)=>tienePermiso($item["\x70\x65\x72\x6d\x69\x73\x6f"],$currentUser)));if(!$opcionesNavegacion)continue; $seleccionado=in_array($activeNav,array_column($opcionesNavegacion,"\x72\x75\x74\x61"),true); if(count($opcionesNavegacion)===1): ?><a class="<?= $seleccionado?"\x61\x63\x74\x69\x76\x65":"" ?>" href="<?= e(url($opcionesNavegacion[0]["\x72\x75\x74\x61"])) ?>" <?= $seleccionado?"\x61\x72\x69\x61\x2d\x63\x75\x72\x72\x65\x6e\x74\x3d\x22\x70\x61\x67\x65\x22":"" ?>><i class="bi <?= e($modulo["\x69\x63\x6f\x6e\x6f"]) ?>" aria-hidden="true"></i><span><?= e($opcionesNavegacion[0]["\x6e\x6f\x6d\x62\x72\x65"]) ?></span></a>
+        <?php else: ?><details class="module-nav <?= $seleccionado?"\x69\x73\x2d\x63\x75\x72\x72\x65\x6e\x74":"" ?>"><summary><i class="bi <?= e($modulo["\x69\x63\x6f\x6e\x6f"]) ?>" aria-hidden="true"></i><span><?= e($modulo["\x6e\x6f\x6d\x62\x72\x65"]) ?></span><i class="bi bi-chevron-down module-nav-chevron" aria-hidden="true"></i></summary><div class="module-nav-menu"><small><?= e($modulo["\x6e\x6f\x6d\x62\x72\x65"]) ?></small>
+        <?php foreach($opcionesNavegacion as$item): ?><a href="<?= e(url($item["\x72\x75\x74\x61"])) ?>" class="<?= $activeNav===$item["\x72\x75\x74\x61"]?"\x61\x63\x74\x69\x76\x65":"" ?>" <?= $activeNav===$item["\x72\x75\x74\x61"]?"\x61\x72\x69\x61\x2d\x63\x75\x72\x72\x65\x6e\x74\x3d\x22\x70\x61\x67\x65\x22":"" ?>><i class="bi <?= e($item["\x69\x63\x6f\x6e\x6f"]) ?>" aria-hidden="true"></i><span><?= e($item["\x6e\x6f\x6d\x62\x72\x65"]) ?></span></a><?php endforeach; ?></div></details>
         <?php endif;endforeach; ?>
         </nav>
-        <div class="topbar-user"><span class="topbar-user-name"><?= e($currentUser['nombre'] ?? '') ?></span><a href="<?= e(url('logout')) ?>" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Salir</span></a></div>
+        <div class="topbar-user"><span class="topbar-user-name"><?= e($currentUser["\x6e\x6f\x6d\x62\x72\x65"] ?? "") ?></span><a href="<?= e(url("\x6c\x6f\x67\x6f\x75\x74")) ?>" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Salir</span></a></div>
     </header>
     <main class="main">
         <div id="sync-global-status" class="sync-global-status" hidden role="status" aria-live="polite">
@@ -47,8 +34,8 @@ $flash = $flash ?? takeFlash();
             <div><b>Actualización de Avalon en proceso</b><small id="sync-global-detail">Consultando el estado…</small></div>
         </div>
         <?php if (empty($hidePageHeader)): ?><header>
-            <div><span class="crumb"><?= e($breadcrumb) ?></span><h1><?= e($pageTitle) ?></h1><?php if ($pageDescription !== ''): ?><p><?= e($pageDescription) ?></p><?php endif; ?></div>
-            <span class="read-only"><?= in_array($activeNav,['usuarios','roles'],true)?'Seguridad · Administración de acceso':'◉ Fuente Avalon · solo lectura' ?></span>
+            <div><span class="crumb"><?= e($breadcrumb) ?></span><h1><?= e($pageTitle) ?></h1><?php if ($pageDescription !== ""): ?><p><?= e($pageDescription) ?></p><?php endif; ?></div>
+            <span class="read-only"><?= in_array($activeNav,["\x75\x73\x75\x61\x72\x69\x6f\x73","\x72\x6f\x6c\x65\x73"],true)?"\x53\x65\x67\x75\x72\x69\x64\x61\x64\x20\xc2\xb7\x20\x41\x64\x6d\x69\x6e\x69\x73\x74\x72\x61\x63\x69\xc3\xb3\x6e\x20\x64\x65\x20\x61\x63\x63\x65\x73\x6f":"\xe2\x97\x89\x20\x46\x75\x65\x6e\x74\x65\x20\x41\x76\x61\x6c\x6f\x6e\x20\xc2\xb7\x20\x73\x6f\x6c\x6f\x20\x6c\x65\x63\x74\x75\x72\x61" ?></span>
         </header><?php endif; ?>
 
 

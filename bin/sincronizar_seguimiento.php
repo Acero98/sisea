@@ -1,18 +1,2 @@
 <?php
-declare(strict_types=1);
-if(PHP_SAPI!=='cli') { http_response_code(404); exit; }
-require dirname(__DIR__).'/config/app.php';
-require APP_ROOT.'/config/database.php';
-$locked=false;
-try {
-    $control=new SincronizacionControlService(); $control->instalar();
-    $locked=$control->iniciar(['nombre'=>'Terminal'],'GLOBAL','Sincronizacion desde terminal');
-    if(!$locked) throw new RuntimeException('Ya existe una sincronizacion en curso.');
-    echo date('c')." - Inicio. La primera carga puede tardar; no cierre esta terminal.\n";
-    $n=(new SeguimientoSnapshotService())->sincronizar([],null,static function(string $mensaje): void { echo date('c').' - '.$mensaje.PHP_EOL; });
-    $control->finalizar(true,"$n notas sincronizadas"); $locked=false;
-    echo date('c')." - $n notas sincronizadas desde Avalon (solo lectura).\n";
-} catch(Throwable $e) {
-    if($locked) { try { $control->finalizar(false,$e->getMessage()); } catch(Throwable $ignored) {} }
-    fwrite(STDERR,date('c').' - ERROR: '.$e->getMessage()."\n"); exit(1);
-}
+declare(strict_types=1); if(PHP_SAPI!=="\x63\x6c\x69") { http_response_code(404); exit; } require dirname(__DIR__)."\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x61\x70\x70\x2e\x70\x68\x70"; require APP_ROOT."\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x70\x68\x70"; $locked=false; try { $control=new SincronizacionControlService(); $control->instalar(); $locked=$control->iniciar(["\x6e\x6f\x6d\x62\x72\x65"=>"\x54\x65\x72\x6d\x69\x6e\x61\x6c"],"\x47\x4c\x4f\x42\x41\x4c","\x53\x69\x6e\x63\x72\x6f\x6e\x69\x7a\x61\x63\x69\x6f\x6e\x20\x64\x65\x73\x64\x65\x20\x74\x65\x72\x6d\x69\x6e\x61\x6c"); if(!$locked) throw new RuntimeException("\x59\x61\x20\x65\x78\x69\x73\x74\x65\x20\x75\x6e\x61\x20\x73\x69\x6e\x63\x72\x6f\x6e\x69\x7a\x61\x63\x69\x6f\x6e\x20\x65\x6e\x20\x63\x75\x72\x73\x6f\x2e"); echo date("\x63")."\x20\x2d\x20\x49\x6e\x69\x63\x69\x6f\x2e\x20\x4c\x61\x20\x70\x72\x69\x6d\x65\x72\x61\x20\x63\x61\x72\x67\x61\x20\x70\x75\x65\x64\x65\x20\x74\x61\x72\x64\x61\x72\x3b\x20\x6e\x6f\x20\x63\x69\x65\x72\x72\x65\x20\x65\x73\x74\x61\x20\x74\x65\x72\x6d\x69\x6e\x61\x6c\x2e\x0a"; $n=(new SeguimientoSnapshotService())->sincronizar([],null,static function(string $mensaje): void { echo date("\x63")."\x20\x2d\x20".$mensaje.PHP_EOL; }); $control->finalizar(true,"$n notas sincronizadas"); $locked=false; echo date("\x63")." - $n notas sincronizadas desde Avalon (solo lectura).\n"; } catch(Throwable $e) { if($locked) { try { $control->finalizar(false,$e->getMessage()); } catch(Throwable $ignored) {} } fwrite(STDERR,date("\x63")."\x20\x2d\x20\x45\x52\x52\x4f\x52\x3a\x20".$e->getMessage()."\x0a"); exit(1); } 

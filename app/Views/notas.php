@@ -1,86 +1,5 @@
 <?php
-
-$flash = takeFlash();
-
-$esAdministradorGlobal = alcanceModulo('seguimiento',$acceso) === 'GLOBAL';
-
-$codigoAvalon = trim(
-    (string) ($acceso['avalon_codigo'] ?? '')
-);
-
-$unidadOrganica = trim(
-    (string) ($acceso['unidad_organica'] ?? '')
-);
-
-$tieneCodigoAvalon = $codigoAvalon !== '';
-
-$tieneUnidad =
-    $unidadOrganica !== ''
-    && $unidadOrganica !== '0000';
-
-if ($alcance === 'mis') {
-    $pageTitle = 'Mis notas de pedido';
-} elseif ($esAdministradorGlobal) {
-    $pageTitle = 'Notas de todas las unidades';
-} else {
-    $pageTitle = 'Notas de mi unidad orgánica';
-}
-
-$pageDescription =
-    'Consulta paginada: solo se cargan las notas de la página actual.';
-
-$breadcrumb = 'Logística / Notas de pedido';
-$activeNav = 'notas';
-
-$date = static function (string $value): string {
-    $d = DateTime::createFromFormat('Ymd', $value);
-
-    return $d
-        ? $d->format('d/m/Y')
-        : '—';
-};
-
-$routeClass = static function (string $route): string {
-    return [
-        'Pedido' => 'pedido',
-        'Cotización' => 'cotizacion',
-        'Certificación' => 'certificacion',
-        'Orden de compra' => 'orden',
-        'Orden de servicio' => 'orden',
-        'Factura o boleta' => 'comprobante',
-        'Devengado' => 'devengado',
-        'Pago' => 'pago',
-        'Retiro de almacén' => 'retiro',
-        'Pendiente de retiro de almacén' => 'pendiente',
-        'Pedido anulado' => 'anulado',
-    ][$route] ?? 'pedido';
-};
-
-$tipoActualizacion = null;
-$textoActualizar = null;
-$descripcionActualizacion = null;
-
-if ($alcance === 'mis' && $tieneCodigoAvalon) {
-    $tipoActualizacion = 'mis';
-    $textoActualizar = 'Actualizar mis notas';
-    $descripcionActualizacion =
-        'Actualiza únicamente las notas registradas por su usuario.';
-} elseif ($alcance === 'unidad' && $esAdministradorGlobal) {
-    $tipoActualizacion = 'global';
-    $textoActualizar = 'Actualizar todas las notas';
-    $descripcionActualizacion =
-        'Actualiza desde Avalon las notas de todas las unidades.';
-} elseif ($alcance === 'unidad' && $tieneUnidad) {
-    $tipoActualizacion = 'unidad';
-    $textoActualizar = 'Actualizar mi unidad';
-    $descripcionActualizacion =
-        'Actualiza únicamente las notas correspondientes a su unidad orgánica.';
-}
-
-$useDataTables = true;
-require APP_ROOT . '/app/Views/partials/header.php';
-
-?>
+ $flash = takeFlash(); $esAdministradorGlobal = alcanceModulo("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f",$acceso) === "\x47\x4c\x4f\x42\x41\x4c"; $codigoAvalon = trim( (string) ($acceso["\x61\x76\x61\x6c\x6f\x6e\x5f\x63\x6f\x64\x69\x67\x6f"] ?? "") ); $unidadOrganica = trim( (string) ($acceso["\x75\x6e\x69\x64\x61\x64\x5f\x6f\x72\x67\x61\x6e\x69\x63\x61"] ?? "") ); $tieneCodigoAvalon = $codigoAvalon !== ""; $tieneUnidad = $unidadOrganica !== "" && $unidadOrganica !== "\x30\x30\x30\x30"; if ($alcance === "\x6d\x69\x73") { $pageTitle = "\x4d\x69\x73\x20\x6e\x6f\x74\x61\x73\x20\x64\x65\x20\x70\x65\x64\x69\x64\x6f"; } elseif ($esAdministradorGlobal) { $pageTitle = "\x4e\x6f\x74\x61\x73\x20\x64\x65\x20\x74\x6f\x64\x61\x73\x20\x6c\x61\x73\x20\x75\x6e\x69\x64\x61\x64\x65\x73"; } else { $pageTitle = "\x4e\x6f\x74\x61\x73\x20\x64\x65\x20\x6d\x69\x20\x75\x6e\x69\x64\x61\x64\x20\x6f\x72\x67\xc3\xa1\x6e\x69\x63\x61"; } $pageDescription = "\x43\x6f\x6e\x73\x75\x6c\x74\x61\x20\x70\x61\x67\x69\x6e\x61\x64\x61\x3a\x20\x73\x6f\x6c\x6f\x20\x73\x65\x20\x63\x61\x72\x67\x61\x6e\x20\x6c\x61\x73\x20\x6e\x6f\x74\x61\x73\x20\x64\x65\x20\x6c\x61\x20\x70\xc3\xa1\x67\x69\x6e\x61\x20\x61\x63\x74\x75\x61\x6c\x2e"; $breadcrumb = "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61\x20\x2f\x20\x4e\x6f\x74\x61\x73\x20\x64\x65\x20\x70\x65\x64\x69\x64\x6f"; $activeNav = "\x6e\x6f\x74\x61\x73"; $date = static function (string $value): string { $d = DateTime::createFromFormat("\x59\x6d\x64", $value); return $d ? $d->format("\x64\x2f\x6d\x2f\x59") : "\xe2\x80\x94"; }; $routeClass = static function (string $route): string { return [ "\x50\x65\x64\x69\x64\x6f" => "\x70\x65\x64\x69\x64\x6f", "\x43\x6f\x74\x69\x7a\x61\x63\x69\xc3\xb3\x6e" => "\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e", "\x43\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\xc3\xb3\x6e" => "\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e", "\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61" => "\x6f\x72\x64\x65\x6e", "\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x73\x65\x72\x76\x69\x63\x69\x6f" => "\x6f\x72\x64\x65\x6e", "\x46\x61\x63\x74\x75\x72\x61\x20\x6f\x20\x62\x6f\x6c\x65\x74\x61" => "\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65", "\x44\x65\x76\x65\x6e\x67\x61\x64\x6f" => "\x64\x65\x76\x65\x6e\x67\x61\x64\x6f", "\x50\x61\x67\x6f" => "\x70\x61\x67\x6f", "\x52\x65\x74\x69\x72\x6f\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e" => "\x72\x65\x74\x69\x72\x6f", "\x50\x65\x6e\x64\x69\x65\x6e\x74\x65\x20\x64\x65\x20\x72\x65\x74\x69\x72\x6f\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e" => "\x70\x65\x6e\x64\x69\x65\x6e\x74\x65", "\x50\x65\x64\x69\x64\x6f\x20\x61\x6e\x75\x6c\x61\x64\x6f" => "\x61\x6e\x75\x6c\x61\x64\x6f", ][$route] ?? "\x70\x65\x64\x69\x64\x6f"; }; $tipoActualizacion = null; $textoActualizar = null; $descripcionActualizacion = null; if ($alcance === "\x6d\x69\x73" && $tieneCodigoAvalon) { $tipoActualizacion = "\x6d\x69\x73"; $textoActualizar = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x72\x20\x6d\x69\x73\x20\x6e\x6f\x74\x61\x73"; $descripcionActualizacion = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x20\xc3\xba\x6e\x69\x63\x61\x6d\x65\x6e\x74\x65\x20\x6c\x61\x73\x20\x6e\x6f\x74\x61\x73\x20\x72\x65\x67\x69\x73\x74\x72\x61\x64\x61\x73\x20\x70\x6f\x72\x20\x73\x75\x20\x75\x73\x75\x61\x72\x69\x6f\x2e"; } elseif ($alcance === "\x75\x6e\x69\x64\x61\x64" && $esAdministradorGlobal) { $tipoActualizacion = "\x67\x6c\x6f\x62\x61\x6c"; $textoActualizar = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x72\x20\x74\x6f\x64\x61\x73\x20\x6c\x61\x73\x20\x6e\x6f\x74\x61\x73"; $descripcionActualizacion = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x20\x64\x65\x73\x64\x65\x20\x41\x76\x61\x6c\x6f\x6e\x20\x6c\x61\x73\x20\x6e\x6f\x74\x61\x73\x20\x64\x65\x20\x74\x6f\x64\x61\x73\x20\x6c\x61\x73\x20\x75\x6e\x69\x64\x61\x64\x65\x73\x2e"; } elseif ($alcance === "\x75\x6e\x69\x64\x61\x64" && $tieneUnidad) { $tipoActualizacion = "\x75\x6e\x69\x64\x61\x64"; $textoActualizar = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x72\x20\x6d\x69\x20\x75\x6e\x69\x64\x61\x64"; $descripcionActualizacion = "\x41\x63\x74\x75\x61\x6c\x69\x7a\x61\x20\xc3\xba\x6e\x69\x63\x61\x6d\x65\x6e\x74\x65\x20\x6c\x61\x73\x20\x6e\x6f\x74\x61\x73\x20\x63\x6f\x72\x72\x65\x73\x70\x6f\x6e\x64\x69\x65\x6e\x74\x65\x73\x20\x61\x20\x73\x75\x20\x75\x6e\x69\x64\x61\x64\x20\x6f\x72\x67\xc3\xa1\x6e\x69\x63\x61\x2e"; } $useDataTables = true; require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x68\x65\x61\x64\x65\x72\x2e\x70\x68\x70"; ?>
 
 <section class="card notes-intro">
     <div>
@@ -89,16 +8,16 @@ require APP_ROOT . '/app/Views/partials/header.php';
         <p>
             La lista consulta la copia local actualizada desde Avalon;
             se muestran
-            <?= e((string) $resultado['por_pagina']) ?>
+            <?= e((string) $resultado["\x70\x6f\x72\x5f\x70\x61\x67\x69\x6e\x61"]) ?>
             registros por página.
         </p>
 
         <?php if ($ultimaSincronizacion): ?>
             <small>
                 Última sincronización:
-                <?= e($ultimaSincronizacion['terminado_en']) ?>
+                <?= e($ultimaSincronizacion["\x74\x65\x72\x6d\x69\x6e\x61\x64\x6f\x5f\x65\x6e"]) ?>
                 ·
-                <?= e((string) $ultimaSincronizacion['notas_procesadas']) ?>
+                <?= e((string) $ultimaSincronizacion["\x6e\x6f\x74\x61\x73\x5f\x70\x72\x6f\x63\x65\x73\x61\x64\x61\x73"]) ?>
                 notas.
             </small>
         <?php endif; ?>
@@ -107,8 +26,8 @@ require APP_ROOT . '/app/Views/partials/header.php';
     <div class="scope-actions">
         <?php if ($tieneCodigoAvalon): ?>
             <a
-                class="<?= $alcance === 'mis' ? 'selected' : '' ?>"
-                href="<?= e(url('notas', ['vista' => 'mis'])) ?>"
+                class="<?= $alcance === "\x6d\x69\x73" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>"
+                href="<?= e(url("\x6e\x6f\x74\x61\x73", ["\x76\x69\x73\x74\x61" => "\x6d\x69\x73"])) ?>"
             >
                 ▤ Mis notas
             </a>
@@ -116,15 +35,15 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
         <?php if ($esAdministradorGlobal): ?>
             <a
-                class="<?= $alcance === 'unidad' ? 'selected' : '' ?>"
-                href="<?= e(url('notas', ['vista' => 'unidad'])) ?>"
+                class="<?= $alcance === "\x75\x6e\x69\x64\x61\x64" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>"
+                href="<?= e(url("\x6e\x6f\x74\x61\x73", ["\x76\x69\x73\x74\x61" => "\x75\x6e\x69\x64\x61\x64"])) ?>"
             >
                 ⌂ Todas las unidades
             </a>
-        <?php elseif ($tieneUnidad && alcanceModulo('seguimiento',$acceso)!=='PROPIO'): ?>
+        <?php elseif ($tieneUnidad && alcanceModulo("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f",$acceso)!=="\x50\x52\x4f\x50\x49\x4f"): ?>
             <a
-                class="<?= $alcance === 'unidad' ? 'selected' : '' ?>"
-                href="<?= e(url('notas', ['vista' => 'unidad'])) ?>"
+                class="<?= $alcance === "\x75\x6e\x69\x64\x61\x64" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>"
+                href="<?= e(url("\x6e\x6f\x74\x61\x73", ["\x76\x69\x73\x74\x61" => "\x75\x6e\x69\x64\x61\x64"])) ?>"
             >
                 ⌂ Mi unidad orgánica
             </a>
@@ -133,7 +52,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
 </section>
 
 <section class="card">
-    <?php if ($errorFechas !== ''): ?>
+    <?php if ($errorFechas !== ""): ?>
         <p class="alert error" role="alert"><?= e($errorFechas) ?></p>
     <?php endif; ?>
     <form class="notes-filter notes-date-filter" method="get">
@@ -147,12 +66,12 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
         <label>Unidad orgánica
             <select name="unidad" class="js-select2" data-searchable><option value="">Todas las unidades permitidas</option>
-                <?php foreach($opcionesFiltros['unidades'] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUnidad?'selected':'' ?>><?= e($nombre) ?></option><?php endforeach; ?>
+                <?php foreach($opcionesFiltros["\x75\x6e\x69\x64\x61\x64\x65\x73"] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUnidad?"\x73\x65\x6c\x65\x63\x74\x65\x64":"" ?>><?= e($nombre) ?></option><?php endforeach; ?>
             </select>
         </label>
         <label>Registrado por
             <select name="registrado_por" class="js-select2" data-searchable><option value="">Todos los usuarios permitidos</option>
-                <?php foreach($opcionesFiltros['usuarios'] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUsuario?'selected':'' ?>><?= e($nombre) ?></option><?php endforeach; ?>
+                <?php foreach($opcionesFiltros["\x75\x73\x75\x61\x72\x69\x6f\x73"] as $codigo=>$nombre): ?><option value="<?= e((string)$codigo) ?>" <?= (string)$codigo===$filtroUsuario?"\x73\x65\x6c\x65\x63\x74\x65\x64":"" ?>><?= e($nombre) ?></option><?php endforeach; ?>
             </select>
         </label>
         <label>
@@ -167,13 +86,13 @@ require APP_ROOT . '/app/Views/partials/header.php';
         <div class="notes-filter-actions">
         <button type="submit">Buscar</button>
 
-        <?php if ($errorFechas === ''): ?>
-        <a id="notes-export" class="clear-search" href="<?= e(url('exportar_notas', ['vista' => $alcance, 'q' => $busqueda, 'desde' => $desde, 'hasta' => $hasta, 'unidad'=>$filtroUnidad, 'registrado_por'=>$filtroUsuario])) ?>">Exportar CSV</a>
+        <?php if ($errorFechas === ""): ?>
+        <a id="notes-export" class="clear-search" href="<?= e(url("\x65\x78\x70\x6f\x72\x74\x61\x72\x5f\x6e\x6f\x74\x61\x73", ["\x76\x69\x73\x74\x61" => $alcance, "\x71" => $busqueda, "\x64\x65\x73\x64\x65" => $desde, "\x68\x61\x73\x74\x61" => $hasta, "\x75\x6e\x69\x64\x61\x64"=>$filtroUnidad, "\x72\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x5f\x70\x6f\x72"=>$filtroUsuario])) ?>">Exportar CSV</a>
         <?php endif; ?>
 
         <a
             class="clear-search"
-            href="<?= e(url('notas', ['vista' => $alcance])) ?>"
+            href="<?= e(url("\x6e\x6f\x74\x61\x73", ["\x76\x69\x73\x74\x61" => $alcance])) ?>"
         >
             Limpiar
         </a>
@@ -183,7 +102,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
     <div class="section-heading">
         <div>
             <h2>
-                <?php if ($alcance === 'mis'): ?>
+                <?php if ($alcance === "\x6d\x69\x73"): ?>
                     Notas realizadas por mí
                 <?php elseif ($esAdministradorGlobal): ?>
                     Notas de todas las unidades
@@ -234,7 +153,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
 
         <form data-sync-form
             method="post"
-            action="<?= e(url('sincronizar_seguimiento')) ?>"
+            action="<?= e(url("\x73\x69\x6e\x63\x72\x6f\x6e\x69\x7a\x61\x72\x5f\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f")) ?>"
         >
             <input
                 type="hidden"
@@ -275,7 +194,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
         processing:true,serverSide:true,autoWidth:false,searchDelay:350,
         pageLength:10,lengthMenu:[10,25,50,100],order:[[1,'desc']],
         search:{search:<?= json_encode($busqueda,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?>},
-        ajax:{url:<?= json_encode(url('notas')) ?>,data:function(d){
+        ajax:{url:<?= json_encode(url("\x6e\x6f\x74\x61\x73")) ?>,data:function(d){
             d.datos=1;form.serializeArray().forEach(function(f){d[f.name]=f.value;});
         }},
         columns:[
@@ -300,4 +219,4 @@ require APP_ROOT . '/app/Views/partials/header.php';
     });
 }());
 </script>
-<?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>
+<?php require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x66\x6f\x6f\x74\x65\x72\x2e\x70\x68\x70"; ?>

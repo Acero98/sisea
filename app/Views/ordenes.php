@@ -1,16 +1,9 @@
 <?php
-$pageTitle = 'Órdenes de compra y servicio';
-$pageDescription = 'Consulta en solo lectura de las órdenes vinculadas a pedidos dentro de tu alcance.';
-$breadcrumb = 'Logística / Órdenes';
-$activeNav = 'ordenes';
-$useDataTables = true;
-if (!isset($ordenesIniciales)) $ordenesIniciales = [];
-require APP_ROOT . '/app/Views/partials/header.php';
-?>
+$pageTitle = "\xc3\x93\x72\x64\x65\x6e\x65\x73\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61\x20\x79\x20\x73\x65\x72\x76\x69\x63\x69\x6f"; $pageDescription = "\x43\x6f\x6e\x73\x75\x6c\x74\x61\x20\x65\x6e\x20\x73\x6f\x6c\x6f\x20\x6c\x65\x63\x74\x75\x72\x61\x20\x64\x65\x20\x6c\x61\x73\x20\xc3\xb3\x72\x64\x65\x6e\x65\x73\x20\x76\x69\x6e\x63\x75\x6c\x61\x64\x61\x73\x20\x61\x20\x70\x65\x64\x69\x64\x6f\x73\x20\x64\x65\x6e\x74\x72\x6f\x20\x64\x65\x20\x74\x75\x20\x61\x6c\x63\x61\x6e\x63\x65\x2e"; $breadcrumb = "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61\x20\x2f\x20\xc3\x93\x72\x64\x65\x6e\x65\x73"; $activeNav = "\x6f\x72\x64\x65\x6e\x65\x73"; $useDataTables = true; if (!isset($ordenesIniciales)) $ordenesIniciales = []; require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x68\x65\x61\x64\x65\x72\x2e\x70\x68\x70"; ?>
 <?php if ($ordenesIniciales): ?><section class="card orders-budget-context">
         <div><strong>Órdenes seleccionadas desde Presupuesto</strong>
             <p>El listado conserva los filtros de acceso de tu usuario.</p>
-        </div><a class="orders-clear" href="<?= e(url('ordenes')) ?>">Ver todas las órdenes</a>
+        </div><a class="orders-clear" href="<?= e(url("\x6f\x72\x64\x65\x6e\x65\x73")) ?>">Ver todas las órdenes</a>
     </section><?php endif; ?>
 <section class="card orders-filter-card min-w-0">
     <div class="orders-heading flex items-center gap-3">
@@ -43,10 +36,10 @@ require APP_ROOT . '/app/Views/partials/header.php';
         </div>
         <div class="orders-filter-parties">
             <label><span>Unidad orgánica</span><select class="js-select2" data-searchable id="orders-unit" aria-label="Unidad orgánica">
-                    <option value="">Todas las unidades permitidas</option><?php foreach ($opcionesFiltros['unidades'] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
+                    <option value="">Todas las unidades permitidas</option><?php foreach ($opcionesFiltros["\x75\x6e\x69\x64\x61\x64\x65\x73"] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
                 </select></label>
             <label><span>Proveedor</span><select class="js-select2" data-searchable id="orders-provider" aria-label="Proveedor">
-                    <option value="">Todos los proveedores</option><?php foreach ($opcionesFiltros['proveedores'] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
+                    <option value="">Todos los proveedores</option><?php foreach ($opcionesFiltros["\x70\x72\x6f\x76\x65\x65\x64\x6f\x72\x65\x73"] as $codigo => $nombre): ?><option value="<?= e((string)$codigo) ?>"><?= e($nombre) ?></option><?php endforeach; ?>
                 </select></label>
             <button type="button" class="orders-clear" id="orders-clear"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar filtros</button>
         </div>
@@ -97,7 +90,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             ],
             autoWidth: false,
             ajax: {
-                url: <?= json_encode(url('ordenes_datos'), JSON_UNESCAPED_SLASHES) ?>,
+                url: <?= json_encode(url("\x6f\x72\x64\x65\x6e\x65\x73\x5f\x64\x61\x74\x6f\x73"), JSON_UNESCAPED_SLASHES) ?>,
                 data: function(request) {
                     request.tipo = $('#orders-type').val();
                     request.estado = $('#orders-state').val();
@@ -188,7 +181,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <?php endif; ?>
             ],
             createdRow: function(row) {
-                var labels = <?= json_encode(array_merge(['Orden', 'Fecha', 'Pedidos vinculados', 'Unidad / descripción', 'Proveedor / RUC', 'Estado'], $mostrarMontos ? ['Importe sin IGV', 'Importe total'] : [], $puedeVerDetalle ? ['Detalle'] : []), JSON_UNESCAPED_UNICODE) ?>;
+                var labels = <?= json_encode(array_merge(["\x4f\x72\x64\x65\x6e", "\x46\x65\x63\x68\x61", "\x50\x65\x64\x69\x64\x6f\x73\x20\x76\x69\x6e\x63\x75\x6c\x61\x64\x6f\x73", "\x55\x6e\x69\x64\x61\x64\x20\x2f\x20\x64\x65\x73\x63\x72\x69\x70\x63\x69\xc3\xb3\x6e", "\x50\x72\x6f\x76\x65\x65\x64\x6f\x72\x20\x2f\x20\x52\x55\x43", "\x45\x73\x74\x61\x64\x6f"], $mostrarMontos ? ["\x49\x6d\x70\x6f\x72\x74\x65\x20\x73\x69\x6e\x20\x49\x47\x56", "\x49\x6d\x70\x6f\x72\x74\x65\x20\x74\x6f\x74\x61\x6c"] : [], $puedeVerDetalle ? ["\x44\x65\x74\x61\x6c\x6c\x65"] : []), JSON_UNESCAPED_UNICODE) ?>;
                 $('td', row).each(function(index) {
                     this.setAttribute('data-label', labels[index] || '');
                 });
@@ -243,4 +236,4 @@ require APP_ROOT . '/app/Views/partials/header.php';
         });
     }());
 </script>
-<?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>
+<?php require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x66\x6f\x6f\x74\x65\x72\x2e\x70\x68\x70"; ?>

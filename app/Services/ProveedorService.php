@@ -1,28 +1,2 @@
 <?php
-declare(strict_types=1);
-final class ProveedorService
-{
-    private static ?array $catalogo = null;
-    public static function catalogo(): array
-    {
-        if (self::$catalogo !== null) return self::$catalogo;
-        $datos = [];
-        foreach ((new DbfReader(false))->rows(AVALON_LOGISTICA_DATA.'/sum40013.dbf', ['CODPROV','NOMBRE']) as $r) {
-            $codigo = trim($r['CODPROV']);
-            if ($codigo !== '') $datos[$codigo] = ['codigo'=>$codigo,'nombre'=>trim($r['NOMBRE']) ?: 'Nombre no disponible','ruc'=>preg_match('/^\d{11}$/',$codigo) ? $codigo : ''];
-        }
-        return self::$catalogo = $datos;
-    }
-    public static function resolver(string $codigo, array $comprobantes = []): array
-    {
-        $codigo = trim($codigo);
-        try { $p = self::catalogo()[$codigo] ?? null; } catch (RuntimeException $e) { $p = null; }
-        if ($p && $p['nombre'] !== 'Nombre no disponible') return $p;
-        $opciones = [];
-        foreach ($comprobantes as $c) {
-            if (trim((string)($c['RUCPROV'] ?? '')) !== $codigo || trim((string)($c['NOMPROV'] ?? '')) === '') continue;
-            $opciones[trim($c['NOMPROV'])] = ['codigo'=>$codigo,'nombre'=>trim($c['NOMPROV']),'ruc'=>trim($c['RUCPROV'])];
-        }
-        return count($opciones) === 1 ? reset($opciones) : ($p ?? ['codigo'=>$codigo,'nombre'=>'Nombre no disponible','ruc'=>preg_match('/^\d{11}$/',$codigo) ? $codigo : '']);
-    }
-}
+declare(strict_types=1); final class ProveedorService { private static ?array $catalogo = null; public static function catalogo(): array { if (self::$catalogo !== null) return self::$catalogo; $datos = []; foreach ((new DbfReader(false))->rows(AVALON_LOGISTICA_DATA."\x2f\x73\x75\x6d\x34\x30\x30\x31\x33\x2e\x64\x62\x66", ["\x43\x4f\x44\x50\x52\x4f\x56","\x4e\x4f\x4d\x42\x52\x45"]) as $r) { $codigo = trim($r["\x43\x4f\x44\x50\x52\x4f\x56"]); if ($codigo !== "") $datos[$codigo] = ["\x63\x6f\x64\x69\x67\x6f"=>$codigo,"\x6e\x6f\x6d\x62\x72\x65"=>trim($r["\x4e\x4f\x4d\x42\x52\x45"]) ?: "\x4e\x6f\x6d\x62\x72\x65\x20\x6e\x6f\x20\x64\x69\x73\x70\x6f\x6e\x69\x62\x6c\x65","\x72\x75\x63"=>preg_match("\x2f\x5e\x5c\x64\x7b\x31\x31\x7d\x24\x2f",$codigo) ? $codigo : ""]; } return self::$catalogo = $datos; } public static function resolver(string $codigo, array $comprobantes = []): array { $codigo = trim($codigo); try { $p = self::catalogo()[$codigo] ?? null; } catch (RuntimeException $e) { $p = null; } if ($p && $p["\x6e\x6f\x6d\x62\x72\x65"] !== "\x4e\x6f\x6d\x62\x72\x65\x20\x6e\x6f\x20\x64\x69\x73\x70\x6f\x6e\x69\x62\x6c\x65") return $p; $opciones = []; foreach ($comprobantes as $c) { if (trim((string)($c["\x52\x55\x43\x50\x52\x4f\x56"] ?? "")) !== $codigo || trim((string)($c["\x4e\x4f\x4d\x50\x52\x4f\x56"] ?? "")) === "") continue; $opciones[trim($c["\x4e\x4f\x4d\x50\x52\x4f\x56"])] = ["\x63\x6f\x64\x69\x67\x6f"=>$codigo,"\x6e\x6f\x6d\x62\x72\x65"=>trim($c["\x4e\x4f\x4d\x50\x52\x4f\x56"]),"\x72\x75\x63"=>trim($c["\x52\x55\x43\x50\x52\x4f\x56"])]; } return count($opciones) === 1 ? reset($opciones) : ($p ?? ["\x63\x6f\x64\x69\x67\x6f"=>$codigo,"\x6e\x6f\x6d\x62\x72\x65"=>"\x4e\x6f\x6d\x62\x72\x65\x20\x6e\x6f\x20\x64\x69\x73\x70\x6f\x6e\x69\x62\x6c\x65","\x72\x75\x63"=>preg_match("\x2f\x5e\x5c\x64\x7b\x31\x31\x7d\x24\x2f",$codigo) ? $codigo : ""]); } } 

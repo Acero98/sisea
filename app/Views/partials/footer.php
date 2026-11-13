@@ -54,7 +54,7 @@
     (function () {
         var panel=document.getElementById('sync-global-status');
         var detail=document.getElementById('sync-global-detail');
-        var endpoint=<?= json_encode(url('estado_sincronizacion'), JSON_UNESCAPED_SLASHES) ?>;
+        var endpoint=<?= json_encode(url("\x65\x73\x74\x61\x64\x6f\x5f\x73\x69\x6e\x63\x72\x6f\x6e\x69\x7a\x61\x63\x69\x6f\x6e"), JSON_UNESCAPED_SLASHES) ?>;
         var waitingTimer=null;
         function requestStatus(){
             return fetch(endpoint,{cache:'no-store',credentials:'same-origin'}).then(function(response){

@@ -1,11 +1,5 @@
 <?php
-$flash = takeFlash();
-$sesionReemplazada = (string)($_GET['motivo'] ?? '') === 'sesion_reemplazada'
-    || (string)($_COOKIE['sisea_motivo_salida'] ?? '') === 'sesion_reemplazada';
-if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
-    setcookie('sisea_motivo_salida','',time()-3600,APP_URL,'',false,true);
-}
-?>
+$flash = takeFlash(); $sesionReemplazada = (string)($_GET["\x6d\x6f\x74\x69\x76\x6f"] ?? "") === "\x73\x65\x73\x69\x6f\x6e\x5f\x72\x65\x65\x6d\x70\x6c\x61\x7a\x61\x64\x61" || (string)($_COOKIE["\x73\x69\x73\x65\x61\x5f\x6d\x6f\x74\x69\x76\x6f\x5f\x73\x61\x6c\x69\x64\x61"] ?? "") === "\x73\x65\x73\x69\x6f\x6e\x5f\x72\x65\x65\x6d\x70\x6c\x61\x7a\x61\x64\x61"; if ($sesionReemplazada && isset($_COOKIE["\x73\x69\x73\x65\x61\x5f\x6d\x6f\x74\x69\x76\x6f\x5f\x73\x61\x6c\x69\x64\x61"])) { setcookie("\x73\x69\x73\x65\x61\x5f\x6d\x6f\x74\x69\x76\x6f\x5f\x73\x61\x6c\x69\x64\x61","",time()-3600,APP_URL,"",false,true); } ?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -20,7 +14,7 @@ if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
 <body class="login-page">
 <main class="access-shell">
     <section class="access-story" aria-labelledby="story-title">
-        <a class="access-brand" href="<?= e(url('login')) ?>" aria-label="Avalon, inicio">
+        <a class="access-brand" href="<?= e(url("\x6c\x6f\x67\x69\x6e")) ?>" aria-label="Avalon, inicio">
             <span class="access-mark" aria-hidden="true">A<span></span></span>
             <span><strong>AVALON</strong><small>Seguimiento de logística</small></span>
         </a>
@@ -49,9 +43,9 @@ if ($sesionReemplazada && isset($_COOKIE['sisea_motivo_salida'])) {
                     Su sesión se cerró porque esta cuenta inició sesión en otro equipo o navegador.
                 </div>
             <?php elseif ($flash): ?>
-                <div class="alert error" role="alert"><?= e($flash['message']) ?></div>
+                <div class="alert error" role="alert"><?= e($flash["\x6d\x65\x73\x73\x61\x67\x65"]) ?></div>
             <?php endif; ?>
-            <form method="post" action="<?= e(url('auth')) ?>">
+            <form method="post" action="<?= e(url("\x61\x75\x74\x68")) ?>">
                 <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
                 <label for="usuario">Usuario</label>
                 <input id="usuario" name="usuario" autocomplete="username" placeholder="Tu usuario" required>

@@ -1,6 +1,1 @@
-(function(){
-    var menus=Array.from(document.querySelectorAll('.module-nav'));
-    menus.forEach(function(menu){menu.addEventListener('toggle',function(){if(menu.open)menus.forEach(function(other){if(other!==menu)other.open=false;});});});
-    document.addEventListener('click',function(event){menus.forEach(function(menu){if(!menu.contains(event.target))menu.open=false;});});
-    document.addEventListener('keydown',function(event){if(event.key==='Escape')menus.forEach(function(menu){if(menu.open){menu.open=false;menu.querySelector('summary').focus();}});});
-})();
+!function(){var n=Array.from(document.querySelectorAll(".module-nav"));n.forEach(function(e){e.addEventListener("toggle",function(){e.open&&n.forEach(function(n){n!==e&&(n.open=!1)})})}),document.addEventListener("click",function(e){n.forEach(function(n){n.contains(e.target)||(n.open=!1)})}),document.addEventListener("keydown",function(e){"Escape"===e.key&&n.forEach(function(n){n.open&&(n.open=!1,n.querySelector("summary").focus())})})}();

@@ -1,57 +1,40 @@
 <?php
-declare(strict_types=1);
-$esOrden = in_array($detalle['tipo'] ?? '', ['orden_compra','orden_servicio'], true);
-$pageTitle = $detalle['titulo'] ?? 'Detalle documental';
-$pageDescription = $esOrden ? 'Detalle de la orden según el formato de Avalon.' : 'Consulta de solo lectura desde la copia local de Avalon.';
-$breadcrumb = !empty($desdeOrdenes) ? 'Logística / Órdenes / Detalle' : 'Logística / Seguimiento documental / Detalle';
-$activeNav = !empty($desdeOrdenes) ? 'ordenes' : 'seguimiento';
-$hidePageHeader = true;
-$date = static function ($value): string {
-    $value = trim((string)$value);
-    if ($value === '' || $value === '00000000') return '—';
-    $fecha = DateTime::createFromFormat('Ymd', $value) ?: DateTime::createFromFormat('Y-m-d', $value);
-    return $fecha ? $fecha->format('d/m/Y') : $value;
-};
-$money = static function ($value): string {
-    return is_numeric($value) ? number_format((float)$value, 2, '.', ',') : '—';
-};
-require APP_ROOT.'/app/Views/partials/header.php';
-?>
+declare(strict_types=1); $esOrden = in_array($detalle["\x74\x69\x70\x6f"] ?? "", ["\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61","\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f"], true); $pageTitle = $detalle["\x74\x69\x74\x75\x6c\x6f"] ?? "\x44\x65\x74\x61\x6c\x6c\x65\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c"; $pageDescription = $esOrden ? "\x44\x65\x74\x61\x6c\x6c\x65\x20\x64\x65\x20\x6c\x61\x20\x6f\x72\x64\x65\x6e\x20\x73\x65\x67\xc3\xba\x6e\x20\x65\x6c\x20\x66\x6f\x72\x6d\x61\x74\x6f\x20\x64\x65\x20\x41\x76\x61\x6c\x6f\x6e\x2e" : "\x43\x6f\x6e\x73\x75\x6c\x74\x61\x20\x64\x65\x20\x73\x6f\x6c\x6f\x20\x6c\x65\x63\x74\x75\x72\x61\x20\x64\x65\x73\x64\x65\x20\x6c\x61\x20\x63\x6f\x70\x69\x61\x20\x6c\x6f\x63\x61\x6c\x20\x64\x65\x20\x41\x76\x61\x6c\x6f\x6e\x2e"; $breadcrumb = !empty($desdeOrdenes) ? "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61\x20\x2f\x20\xc3\x93\x72\x64\x65\x6e\x65\x73\x20\x2f\x20\x44\x65\x74\x61\x6c\x6c\x65" : "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61\x20\x2f\x20\x53\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c\x20\x2f\x20\x44\x65\x74\x61\x6c\x6c\x65"; $activeNav = !empty($desdeOrdenes) ? "\x6f\x72\x64\x65\x6e\x65\x73" : "\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f"; $hidePageHeader = true; $date = static function ($value): string { $value = trim((string)$value); if ($value === "" || $value === "\x30\x30\x30\x30\x30\x30\x30\x30") return "\xe2\x80\x94"; $fecha = DateTime::createFromFormat("\x59\x6d\x64", $value) ?: DateTime::createFromFormat("\x59\x2d\x6d\x2d\x64", $value); return $fecha ? $fecha->format("\x64\x2f\x6d\x2f\x59") : $value; }; $money = static function ($value): string { return is_numeric($value) ? number_format((float)$value, 2, "\x2e", "\x2c") : "\xe2\x80\x94"; }; require APP_ROOT."\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x68\x65\x61\x64\x65\x72\x2e\x70\x68\x70"; ?>
 <div class="detail-content">
 <?php if (!$detalle): ?>
-    <section class="card"><h1>Documento no disponible</h1><p><?= e($error ?? 'No se encontró el documento solicitado.') ?></p><a class="table-action" href="<?= e(url('seguimiento')) ?>">Volver a seguimiento</a></section>
+    <section class="card"><h1>Documento no disponible</h1><p><?= e($error ?? "\x4e\x6f\x20\x73\x65\x20\x65\x6e\x63\x6f\x6e\x74\x72\xc3\xb3\x20\x65\x6c\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f\x20\x73\x6f\x6c\x69\x63\x69\x74\x61\x64\x6f\x2e") ?></p><a class="table-action" href="<?= e(url("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f")) ?>">Volver a seguimiento</a></section>
 <?php else: ?>
     <header>
-        <div><div class="breadcrumb"><?= e($breadcrumb) ?></div><h1><?= e($pageTitle) ?></h1><p><?= e($detalle['nota']['unidad_organica'].' · '.$detalle['nota']['unidad_nombre']) ?></p></div>
-        <a class="clear-search" href="<?= e(!empty($desdeOrdenes)?url('ordenes'):url('seguimiento',['q'=>$detalle['pedido'],'tipo'=>'pedido'])) ?>"><?= !empty($desdeOrdenes)?'← Volver a órdenes':'← Volver al expediente' ?></a>
+        <div><div class="breadcrumb"><?= e($breadcrumb) ?></div><h1><?= e($pageTitle) ?></h1><p><?= e($detalle["\x6e\x6f\x74\x61"]["\x75\x6e\x69\x64\x61\x64\x5f\x6f\x72\x67\x61\x6e\x69\x63\x61"]."\x20\xc2\xb7\x20".$detalle["\x6e\x6f\x74\x61"]["\x75\x6e\x69\x64\x61\x64\x5f\x6e\x6f\x6d\x62\x72\x65"]) ?></p></div>
+        <a class="clear-search" href="<?= e(!empty($desdeOrdenes)?url("\x6f\x72\x64\x65\x6e\x65\x73"):url("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f",["\x71"=>$detalle["\x70\x65\x64\x69\x64\x6f"],"\x74\x69\x70\x6f"=>"\x70\x65\x64\x69\x64\x6f"])) ?>"><?= !empty($desdeOrdenes)?"\xe2\x86\x90\x20\x56\x6f\x6c\x76\x65\x72\x20\x61\x20\xc3\xb3\x72\x64\x65\x6e\x65\x73":"\xe2\x86\x90\x20\x56\x6f\x6c\x76\x65\x72\x20\x61\x6c\x20\x65\x78\x70\x65\x64\x69\x65\x6e\x74\x65" ?></a>
     </header>
     <?php if ($esOrden): ?>
-        <?php $datos = $detalle['meta'][0] ?? []; $orden = $detalle['orden']; ?>
+        <?php $datos = $detalle["\x6d\x65\x74\x61"][0] ?? []; $orden = $detalle["\x6f\x72\x64\x65\x6e"]; ?>
         <section class="card order-sheet">
-            <div class="order-sheet-heading"><div><span class="order-sheet-kicker">EPS ILO S.A. · <?= e($detalle['tipo']==='orden_compra'?'Gasto operativo':'Servicio') ?></span><h2><?= e($detalle['titulo']) ?></h2><p>Pedido <?= e($detalle['pedido']) ?><?= !empty($datos['Expediente de cotización']) ? ' · Expediente '.e($datos['Expediente de cotización']) : '' ?></p></div><span class="order-sheet-date">Emisión<br><b><?= e($date($datos['Fecha de emisión'] ?? '')) ?></b></span></div>
+            <div class="order-sheet-heading"><div><span class="order-sheet-kicker">EPS ILO S.A. · <?= e($detalle["\x74\x69\x70\x6f"]==="\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61"?"\x47\x61\x73\x74\x6f\x20\x6f\x70\x65\x72\x61\x74\x69\x76\x6f":"\x53\x65\x72\x76\x69\x63\x69\x6f") ?></span><h2><?= e($detalle["\x74\x69\x74\x75\x6c\x6f"]) ?></h2><p>Pedido <?= e($detalle["\x70\x65\x64\x69\x64\x6f"]) ?><?= !empty($datos["\x45\x78\x70\x65\x64\x69\x65\x6e\x74\x65\x20\x64\x65\x20\x63\x6f\x74\x69\x7a\x61\x63\x69\xc3\xb3\x6e"]) ? "\x20\xc2\xb7\x20\x45\x78\x70\x65\x64\x69\x65\x6e\x74\x65\x20".e($datos["\x45\x78\x70\x65\x64\x69\x65\x6e\x74\x65\x20\x64\x65\x20\x63\x6f\x74\x69\x7a\x61\x63\x69\xc3\xb3\x6e"]) : "" ?></p></div><span class="order-sheet-date">Emisión<br><b><?= e($date($datos["\x46\x65\x63\x68\x61\x20\x64\x65\x20\x65\x6d\x69\x73\x69\xc3\xb3\x6e"] ?? "")) ?></b></span></div>
             <h3>Datos de la orden</h3>
             <dl class="order-sheet-fields">
-                <?php foreach (['Proveedor','RUC','Código de proveedor','Certificación','Referencia','Lugar de entrega','Forma de pago','Estado'] as $campo): if (trim((string)($datos[$campo] ?? '')) !== ''): ?>
+                <?php foreach (["\x50\x72\x6f\x76\x65\x65\x64\x6f\x72","\x52\x55\x43","\x43\xc3\xb3\x64\x69\x67\x6f\x20\x64\x65\x20\x70\x72\x6f\x76\x65\x65\x64\x6f\x72","\x43\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\xc3\xb3\x6e","\x52\x65\x66\x65\x72\x65\x6e\x63\x69\x61","\x4c\x75\x67\x61\x72\x20\x64\x65\x20\x65\x6e\x74\x72\x65\x67\x61","\x46\x6f\x72\x6d\x61\x20\x64\x65\x20\x70\x61\x67\x6f","\x45\x73\x74\x61\x64\x6f"] as $campo): if (trim((string)($datos[$campo] ?? "")) !== ""): ?>
                     <dt><?= e($campo) ?></dt><dd><?= nl2br(e($datos[$campo])) ?></dd>
                 <?php endif; endforeach; ?>
             </dl>
             <h3>Detalle de artículos y servicios</h3>
             <div class="table-scroll order-lines-scroll" tabindex="0" role="region" aria-label="Detalle de las líneas de la orden"><table class="order-sheet-lines">
                 <thead><tr><th>Ítem</th><th>Código</th><th>Denominación</th><th>Unidad</th><th>Actividad – cuenta</th><th>Centro de costo</th><th>Cantidad</th><?php if($mostrarMontos): ?><th>Precio unitario</th><th>Precio total</th><?php endif; ?></tr></thead>
-                <tbody><?php if (!$detalle['rows']): ?><tr><td colspan="<?= $mostrarMontos ? '9' : '7' ?>">No se encontraron líneas en esta orden.</td></tr><?php else: foreach ($detalle['rows'] as $linea): ?>
-                    <tr><td><?= e($linea['item']) ?></td><td><?= e($linea['codigo']) ?></td><td><b><?= e($linea['denominacion']) ?></b><br><small>Pedido <?= e($linea['pedido']) ?></small></td><td><?= e($linea['unidad'] ?: '—') ?></td><td><?= e($linea['actividad_cuenta'] ?: '—') ?></td><td><?= e($linea['centro_costo'] ?: '—') ?></td><td class="order-number"><?= e($linea['cantidad']) ?><?= $linea['recibido'] !== '' ? '<br><small>Recibido: '.e($linea['recibido']).'</small>' : '' ?></td><?php if($mostrarMontos): ?><td class="order-number"><?= e($money($linea['precio_unitario'])) ?></td><td class="order-number"><?= e($money($linea['precio_total'])) ?></td><?php endif; ?></tr>
+                <tbody><?php if (!$detalle["\x72\x6f\x77\x73"]): ?><tr><td colspan="<?= $mostrarMontos ? "\x39" : "\x37" ?>">No se encontraron líneas en esta orden.</td></tr><?php else: foreach ($detalle["\x72\x6f\x77\x73"] as $linea): ?>
+                    <tr><td><?= e($linea["\x69\x74\x65\x6d"]) ?></td><td><?= e($linea["\x63\x6f\x64\x69\x67\x6f"]) ?></td><td><b><?= e($linea["\x64\x65\x6e\x6f\x6d\x69\x6e\x61\x63\x69\x6f\x6e"]) ?></b><br><small>Pedido <?= e($linea["\x70\x65\x64\x69\x64\x6f"]) ?></small></td><td><?= e($linea["\x75\x6e\x69\x64\x61\x64"] ?: "\xe2\x80\x94") ?></td><td><?= e($linea["\x61\x63\x74\x69\x76\x69\x64\x61\x64\x5f\x63\x75\x65\x6e\x74\x61"] ?: "\xe2\x80\x94") ?></td><td><?= e($linea["\x63\x65\x6e\x74\x72\x6f\x5f\x63\x6f\x73\x74\x6f"] ?: "\xe2\x80\x94") ?></td><td class="order-number"><?= e($linea["\x63\x61\x6e\x74\x69\x64\x61\x64"]) ?><?= $linea["\x72\x65\x63\x69\x62\x69\x64\x6f"] !== "" ? "\x3c\x62\x72\x3e\x3c\x73\x6d\x61\x6c\x6c\x3e\x52\x65\x63\x69\x62\x69\x64\x6f\x3a\x20".e($linea["\x72\x65\x63\x69\x62\x69\x64\x6f"])."\x3c\x2f\x73\x6d\x61\x6c\x6c\x3e" : "" ?></td><?php if($mostrarMontos): ?><td class="order-number"><?= e($money($linea["\x70\x72\x65\x63\x69\x6f\x5f\x75\x6e\x69\x74\x61\x72\x69\x6f"])) ?></td><td class="order-number"><?= e($money($linea["\x70\x72\x65\x63\x69\x6f\x5f\x74\x6f\x74\x61\x6c"])) ?></td><?php endif; ?></tr>
                 <?php endforeach; endif; ?></tbody>
             </table></div>
-            <?php if($mostrarMontos): ?><div class="order-sheet-totals"><div><span>Subtotal</span><b><?= e($money($datos['Subtotal'] ?? null)) ?></b></div><div><span>Impuesto</span><b><?= e($money($datos['Impuesto'] ?? null)) ?></b></div><div class="grand-total"><span>Total · moneda <?= e($orden['moneda'] ?: '—') ?></span><b><?= e($money($datos['Total'] ?? null)) ?></b></div></div><?php endif; ?>
+            <?php if($mostrarMontos): ?><div class="order-sheet-totals"><div><span>Subtotal</span><b><?= e($money($datos["\x53\x75\x62\x74\x6f\x74\x61\x6c"] ?? null)) ?></b></div><div><span>Impuesto</span><b><?= e($money($datos["\x49\x6d\x70\x75\x65\x73\x74\x6f"] ?? null)) ?></b></div><div class="grand-total"><span>Total · moneda <?= e($orden["\x6d\x6f\x6e\x65\x64\x61"] ?: "\xe2\x80\x94") ?></span><b><?= e($money($datos["\x54\x6f\x74\x61\x6c"] ?? null)) ?></b></div></div><?php endif; ?>
         </section>
-        <?php if ($orden['condiciones']): ?>
-            <section class="card order-conditions"><h2>Provisión, entrega y condiciones</h2><?php foreach ($orden['condiciones'] as $condicion): ?><div class="order-condition"><?= nl2br(e($condicion)) ?></div><?php endforeach; ?></section>
+        <?php if ($orden["\x63\x6f\x6e\x64\x69\x63\x69\x6f\x6e\x65\x73"]): ?>
+            <section class="card order-conditions"><h2>Provisión, entrega y condiciones</h2><?php foreach ($orden["\x63\x6f\x6e\x64\x69\x63\x69\x6f\x6e\x65\x73"] as $condicion): ?><div class="order-condition"><?= nl2br(e($condicion)) ?></div><?php endforeach; ?></section>
         <?php endif; ?>
     <?php else: ?>
-        <section class="card"><h2>Datos registrados</h2><?php if ($detalle['meta']): ?><div class="table-scroll"><table><tbody><?php foreach ($detalle['meta'] as $meta): foreach ($meta as $campo=>$valor): if ($valor!==''): ?><tr><th><?= e(ucwords(strtolower(str_replace('_',' ',$campo)))) ?></th><td><?= e($valor) ?></td></tr><?php endif; endforeach; endforeach;?></tbody></table></div><?php endif; ?>
-            <div class="table-scroll" tabindex="0"><table><thead><tr><?php foreach(array_keys($detalle['rows'][0]??[]) as $campo): ?><th><?= e(ucwords(strtolower(str_replace('_',' ',$campo)))) ?></th><?php endforeach;?></tr></thead><tbody><?php if(!$detalle['rows']): ?><tr><td>No se encontraron líneas de detalle para este documento.</td></tr><?php else: foreach($detalle['rows'] as $row): ?><tr><?php foreach($row as $valor): ?><td><?= e($valor?:'—') ?></td><?php endforeach;?></tr><?php endforeach; endif;?></tbody></table></div>
+        <section class="card"><h2>Datos registrados</h2><?php if ($detalle["\x6d\x65\x74\x61"]): ?><div class="table-scroll"><table><tbody><?php foreach ($detalle["\x6d\x65\x74\x61"] as $meta): foreach ($meta as $campo=>$valor): if ($valor!==""): ?><tr><th><?= e(ucwords(strtolower(str_replace("\x5f","\x20",$campo)))) ?></th><td><?= e($valor) ?></td></tr><?php endif; endforeach; endforeach;?></tbody></table></div><?php endif; ?>
+            <div class="table-scroll" tabindex="0"><table><thead><tr><?php foreach(array_keys($detalle["\x72\x6f\x77\x73"][0]??[]) as $campo): ?><th><?= e(ucwords(strtolower(str_replace("\x5f","\x20",$campo)))) ?></th><?php endforeach;?></tr></thead><tbody><?php if(!$detalle["\x72\x6f\x77\x73"]): ?><tr><td>No se encontraron líneas de detalle para este documento.</td></tr><?php else: foreach($detalle["\x72\x6f\x77\x73"] as $row): ?><tr><?php foreach($row as $valor): ?><td><?= e($valor?:"\xe2\x80\x94") ?></td><?php endforeach;?></tr><?php endforeach; endif;?></tbody></table></div>
         </section>
     <?php endif; ?>
 <?php endif; ?>
 </div>
-<?php require APP_ROOT.'/app/Views/partials/footer.php'; ?>
+<?php require APP_ROOT."\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x66\x6f\x6f\x74\x65\x72\x2e\x70\x68\x70"; ?>

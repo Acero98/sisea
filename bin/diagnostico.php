@@ -1,19 +1,2 @@
 <?php
-declare(strict_types=1);
-if(PHP_SAPI!=='cli') { http_response_code(404); exit; }
-require __DIR__.'/../config/app.php';
-require APP_ROOT.'/config/database.php';
-$errors=0;
-foreach(['pdo_mysql','mbstring','iconv','json','zlib'] as $extension) {
-    $ok=extension_loaded($extension); echo ($ok?'OK ':'FALTA ').$extension.PHP_EOL; if(!$ok) $errors++;
-}
-foreach([AVALON_LOGISTICA_DATA,AVALON_PLANIF_DATA,AVALON_CONTAB_DATA,AVALON_FINANZAS_DATA] as $path) {
-    $ok=is_dir($path)&&is_readable($path); echo ($ok?'OK ':'FALTA ').$path.PHP_EOL; if(!$ok) $errors++;
-}
-foreach(['cache','sessions'] as $dir) {
-    $path=APP_ROOT.'/storage/'.$dir; $ok=is_dir($path)&&is_writable($path);
-    echo ($ok?'OK ':'FALTA ').'escritura '.$path.PHP_EOL; if(!$ok) $errors++;
-}
-try { db()->query('SELECT 1 FROM usuarios LIMIT 1'); echo "OK base instalada\n"; }
-catch(Throwable $e) { echo "FALTA conexion o estructura de base. Revise config/local.php e instalacion.\n"; $errors++; }
-exit($errors?1:0);
+declare(strict_types=1); if(PHP_SAPI!=="\x63\x6c\x69") { http_response_code(404); exit; } require __DIR__."\x2f\x2e\x2e\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x61\x70\x70\x2e\x70\x68\x70"; require APP_ROOT."\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x70\x68\x70"; $errors=0; foreach(["\x70\x64\x6f\x5f\x6d\x79\x73\x71\x6c","\x6d\x62\x73\x74\x72\x69\x6e\x67","\x69\x63\x6f\x6e\x76","\x6a\x73\x6f\x6e","\x7a\x6c\x69\x62"] as $extension) { $ok=extension_loaded($extension); echo ($ok?"\x4f\x4b\x20":"\x46\x41\x4c\x54\x41\x20").$extension.PHP_EOL; if(!$ok) $errors++; } foreach([AVALON_LOGISTICA_DATA,AVALON_PLANIF_DATA,AVALON_CONTAB_DATA,AVALON_FINANZAS_DATA] as $path) { $ok=is_dir($path)&&is_readable($path); echo ($ok?"\x4f\x4b\x20":"\x46\x41\x4c\x54\x41\x20").$path.PHP_EOL; if(!$ok) $errors++; } foreach(["\x63\x61\x63\x68\x65","\x73\x65\x73\x73\x69\x6f\x6e\x73"] as $dir) { $path=APP_ROOT."\x2f\x73\x74\x6f\x72\x61\x67\x65\x2f".$dir; $ok=is_dir($path)&&is_writable($path); echo ($ok?"\x4f\x4b\x20":"\x46\x41\x4c\x54\x41\x20")."\x65\x73\x63\x72\x69\x74\x75\x72\x61\x20".$path.PHP_EOL; if(!$ok) $errors++; } try { db()->query("\x53\x45\x4c\x45\x43\x54\x20\x31\x20\x46\x52\x4f\x4d\x20\x75\x73\x75\x61\x72\x69\x6f\x73\x20\x4c\x49\x4d\x49\x54\x20\x31"); echo "\x4f\x4b\x20\x62\x61\x73\x65\x20\x69\x6e\x73\x74\x61\x6c\x61\x64\x61\x0a"; } catch(Throwable $e) { echo "\x46\x41\x4c\x54\x41\x20\x63\x6f\x6e\x65\x78\x69\x6f\x6e\x20\x6f\x20\x65\x73\x74\x72\x75\x63\x74\x75\x72\x61\x20\x64\x65\x20\x62\x61\x73\x65\x2e\x20\x52\x65\x76\x69\x73\x65\x20\x63\x6f\x6e\x66\x69\x67\x2f\x6c\x6f\x63\x61\x6c\x2e\x70\x68\x70\x20\x65\x20\x69\x6e\x73\x74\x61\x6c\x61\x63\x69\x6f\x6e\x2e\x0a"; $errors++; } exit($errors?1:0); 

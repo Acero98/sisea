@@ -1,11 +1,2 @@
 <?php
-declare(strict_types=1);
-
-function db(): PDO
-{
-    static $pdo;
-    if ($pdo instanceof PDO) return $pdo;
-    $config = require __DIR__ . '/settings.php';
-    $pdo = new PDO('mysql:host=' . $config['host'] . ';port=' . $config['port'] . ';dbname=' . $config['database'] . ';charset=utf8mb4', $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
-    return $pdo;
-}
+declare(strict_types=1); function db(): PDO { static $pdo; if ($pdo instanceof PDO) return $pdo; $config = require __DIR__ . "\x2f\x73\x65\x74\x74\x69\x6e\x67\x73\x2e\x70\x68\x70"; $pdo = new PDO("\x6d\x79\x73\x71\x6c\x3a\x68\x6f\x73\x74\x3d" . $config["\x68\x6f\x73\x74"] . "\x3b\x70\x6f\x72\x74\x3d" . $config["\x70\x6f\x72\x74"] . "\x3b\x64\x62\x6e\x61\x6d\x65\x3d" . $config["\x64\x61\x74\x61\x62\x61\x73\x65"] . "\x3b\x63\x68\x61\x72\x73\x65\x74\x3d\x75\x74\x66\x38\x6d\x62\x34", $config["\x75\x73\x65\x72\x6e\x61\x6d\x65"], $config["\x70\x61\x73\x73\x77\x6f\x72\x64"], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]); return $pdo; } 

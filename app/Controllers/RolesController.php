@@ -1,19 +1,2 @@
 <?php
-declare(strict_types=1);
-final class RolesController
-{
-    private function acceso():void { requiereLogin();if(!tienePermiso('usuarios')){http_response_code(403);exit('No tiene acceso a la administración de roles.');} }
-    public function index():void { $this->acceso();$roles=(new RolModel())->listar();require APP_ROOT.'/app/Views/roles.php'; }
-    public function guardar():void {
-        $this->acceso();if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);exit;}validarCsrf();
-        try{(new RolModel())->guardar((int)($_POST['id']??0),$_POST);flash('ok','Rol y permisos actualizados. Los cambios se aplican a todas las cuentas asignadas.');}
-        catch(DomainException $e){flash('error',$e->getMessage());}
-        header('Location: '.url('roles'));exit;
-    }
-    public function estado():void {
-        $this->acceso();if($_SERVER['REQUEST_METHOD']!=='POST'){http_response_code(405);exit;}validarCsrf();
-        try{(new RolModel())->estado((int)($_POST['id']??0),($_POST['activo']??'')==='1');flash('ok','Estado del rol actualizado.');}
-        catch(DomainException $e){flash('error',$e->getMessage());}
-        header('Location: '.url('roles'));exit;
-    }
-}
+declare(strict_types=1); final class RolesController { private function acceso():void { requiereLogin();if(!tienePermiso("\x75\x73\x75\x61\x72\x69\x6f\x73")){http_response_code(403);exit("\x4e\x6f\x20\x74\x69\x65\x6e\x65\x20\x61\x63\x63\x65\x73\x6f\x20\x61\x20\x6c\x61\x20\x61\x64\x6d\x69\x6e\x69\x73\x74\x72\x61\x63\x69\xc3\xb3\x6e\x20\x64\x65\x20\x72\x6f\x6c\x65\x73\x2e");} } public function index():void { $this->acceso();$roles=(new RolModel())->listar();require APP_ROOT."\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x72\x6f\x6c\x65\x73\x2e\x70\x68\x70"; } public function guardar():void { $this->acceso();if($_SERVER["\x52\x45\x51\x55\x45\x53\x54\x5f\x4d\x45\x54\x48\x4f\x44"]!=="\x50\x4f\x53\x54"){http_response_code(405);exit;}validarCsrf(); try{(new RolModel())->guardar((int)($_POST["\x69\x64"]??0),$_POST);flash("\x6f\x6b","\x52\x6f\x6c\x20\x79\x20\x70\x65\x72\x6d\x69\x73\x6f\x73\x20\x61\x63\x74\x75\x61\x6c\x69\x7a\x61\x64\x6f\x73\x2e\x20\x4c\x6f\x73\x20\x63\x61\x6d\x62\x69\x6f\x73\x20\x73\x65\x20\x61\x70\x6c\x69\x63\x61\x6e\x20\x61\x20\x74\x6f\x64\x61\x73\x20\x6c\x61\x73\x20\x63\x75\x65\x6e\x74\x61\x73\x20\x61\x73\x69\x67\x6e\x61\x64\x61\x73\x2e");} catch(DomainException $e){flash("\x65\x72\x72\x6f\x72",$e->getMessage());} header("\x4c\x6f\x63\x61\x74\x69\x6f\x6e\x3a\x20".url("\x72\x6f\x6c\x65\x73"));exit; } public function estado():void { $this->acceso();if($_SERVER["\x52\x45\x51\x55\x45\x53\x54\x5f\x4d\x45\x54\x48\x4f\x44"]!=="\x50\x4f\x53\x54"){http_response_code(405);exit;}validarCsrf(); try{(new RolModel())->estado((int)($_POST["\x69\x64"]??0),($_POST["\x61\x63\x74\x69\x76\x6f"]??"")==="\x31");flash("\x6f\x6b","\x45\x73\x74\x61\x64\x6f\x20\x64\x65\x6c\x20\x72\x6f\x6c\x20\x61\x63\x74\x75\x61\x6c\x69\x7a\x61\x64\x6f\x2e");} catch(DomainException $e){flash("\x65\x72\x72\x6f\x72",$e->getMessage());} header("\x4c\x6f\x63\x61\x74\x69\x6f\x6e\x3a\x20".url("\x72\x6f\x6c\x65\x73"));exit; } } 

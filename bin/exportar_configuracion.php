@@ -1,23 +1,2 @@
 <?php
-declare(strict_types=1);
-if(PHP_SAPI!=='cli') { http_response_code(404); exit; }
-require __DIR__.'/../config/app.php';
-require __DIR__.'/../config/database.php';
-$options=getopt('', ['help','output:']);
-if(isset($options['help'])) { echo "php bin/exportar_configuracion.php [--output=ruta.json.gz]\n"; exit; }
-try {
-    $path=$options['output']??__DIR__.'/../storage/backups/config-'.date('Ymd-His').'.json.gz';
-    if(!is_dir(dirname($path))) mkdir(dirname($path),0770,true);
-    RolModel::instalar();
-    $pdo=db(); $pdo->beginTransaction(); $tables=[];
-    foreach(['roles_acceso','usuarios','presupuesto_responsabilidades'] as $table) {
-        $tables[$table]=$pdo->query('SELECT * FROM '.$table.' ORDER BY id')->fetchAll();
-        foreach($tables[$table] as &$row) unset($row['sesion_token'],$row['sesion_iniciada_en']);
-        unset($row);
-    }
-    $pdo->commit();
-    $bytes=gzencode(json_encode(['format'=>'sisea-config-v2','tables'=>$tables],JSON_THROW_ON_ERROR),9);
-    $h=fopen($path,'xb'); if(!$h) throw new RuntimeException('No se crea ni sobrescribe el archivo.');
-    try { if(fwrite($h,$bytes)!==strlen($bytes)) throw new RuntimeException('Escritura incompleta.'); } finally { fclose($h); }
-    echo "Creado: $path\nContiene cuentas y hashes de claves. Transportar en privado. No incluye historial ni sesiones.\n";
-} catch(Throwable $e) { if(isset($pdo) && $pdo->inTransaction()) $pdo->rollBack(); fwrite(STDERR,$e->getMessage()."\n"); exit(1); }
+declare(strict_types=1); if(PHP_SAPI!=="\x63\x6c\x69") { http_response_code(404); exit; } require __DIR__."\x2f\x2e\x2e\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x61\x70\x70\x2e\x70\x68\x70"; require __DIR__."\x2f\x2e\x2e\x2f\x63\x6f\x6e\x66\x69\x67\x2f\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x70\x68\x70"; $options=getopt("", ["\x68\x65\x6c\x70","\x6f\x75\x74\x70\x75\x74\x3a"]); if(isset($options["\x68\x65\x6c\x70"])) { echo "\x70\x68\x70\x20\x62\x69\x6e\x2f\x65\x78\x70\x6f\x72\x74\x61\x72\x5f\x63\x6f\x6e\x66\x69\x67\x75\x72\x61\x63\x69\x6f\x6e\x2e\x70\x68\x70\x20\x5b\x2d\x2d\x6f\x75\x74\x70\x75\x74\x3d\x72\x75\x74\x61\x2e\x6a\x73\x6f\x6e\x2e\x67\x7a\x5d\x0a"; exit; } try { $path=$options["\x6f\x75\x74\x70\x75\x74"]??__DIR__."\x2f\x2e\x2e\x2f\x73\x74\x6f\x72\x61\x67\x65\x2f\x62\x61\x63\x6b\x75\x70\x73\x2f\x63\x6f\x6e\x66\x69\x67\x2d".date("\x59\x6d\x64\x2d\x48\x69\x73")."\x2e\x6a\x73\x6f\x6e\x2e\x67\x7a"; if(!is_dir(dirname($path))) mkdir(dirname($path),0770,true); RolModel::instalar(); $pdo=db(); $pdo->beginTransaction(); $tables=[]; foreach(["\x72\x6f\x6c\x65\x73\x5f\x61\x63\x63\x65\x73\x6f","\x75\x73\x75\x61\x72\x69\x6f\x73","\x70\x72\x65\x73\x75\x70\x75\x65\x73\x74\x6f\x5f\x72\x65\x73\x70\x6f\x6e\x73\x61\x62\x69\x6c\x69\x64\x61\x64\x65\x73"] as $table) { $tables[$table]=$pdo->query("\x53\x45\x4c\x45\x43\x54\x20\x2a\x20\x46\x52\x4f\x4d\x20".$table."\x20\x4f\x52\x44\x45\x52\x20\x42\x59\x20\x69\x64")->fetchAll(); foreach($tables[$table] as &$row) unset($row["\x73\x65\x73\x69\x6f\x6e\x5f\x74\x6f\x6b\x65\x6e"],$row["\x73\x65\x73\x69\x6f\x6e\x5f\x69\x6e\x69\x63\x69\x61\x64\x61\x5f\x65\x6e"]); unset($row); } $pdo->commit(); $bytes=gzencode(json_encode(["\x66\x6f\x72\x6d\x61\x74"=>"\x73\x69\x73\x65\x61\x2d\x63\x6f\x6e\x66\x69\x67\x2d\x76\x32","\x74\x61\x62\x6c\x65\x73"=>$tables],JSON_THROW_ON_ERROR),9); $h=fopen($path,"\x78\x62"); if(!$h) throw new RuntimeException("\x4e\x6f\x20\x73\x65\x20\x63\x72\x65\x61\x20\x6e\x69\x20\x73\x6f\x62\x72\x65\x73\x63\x72\x69\x62\x65\x20\x65\x6c\x20\x61\x72\x63\x68\x69\x76\x6f\x2e"); try { if(fwrite($h,$bytes)!==strlen($bytes)) throw new RuntimeException("\x45\x73\x63\x72\x69\x74\x75\x72\x61\x20\x69\x6e\x63\x6f\x6d\x70\x6c\x65\x74\x61\x2e"); } finally { fclose($h); } echo "Creado: $path\nContiene cuentas y hashes de claves. Transportar en privado. No incluye historial ni sesiones.\n"; } catch(Throwable $e) { if(isset($pdo) && $pdo->inTransaction()) $pdo->rollBack(); fwrite(STDERR,$e->getMessage()."\x0a"); exit(1); } 

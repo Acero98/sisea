@@ -1,12 +1,2 @@
 <?php
-declare(strict_types=1);
-final class AuthController
-{
-    public function login(): void { require APP_ROOT . '/app/Views/login.php'; }
-    public function auth(): void
-    {
-        try { validarCsrf(); $model=new AuthModel(); $user = $model->login(trim((string)($_POST['usuario'] ?? '')), (string)($_POST['clave'] ?? '')); if (!$user) throw new DomainException('Usuario o contraseña no válidos.'); session_regenerate_id(true); $token=bin2hex(random_bytes(32)); $model->registrarSesion((int)$user['id'],$token); $user['sesion_token']=$token; $_SESSION['usuario'] = $user; header('Location: ' . url(rutaInicio($user))); exit; }
-        catch (DomainException $error) { flash('error', $error->getMessage()); header('Location: ' . url('login')); exit; }
-    }
-    public function logout(): void { $user=usuario(); if ($user && !empty($user['sesion_token'])) (new AuthModel())->cerrarSesion((int)$user['id'],(string)$user['sesion_token']); $_SESSION = []; session_destroy(); header('Location: ' . url('login')); exit; }
-}
+declare(strict_types=1); final class AuthController { public function login(): void { require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x6c\x6f\x67\x69\x6e\x2e\x70\x68\x70"; } public function auth(): void { try { validarCsrf(); $model=new AuthModel(); $user = $model->login(trim((string)($_POST["\x75\x73\x75\x61\x72\x69\x6f"] ?? "")), (string)($_POST["\x63\x6c\x61\x76\x65"] ?? "")); if (!$user) throw new DomainException("\x55\x73\x75\x61\x72\x69\x6f\x20\x6f\x20\x63\x6f\x6e\x74\x72\x61\x73\x65\xc3\xb1\x61\x20\x6e\x6f\x20\x76\xc3\xa1\x6c\x69\x64\x6f\x73\x2e"); session_regenerate_id(true); $token=bin2hex(random_bytes(32)); $model->registrarSesion((int)$user["\x69\x64"],$token); $user["\x73\x65\x73\x69\x6f\x6e\x5f\x74\x6f\x6b\x65\x6e"]=$token; $_SESSION["\x75\x73\x75\x61\x72\x69\x6f"] = $user; header("\x4c\x6f\x63\x61\x74\x69\x6f\x6e\x3a\x20" . url(rutaInicio($user))); exit; } catch (DomainException $error) { flash("\x65\x72\x72\x6f\x72", $error->getMessage()); header("\x4c\x6f\x63\x61\x74\x69\x6f\x6e\x3a\x20" . url("\x6c\x6f\x67\x69\x6e")); exit; } } public function logout(): void { $user=usuario(); if ($user && !empty($user["\x73\x65\x73\x69\x6f\x6e\x5f\x74\x6f\x6b\x65\x6e"])) (new AuthModel())->cerrarSesion((int)$user["\x69\x64"],(string)$user["\x73\x65\x73\x69\x6f\x6e\x5f\x74\x6f\x6b\x65\x6e"]); $_SESSION = []; session_destroy(); header("\x4c\x6f\x63\x61\x74\x69\x6f\x6e\x3a\x20" . url("\x6c\x6f\x67\x69\x6e")); exit; } } 

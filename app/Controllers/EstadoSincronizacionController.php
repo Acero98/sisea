@@ -1,14 +1,2 @@
 <?php
-declare(strict_types=1);
-
-final class EstadoSincronizacionController
-{
-    public function index(): void
-    {
-        requiereLogin();
-        liberarSesion();
-        header('Content-Type: application/json; charset=UTF-8');
-        header('Cache-Control: no-store');
-        echo json_encode((new SincronizacionControlService())->estado(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-}
+declare(strict_types=1); final class EstadoSincronizacionController { public function index(): void { requiereLogin(); liberarSesion(); header("\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79\x70\x65\x3a\x20\x61\x70\x70\x6c\x69\x63\x61\x74\x69\x6f\x6e\x2f\x6a\x73\x6f\x6e\x3b\x20\x63\x68\x61\x72\x73\x65\x74\x3d\x55\x54\x46\x2d\x38"); header("\x43\x61\x63\x68\x65\x2d\x43\x6f\x6e\x74\x72\x6f\x6c\x3a\x20\x6e\x6f\x2d\x73\x74\x6f\x72\x65"); echo json_encode((new SincronizacionControlService())->estado(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); } } 

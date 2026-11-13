@@ -1,72 +1,14 @@
 <?php
-$flash = $flash ?? takeFlash();
-$date = function ($value) {
-    if (!$value || $value === '00000000') return '—';
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$value)) {
-        $date = DateTime::createFromFormat('Y-m-d', (string)$value);
-        return $date ? $date->format('d/m/Y') : $value;
-    }
-    $date = DateTime::createFromFormat('Ymd', $value);
-    return $date ? $date->format('d/m/Y') : $value;
-};
-$montoDocumento = static function ($centavos, string $moneda = ''): string {
-    if ($centavos === null) return '—';
-    $valor = number_format($centavos / 100, 2, '.', ',');
-    $simbolo = $moneda === '01' ? 'S/ ' : ($moneda !== '' ? $moneda . ' ' : '');
-    return $simbolo . $valor;
-};
-$ordenes = $result['ordenes'] ?? [];
-$cotizaciones = $result['cotizaciones'] ?? [];
-$certificaciones = $result['certificaciones'] ?? [];
-$avance = $result['avance'] ?? [];
-$resumenDocumental = $result['resumen_documental'] ?? ['comprobantes' => 0, 'devengados' => 0, 'pagos' => 0];
-$documentoBuscado = $result['documento_buscado'] ?? null;
-$documentosAnulados = $result['documentos_anulados'] ?? [];
-$busquedaAnulada = is_array($documentoBuscado) && strtoupper(trim((string)($documentoBuscado['estado'] ?? ''))) === 'A';
-$tiposBusqueda = ['todo' => 'documento', 'pedido' => 'pedido', 'cotizacion' => 'cotización', 'certificacion' => 'certificación', 'orden_compra' => 'orden de compra', 'orden_servicio' => 'orden de servicio', 'comprobante' => 'factura o boleta', 'devengado' => 'devengado', 'pago' => 'pago'];
-$isService = !empty($result['orden_servicio']);
-$isWarehouse = !empty($result) && !empty($result['pedido']['ES_RETIRO_ALMACEN']);
-$isCancelled = !empty($result) && ($result['pedido']['EST_PEDIDO'] ?? '') === 'A';
-$orderLabel = count($ordenes) > 1 ? 'Órdenes emitidas' : ($isService ? 'Orden de servicio' : 'Orden de compra');
-$stages = $isWarehouse
-    ? [['label' => 'Pedido', 'estado' => 'complete', 'cantidad' => '1/1', 'nota' => ''], ['label' => 'Atención de almacén', 'estado' => !empty($result['retiros_almacen']) ? 'complete' : 'pending', 'cantidad' => !empty($result['retiros_almacen']) ? '1/1' : '0/1', 'nota' => ''], ['label' => 'Retiro de almacén', 'estado' => !empty($result['retiros_almacen']) ? 'complete' : 'pending', 'cantidad' => !empty($result['retiros_almacen']) ? '1/1' : '0/1', 'nota' => '']]
-    : [
-        ['label' => 'Pedido', 'estado' => $isCancelled ? 'issue' : 'complete', 'cantidad' => '1/1', 'nota' => $isCancelled ? 'Pedido anulado' : ''],
-        array_merge(['label' => 'Cotización'], $avance['cotizaciones'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-        array_merge(['label' => 'Certificación'], $avance['certificaciones'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-        array_merge(['label' => $orderLabel], $avance['ordenes'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-        array_merge(['label' => 'Factura o boleta'], $avance['comprobantes'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-        array_merge(['label' => 'Devengado'], $avance['devengados'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-        array_merge(['label' => 'Pago'], $avance['pagos'] ?? ['estado' => 'pending', 'cantidad' => '—', 'nota' => '']),
-    ];
-$estadoFinal = $avance['pagos']['estado'] ?? 'pending';
-$final = $isCancelled ? 'Pedido anulado' : ($isWarehouse ? (!empty($result['retiros_almacen']) ? 'Retiro de almacén registrado' : 'Pendiente de atención de almacén') : ($estadoFinal === 'complete' ? 'Proceso completado' : ($estadoFinal === 'issue' ? 'Proceso con incidencias' : ($estadoFinal === 'partial' ? 'Avance parcial' : 'En proceso'))));
-$detalleLink = function (string $tipoDocumento, string $numeroDocumento) use ($result): string {
-    $href = url('detalle_documento',['pedido'=>$result['pedido']['NRO_PEDIDO'],'tipo'=>$tipoDocumento,'numero'=>$numeroDocumento]);
-    return '<a class="table-action icon-action" href="'.e($href).'" title="Ver detalle" aria-label="Ver detalle"><img src="'.e(APP_URL).'assets/icons/bootstrap-eye.svg" alt=""></a>';
-};
-$celdaMonto = static function ($centavos, string $moneda = '', bool $sinIgv = false) use ($mostrarMontos, $montoDocumento): string {
-    return $mostrarMontos ? '<td>'.e($montoDocumento($centavos, $moneda)).($sinIgv && $centavos !== null ? '<br><small>Sin IGV</small>' : '').'</td>' : '';
-};
-$celdaDetalle = static function (string $tipoDocumento, string $numeroDocumento) use ($puedeVerDetalle, $detalleLink): string {
-    return $puedeVerDetalle ? '<td>'.$detalleLink($tipoDocumento, $numeroDocumento).'</td>' : '';
-};
-?>
+$flash = $flash ?? takeFlash(); $date = function ($value) { if (!$value || $value === "\x30\x30\x30\x30\x30\x30\x30\x30") return "\xe2\x80\x94"; if (preg_match("\x2f\x5e\x5c\x64\x7b\x34\x7d\x2d\x5c\x64\x7b\x32\x7d\x2d\x5c\x64\x7b\x32\x7d\x24\x2f", (string)$value)) { $date = DateTime::createFromFormat("\x59\x2d\x6d\x2d\x64", (string)$value); return $date ? $date->format("\x64\x2f\x6d\x2f\x59") : $value; } $date = DateTime::createFromFormat("\x59\x6d\x64", $value); return $date ? $date->format("\x64\x2f\x6d\x2f\x59") : $value; }; $montoDocumento = static function ($centavos, string $moneda = ""): string { if ($centavos === null) return "\xe2\x80\x94"; $valor = number_format($centavos / 100, 2, "\x2e", "\x2c"); $simbolo = $moneda === "\x30\x31" ? "\x53\x2f\x20" : ($moneda !== "" ? $moneda . "\x20" : ""); return $simbolo . $valor; }; $ordenes = $result["\x6f\x72\x64\x65\x6e\x65\x73"] ?? []; $cotizaciones = $result["\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e\x65\x73"] ?? []; $certificaciones = $result["\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e\x65\x73"] ?? []; $avance = $result["\x61\x76\x61\x6e\x63\x65"] ?? []; $resumenDocumental = $result["\x72\x65\x73\x75\x6d\x65\x6e\x5f\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c"] ?? ["\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65\x73" => 0, "\x64\x65\x76\x65\x6e\x67\x61\x64\x6f\x73" => 0, "\x70\x61\x67\x6f\x73" => 0]; $documentoBuscado = $result["\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f\x5f\x62\x75\x73\x63\x61\x64\x6f"] ?? null; $documentosAnulados = $result["\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f\x73\x5f\x61\x6e\x75\x6c\x61\x64\x6f\x73"] ?? []; $busquedaAnulada = is_array($documentoBuscado) && strtoupper(trim((string)($documentoBuscado["\x65\x73\x74\x61\x64\x6f"] ?? ""))) === "\x41"; $tiposBusqueda = ["\x74\x6f\x64\x6f" => "\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f", "\x70\x65\x64\x69\x64\x6f" => "\x70\x65\x64\x69\x64\x6f", "\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e" => "\x63\x6f\x74\x69\x7a\x61\x63\x69\xc3\xb3\x6e", "\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e" => "\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\xc3\xb3\x6e", "\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61" => "\x6f\x72\x64\x65\x6e\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61", "\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f" => "\x6f\x72\x64\x65\x6e\x20\x64\x65\x20\x73\x65\x72\x76\x69\x63\x69\x6f", "\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65" => "\x66\x61\x63\x74\x75\x72\x61\x20\x6f\x20\x62\x6f\x6c\x65\x74\x61", "\x64\x65\x76\x65\x6e\x67\x61\x64\x6f" => "\x64\x65\x76\x65\x6e\x67\x61\x64\x6f", "\x70\x61\x67\x6f" => "\x70\x61\x67\x6f"]; $isService = !empty($result["\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f"]); $isWarehouse = !empty($result) && !empty($result["\x70\x65\x64\x69\x64\x6f"]["\x45\x53\x5f\x52\x45\x54\x49\x52\x4f\x5f\x41\x4c\x4d\x41\x43\x45\x4e"]); $isCancelled = !empty($result) && ($result["\x70\x65\x64\x69\x64\x6f"]["\x45\x53\x54\x5f\x50\x45\x44\x49\x44\x4f"] ?? "") === "\x41"; $orderLabel = count($ordenes) > 1 ? "\xc3\x93\x72\x64\x65\x6e\x65\x73\x20\x65\x6d\x69\x74\x69\x64\x61\x73" : ($isService ? "\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x73\x65\x72\x76\x69\x63\x69\x6f" : "\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61"); $stages = $isWarehouse ? [["\x6c\x61\x62\x65\x6c" => "\x50\x65\x64\x69\x64\x6f", "\x65\x73\x74\x61\x64\x6f" => "\x63\x6f\x6d\x70\x6c\x65\x74\x65", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\x31\x2f\x31", "\x6e\x6f\x74\x61" => ""], ["\x6c\x61\x62\x65\x6c" => "\x41\x74\x65\x6e\x63\x69\xc3\xb3\x6e\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e", "\x65\x73\x74\x61\x64\x6f" => !empty($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"]) ? "\x63\x6f\x6d\x70\x6c\x65\x74\x65" : "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => !empty($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"]) ? "\x31\x2f\x31" : "\x30\x2f\x31", "\x6e\x6f\x74\x61" => ""], ["\x6c\x61\x62\x65\x6c" => "\x52\x65\x74\x69\x72\x6f\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e", "\x65\x73\x74\x61\x64\x6f" => !empty($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"]) ? "\x63\x6f\x6d\x70\x6c\x65\x74\x65" : "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => !empty($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"]) ? "\x31\x2f\x31" : "\x30\x2f\x31", "\x6e\x6f\x74\x61" => ""]] : [ ["\x6c\x61\x62\x65\x6c" => "\x50\x65\x64\x69\x64\x6f", "\x65\x73\x74\x61\x64\x6f" => $isCancelled ? "\x69\x73\x73\x75\x65" : "\x63\x6f\x6d\x70\x6c\x65\x74\x65", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\x31\x2f\x31", "\x6e\x6f\x74\x61" => $isCancelled ? "\x50\x65\x64\x69\x64\x6f\x20\x61\x6e\x75\x6c\x61\x64\x6f" : ""], array_merge(["\x6c\x61\x62\x65\x6c" => "\x43\x6f\x74\x69\x7a\x61\x63\x69\xc3\xb3\x6e"], $avance["\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e\x65\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), array_merge(["\x6c\x61\x62\x65\x6c" => "\x43\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\xc3\xb3\x6e"], $avance["\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e\x65\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), array_merge(["\x6c\x61\x62\x65\x6c" => $orderLabel], $avance["\x6f\x72\x64\x65\x6e\x65\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), array_merge(["\x6c\x61\x62\x65\x6c" => "\x46\x61\x63\x74\x75\x72\x61\x20\x6f\x20\x62\x6f\x6c\x65\x74\x61"], $avance["\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), array_merge(["\x6c\x61\x62\x65\x6c" => "\x44\x65\x76\x65\x6e\x67\x61\x64\x6f"], $avance["\x64\x65\x76\x65\x6e\x67\x61\x64\x6f\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), array_merge(["\x6c\x61\x62\x65\x6c" => "\x50\x61\x67\x6f"], $avance["\x70\x61\x67\x6f\x73"] ?? ["\x65\x73\x74\x61\x64\x6f" => "\x70\x65\x6e\x64\x69\x6e\x67", "\x63\x61\x6e\x74\x69\x64\x61\x64" => "\xe2\x80\x94", "\x6e\x6f\x74\x61" => ""]), ]; $estadoFinal = $avance["\x70\x61\x67\x6f\x73"]["\x65\x73\x74\x61\x64\x6f"] ?? "\x70\x65\x6e\x64\x69\x6e\x67"; $final = $isCancelled ? "\x50\x65\x64\x69\x64\x6f\x20\x61\x6e\x75\x6c\x61\x64\x6f" : ($isWarehouse ? (!empty($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"]) ? "\x52\x65\x74\x69\x72\x6f\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e\x20\x72\x65\x67\x69\x73\x74\x72\x61\x64\x6f" : "\x50\x65\x6e\x64\x69\x65\x6e\x74\x65\x20\x64\x65\x20\x61\x74\x65\x6e\x63\x69\xc3\xb3\x6e\x20\x64\x65\x20\x61\x6c\x6d\x61\x63\xc3\xa9\x6e") : ($estadoFinal === "\x63\x6f\x6d\x70\x6c\x65\x74\x65" ? "\x50\x72\x6f\x63\x65\x73\x6f\x20\x63\x6f\x6d\x70\x6c\x65\x74\x61\x64\x6f" : ($estadoFinal === "\x69\x73\x73\x75\x65" ? "\x50\x72\x6f\x63\x65\x73\x6f\x20\x63\x6f\x6e\x20\x69\x6e\x63\x69\x64\x65\x6e\x63\x69\x61\x73" : ($estadoFinal === "\x70\x61\x72\x74\x69\x61\x6c" ? "\x41\x76\x61\x6e\x63\x65\x20\x70\x61\x72\x63\x69\x61\x6c" : "\x45\x6e\x20\x70\x72\x6f\x63\x65\x73\x6f")))); $detalleLink = function (string $tipoDocumento, string $numeroDocumento) use ($result): string { $href = url("\x64\x65\x74\x61\x6c\x6c\x65\x5f\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f",["\x70\x65\x64\x69\x64\x6f"=>$result["\x70\x65\x64\x69\x64\x6f"]["\x4e\x52\x4f\x5f\x50\x45\x44\x49\x44\x4f"],"\x74\x69\x70\x6f"=>$tipoDocumento,"\x6e\x75\x6d\x65\x72\x6f"=>$numeroDocumento]); return "\x3c\x61\x20\x63\x6c\x61\x73\x73\x3d\x22\x74\x61\x62\x6c\x65\x2d\x61\x63\x74\x69\x6f\x6e\x20\x69\x63\x6f\x6e\x2d\x61\x63\x74\x69\x6f\x6e\x22\x20\x68\x72\x65\x66\x3d\x22".e($href)."\x22\x20\x74\x69\x74\x6c\x65\x3d\x22\x56\x65\x72\x20\x64\x65\x74\x61\x6c\x6c\x65\x22\x20\x61\x72\x69\x61\x2d\x6c\x61\x62\x65\x6c\x3d\x22\x56\x65\x72\x20\x64\x65\x74\x61\x6c\x6c\x65\x22\x3e\x3c\x69\x6d\x67\x20\x73\x72\x63\x3d\x22".e(APP_URL)."\x61\x73\x73\x65\x74\x73\x2f\x69\x63\x6f\x6e\x73\x2f\x62\x6f\x6f\x74\x73\x74\x72\x61\x70\x2d\x65\x79\x65\x2e\x73\x76\x67\x22\x20\x61\x6c\x74\x3d\x22\x22\x3e\x3c\x2f\x61\x3e"; }; $celdaMonto = static function ($centavos, string $moneda = "", bool $sinIgv = false) use ($mostrarMontos, $montoDocumento): string { return $mostrarMontos ? "\x3c\x74\x64\x3e".e($montoDocumento($centavos, $moneda)).($sinIgv && $centavos !== null ? "\x3c\x62\x72\x3e\x3c\x73\x6d\x61\x6c\x6c\x3e\x53\x69\x6e\x20\x49\x47\x56\x3c\x2f\x73\x6d\x61\x6c\x6c\x3e" : "")."\x3c\x2f\x74\x64\x3e" : ""; }; $celdaDetalle = static function (string $tipoDocumento, string $numeroDocumento) use ($puedeVerDetalle, $detalleLink): string { return $puedeVerDetalle ? "\x3c\x74\x64\x3e".$detalleLink($tipoDocumento, $numeroDocumento)."\x3c\x2f\x74\x64\x3e" : ""; }; ?>
 <?php
-$pageTitle = 'Seguimiento documental';
-$pageDescription = 'Consulta el avance de un pedido y sus documentos vinculados.';
-$breadcrumb = 'Logística / Seguimiento documental';
-$activeNav = 'seguimiento';
-$useDataTables = count($coincidencias ?? []) > 1 && !$result;
-require APP_ROOT . '/app/Views/partials/header.php';
-?>
+$pageTitle = "\x53\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c"; $pageDescription = "\x43\x6f\x6e\x73\x75\x6c\x74\x61\x20\x65\x6c\x20\x61\x76\x61\x6e\x63\x65\x20\x64\x65\x20\x75\x6e\x20\x70\x65\x64\x69\x64\x6f\x20\x79\x20\x73\x75\x73\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f\x73\x20\x76\x69\x6e\x63\x75\x6c\x61\x64\x6f\x73\x2e"; $breadcrumb = "\x4c\x6f\x67\xc3\xad\x73\x74\x69\x63\x61\x20\x2f\x20\x53\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x6c"; $activeNav = "\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f"; $useDataTables = count($coincidencias ?? []) > 1 && !$result; require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x68\x65\x61\x64\x65\x72\x2e\x70\x68\x70"; ?>
         <section class="search-card">
             <h2>Encuentra un documento</h2>
             <p>Busca por pedido o por cualquier documento vinculado ya sincronizado.</p>
             <form><input type="hidden" name="r" value="seguimiento">
                 <input type="hidden" name="tipo" id="tipo-busqueda" value="<?= e($tipo) ?>">
-                <div class="types"><button type="button" class="<?= $tipo === 'todo' ? 'selected' : '' ?>" data-tipo="todo">Todo</button><button type="button" class="<?= $tipo === 'pedido' ? 'selected' : '' ?>" data-tipo="pedido">Pedido</button><button type="button" class="<?= $tipo === 'cotizacion' ? 'selected' : '' ?>" data-tipo="cotizacion">Cotización</button><button type="button" class="<?= $tipo === 'certificacion' ? 'selected' : '' ?>" data-tipo="certificacion">Certificación</button><button type="button" class="<?= $tipo === 'orden_compra' ? 'selected' : '' ?>" data-tipo="orden_compra">Orden de compra</button><button type="button" class="<?= $tipo === 'orden_servicio' ? 'selected' : '' ?>" data-tipo="orden_servicio">Orden de servicio</button><button type="button" class="<?= $tipo === 'comprobante' ? 'selected' : '' ?>" data-tipo="comprobante">Factura o boleta</button><button type="button" class="<?= $tipo === 'devengado' ? 'selected' : '' ?>" data-tipo="devengado">Devengado</button><button type="button" class="<?= $tipo === 'pago' ? 'selected' : '' ?>" data-tipo="pago">Pago</button></div>
-                <div class="search-line"><input name="q" aria-label="Número de documento" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url('seguimiento')) ?>">Limpiar</a></div>
+                <div class="types"><button type="button" class="<?= $tipo === "\x74\x6f\x64\x6f" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="todo">Todo</button><button type="button" class="<?= $tipo === "\x70\x65\x64\x69\x64\x6f" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="pedido">Pedido</button><button type="button" class="<?= $tipo === "\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="cotizacion">Cotización</button><button type="button" class="<?= $tipo === "\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="certificacion">Certificación</button><button type="button" class="<?= $tipo === "\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="orden_compra">Orden de compra</button><button type="button" class="<?= $tipo === "\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="orden_servicio">Orden de servicio</button><button type="button" class="<?= $tipo === "\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="comprobante">Factura o boleta</button><button type="button" class="<?= $tipo === "\x64\x65\x76\x65\x6e\x67\x61\x64\x6f" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="devengado">Devengado</button><button type="button" class="<?= $tipo === "\x70\x61\x67\x6f" ? "\x73\x65\x6c\x65\x63\x74\x65\x64" : "" ?>" data-tipo="pago">Pago</button></div>
+                <div class="search-line"><input name="q" aria-label="Número de documento" value="<?= e($term) ?>" placeholder="Ejemplo: 2602201" required><button>Buscar seguimiento</button><a class="clear-search" href="<?= e(url("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f")) ?>">Limpiar</a></div>
             </form>
         </section>
         <?php if (count($coincidencias ?? []) > 1 && !$result): ?>
@@ -76,56 +18,56 @@ require APP_ROOT . '/app/Views/partials/header.php';
                 <div class="table-scroll"><table id="tabla-coincidencias" class="display">
                     <thead><tr><th>Documento</th><th>Proveedor</th><th>Orden</th><th>Pedido</th><th>Unidad orgánica</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
                     <tbody><?php foreach ($coincidencias as $coincidencia): ?>
-                        <?php $anulada=strtoupper(trim((string)($coincidencia['estado'] ?? '')))==='A'; ?>
-                        <tr class="<?= $anulada ? 'duplicate-cancelled' : '' ?>">
-                            <td><b><?= e($coincidencia['numero']) ?></b><br><small><?= e(ucfirst(str_replace('_',' ',$coincidencia['tipo']))) ?></small></td>
-                            <td><?= e($coincidencia['proveedor'] ?: 'No registrado') ?></td>
-                            <td><?= e(trim(($coincidencia['orden_tipo'] ?: '') . ' ' . ($coincidencia['orden_numero'] ?: '')) ?: '—') ?></td>
-                            <td><?= e($coincidencia['nro_pedido']) ?></td>
-                            <td><?= e(trim(($coincidencia['unidad_organica'] ?: '—').' · '.($coincidencia['unidad_nombre'] ?: 'Unidad no identificada'))) ?></td>
-                            <td><?= e($date($coincidencia['fecha'])) ?></td>
-                            <td><span class="duplicate-state <?= $anulada ? 'cancelled' : 'valid' ?>"><?= $anulada ? 'Anulado' : 'Vigente' ?></span></td>
-                            <td><a class="table-action" href="<?= e(url('seguimiento',['q'=>$term,'tipo'=>$tipo,'pedido'=>$coincidencia['nro_pedido']])) ?>">Ver seguimiento</a></td>
+                        <?php $anulada=strtoupper(trim((string)($coincidencia["\x65\x73\x74\x61\x64\x6f"] ?? "")))==="\x41"; ?>
+                        <tr class="<?= $anulada ? "\x64\x75\x70\x6c\x69\x63\x61\x74\x65\x2d\x63\x61\x6e\x63\x65\x6c\x6c\x65\x64" : "" ?>">
+                            <td><b><?= e($coincidencia["\x6e\x75\x6d\x65\x72\x6f"]) ?></b><br><small><?= e(ucfirst(str_replace("\x5f","\x20",$coincidencia["\x74\x69\x70\x6f"]))) ?></small></td>
+                            <td><?= e($coincidencia["\x70\x72\x6f\x76\x65\x65\x64\x6f\x72"] ?: "\x4e\x6f\x20\x72\x65\x67\x69\x73\x74\x72\x61\x64\x6f") ?></td>
+                            <td><?= e(trim(($coincidencia["\x6f\x72\x64\x65\x6e\x5f\x74\x69\x70\x6f"] ?: "") . "\x20" . ($coincidencia["\x6f\x72\x64\x65\x6e\x5f\x6e\x75\x6d\x65\x72\x6f"] ?: "")) ?: "\xe2\x80\x94") ?></td>
+                            <td><?= e($coincidencia["\x6e\x72\x6f\x5f\x70\x65\x64\x69\x64\x6f"]) ?></td>
+                            <td><?= e(trim(($coincidencia["\x75\x6e\x69\x64\x61\x64\x5f\x6f\x72\x67\x61\x6e\x69\x63\x61"] ?: "\xe2\x80\x94")."\x20\xc2\xb7\x20".($coincidencia["\x75\x6e\x69\x64\x61\x64\x5f\x6e\x6f\x6d\x62\x72\x65"] ?: "\x55\x6e\x69\x64\x61\x64\x20\x6e\x6f\x20\x69\x64\x65\x6e\x74\x69\x66\x69\x63\x61\x64\x61"))) ?></td>
+                            <td><?= e($date($coincidencia["\x66\x65\x63\x68\x61"])) ?></td>
+                            <td><span class="duplicate-state <?= $anulada ? "\x63\x61\x6e\x63\x65\x6c\x6c\x65\x64" : "\x76\x61\x6c\x69\x64" ?>"><?= $anulada ? "\x41\x6e\x75\x6c\x61\x64\x6f" : "\x56\x69\x67\x65\x6e\x74\x65" ?></span></td>
+                            <td><a class="table-action" href="<?= e(url("\x73\x65\x67\x75\x69\x6d\x69\x65\x6e\x74\x6f",["\x71"=>$term,"\x74\x69\x70\x6f"=>$tipo,"\x70\x65\x64\x69\x64\x6f"=>$coincidencia["\x6e\x72\x6f\x5f\x70\x65\x64\x69\x64\x6f"]])) ?>">Ver seguimiento</a></td>
                         </tr>
                     <?php endforeach; ?></tbody>
                 </table></div>
             </section>
         <?php endif; ?>
-        <?php if ($term !== '' && !$error && !$result && !($coincidencias ?? [])): ?><section class="empty">
-                <h2>No se encontró <?= e($tiposBusqueda[$tipo] ?? 'el documento') ?> <?= e($term) ?></h2>
+        <?php if ($term !== "" && !$error && !$result && !($coincidencias ?? [])): ?><section class="empty">
+                <h2>No se encontró <?= e($tiposBusqueda[$tipo] ?? "\x65\x6c\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f") ?> <?= e($term) ?></h2>
                 <p>Verifique el número o actualice primero las notas correspondientes desde Avalon.</p>
             </section><?php endif; ?><?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
         <?php if ($result): ?>
-            <?php if ($busquedaAnulada): ?><div class="alert error"><b>Documento anulado en Avalon.</b> <?= e(ucfirst($tiposBusqueda[$documentoBuscado['tipo']] ?? $documentoBuscado['tipo'])) ?> <?= e($documentoBuscado['numero']) ?> no forma parte de la ruta vigente del pedido <?= e($result['pedido']['NRO_PEDIDO']) ?>.</div><?php endif; ?>
+            <?php if ($busquedaAnulada): ?><div class="alert error"><b>Documento anulado en Avalon.</b> <?= e(ucfirst($tiposBusqueda[$documentoBuscado["\x74\x69\x70\x6f"]] ?? $documentoBuscado["\x74\x69\x70\x6f"])) ?> <?= e($documentoBuscado["\x6e\x75\x6d\x65\x72\x6f"]) ?> no forma parte de la ruta vigente del pedido <?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x4e\x52\x4f\x5f\x50\x45\x44\x49\x44\x4f"]) ?>.</div><?php endif; ?>
             <?php if ($isCancelled): ?><div class="alert error"><b>Nota de pedido anulada.</b> Esta nota no debe considerarse como un proceso vigente.</div><?php endif; ?>
             <?php if (!$busquedaAnulada && !$isCancelled && count($documentosAnulados) > 0): ?><div class="alert error">Se encontraron <?= e((string)count($documentosAnulados)) ?> documento(s) anulado(s). Se muestran para consulta, pero no se consideran como avance válido.</div><?php endif; ?>
             <section class="status-card">
                 <div class="status-pill">▣ <?= e($final) ?></div>
-                <div><b><?= $isCancelled ? 'Avalon registra el pedido como anulado' : ($resumenDocumental['comprobantes'] > 0 ? $resumenDocumental['comprobantes'] . ' comprobante(s), ' . $resumenDocumental['devengados'] . ' devengado(s) y ' . $resumenDocumental['pagos'] . ' pago(s) encontrados' : 'Estado calculado con los documentos encontrados') ?></b>
+                <div><b><?= $isCancelled ? "\x41\x76\x61\x6c\x6f\x6e\x20\x72\x65\x67\x69\x73\x74\x72\x61\x20\x65\x6c\x20\x70\x65\x64\x69\x64\x6f\x20\x63\x6f\x6d\x6f\x20\x61\x6e\x75\x6c\x61\x64\x6f" : ($resumenDocumental["\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65\x73"] > 0 ? $resumenDocumental["\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65\x73"] . "\x20\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65\x28\x73\x29\x2c\x20" . $resumenDocumental["\x64\x65\x76\x65\x6e\x67\x61\x64\x6f\x73"] . "\x20\x64\x65\x76\x65\x6e\x67\x61\x64\x6f\x28\x73\x29\x20\x79\x20" . $resumenDocumental["\x70\x61\x67\x6f\x73"] . "\x20\x70\x61\x67\x6f\x28\x73\x29\x20\x65\x6e\x63\x6f\x6e\x74\x72\x61\x64\x6f\x73" : "\x45\x73\x74\x61\x64\x6f\x20\x63\x61\x6c\x63\x75\x6c\x61\x64\x6f\x20\x63\x6f\x6e\x20\x6c\x6f\x73\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x6f\x73\x20\x65\x6e\x63\x6f\x6e\x74\x72\x61\x64\x6f\x73") ?></b>
                     <p>La ruta diferencia órdenes de compra y órdenes de servicio.</p>
                 </div>
             </section>
             <section class="card">
                 <h2>Ruta del proceso</h2>
-                <p class="route-note"><?= $isWarehouse ? 'Ruta de existencia: se sigue el movimiento de salida registrado por Almacén.' : 'Ruta de adquisición: se sigue la documentación vinculada a la compra o al servicio.' ?></p>
-                <div class="timeline"><?php foreach ($stages as $stage): ?><div class="stage <?= e($stage['estado']) ?>" title="<?= e($stage['nota']) ?>"><small class="stage-count"><?= e($stage['cantidad']) ?></small><i><?= $stage['estado'] === 'complete' ? '✓' : ($stage['estado'] === 'partial' ? '!' : ($stage['estado'] === 'issue' ? '×' : '○')) ?></i><span><?= e($stage['label']) ?></span><?php if ($stage['nota'] !== ''): ?><em><?= e($stage['nota']) ?></em><?php endif; ?></div><?php endforeach; ?></div>
+                <p class="route-note"><?= $isWarehouse ? "\x52\x75\x74\x61\x20\x64\x65\x20\x65\x78\x69\x73\x74\x65\x6e\x63\x69\x61\x3a\x20\x73\x65\x20\x73\x69\x67\x75\x65\x20\x65\x6c\x20\x6d\x6f\x76\x69\x6d\x69\x65\x6e\x74\x6f\x20\x64\x65\x20\x73\x61\x6c\x69\x64\x61\x20\x72\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x20\x70\x6f\x72\x20\x41\x6c\x6d\x61\x63\xc3\xa9\x6e\x2e" : "\x52\x75\x74\x61\x20\x64\x65\x20\x61\x64\x71\x75\x69\x73\x69\x63\x69\xc3\xb3\x6e\x3a\x20\x73\x65\x20\x73\x69\x67\x75\x65\x20\x6c\x61\x20\x64\x6f\x63\x75\x6d\x65\x6e\x74\x61\x63\x69\xc3\xb3\x6e\x20\x76\x69\x6e\x63\x75\x6c\x61\x64\x61\x20\x61\x20\x6c\x61\x20\x63\x6f\x6d\x70\x72\x61\x20\x6f\x20\x61\x6c\x20\x73\x65\x72\x76\x69\x63\x69\x6f\x2e" ?></p>
+                <div class="timeline"><?php foreach ($stages as $stage): ?><div class="stage <?= e($stage["\x65\x73\x74\x61\x64\x6f"]) ?>" title="<?= e($stage["\x6e\x6f\x74\x61"]) ?>"><small class="stage-count"><?= e($stage["\x63\x61\x6e\x74\x69\x64\x61\x64"]) ?></small><i><?= $stage["\x65\x73\x74\x61\x64\x6f"] === "\x63\x6f\x6d\x70\x6c\x65\x74\x65" ? "\xe2\x9c\x93" : ($stage["\x65\x73\x74\x61\x64\x6f"] === "\x70\x61\x72\x74\x69\x61\x6c" ? "\x21" : ($stage["\x65\x73\x74\x61\x64\x6f"] === "\x69\x73\x73\x75\x65" ? "\xc3\x97" : "\xe2\x97\x8b")) ?></i><span><?= e($stage["\x6c\x61\x62\x65\x6c"]) ?></span><?php if ($stage["\x6e\x6f\x74\x61"] !== ""): ?><em><?= e($stage["\x6e\x6f\x74\x61"]) ?></em><?php endif; ?></div><?php endforeach; ?></div>
             </section>
             <div class="grid tracking-documents-grid">
                 <section class="card">
                     <h2>Resumen de la solicitud</h2>
                     <dl>
                         <dt>Número de pedido</dt>
-                        <dd><?= e($result['pedido']['NRO_PEDIDO']) ?></dd>
+                        <dd><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x4e\x52\x4f\x5f\x50\x45\x44\x49\x44\x4f"]) ?></dd>
                         <dt>Unidad orgánica</dt>
-                        <dd><?= e($result['pedido']['UNIDAD_LABEL']) ?></dd>
+                        <dd><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x55\x4e\x49\x44\x41\x44\x5f\x4c\x41\x42\x45\x4c"]) ?></dd>
                         <dt>Tipo</dt>
-                        <dd><?= e($result['pedido']['TIPO_LABEL']) ?></dd>
+                        <dd><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x54\x49\x50\x4f\x5f\x4c\x41\x42\x45\x4c"]) ?></dd>
                         <dt>Fecha de emisión</dt>
-                        <dd><?= e($date($result['pedido']['FEC_EMISIO'])) ?></dd>
+                        <dd><?= e($date($result["\x70\x65\x64\x69\x64\x6f"]["\x46\x45\x43\x5f\x45\x4d\x49\x53\x49\x4f"])) ?></dd>
                         <dt>Prioridad</dt>
-                        <dd><?= e($result['pedido']['PRIORIDAD_LABEL']) ?></dd>
+                        <dd><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x50\x52\x49\x4f\x52\x49\x44\x41\x44\x5f\x4c\x41\x42\x45\x4c"]) ?></dd>
                         <dt>Estado en Logística</dt>
-                        <dd><?= e($result['pedido']['ESTADO_LABEL']) ?></dd>
+                        <dd><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x45\x53\x54\x41\x44\x4f\x5f\x4c\x41\x42\x45\x4c"]) ?></dd>
                     </dl>
                 </section>
                 <section class="card">
@@ -145,106 +87,106 @@ require APP_ROOT . '/app/Views/partials/header.php';
                         <tbody>
                             <tr>
                                 <td>Pedido</td>
-                                <td><?= e($result['pedido']['NRO_PEDIDO']) ?></td>
-                                <td><?= e($date($result['pedido']['FEC_EMISIO'])) ?></td>
-                                <?= $celdaMonto($result['pedido']['MONTO_CENTS'] ?? null, $result['pedido']['MONEDA'] ?? '') ?>
-                                <td><?= e($result['pedido']['ESTADO_LABEL']) ?></td>
-                                <?= $celdaDetalle('pedido',$result['pedido']['NRO_PEDIDO']) ?>
+                                <td><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x4e\x52\x4f\x5f\x50\x45\x44\x49\x44\x4f"]) ?></td>
+                                <td><?= e($date($result["\x70\x65\x64\x69\x64\x6f"]["\x46\x45\x43\x5f\x45\x4d\x49\x53\x49\x4f"])) ?></td>
+                                <?= $celdaMonto($result["\x70\x65\x64\x69\x64\x6f"]["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $result["\x70\x65\x64\x69\x64\x6f"]["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                <td><?= e($result["\x70\x65\x64\x69\x64\x6f"]["\x45\x53\x54\x41\x44\x4f\x5f\x4c\x41\x42\x45\x4c"]) ?></td>
+                                <?= $celdaDetalle("\x70\x65\x64\x69\x64\x6f",$result["\x70\x65\x64\x69\x64\x6f"]["\x4e\x52\x4f\x5f\x50\x45\x44\x49\x44\x4f"]) ?>
                             </tr><?php foreach ($cotizaciones as $cotizacion): ?><tr>
                                     <td><b>Cotización / expediente</b></td>
-                                    <td><b><?= e($cotizacion['NRO_EXPE']) ?></b></td>
-                                    <td><?= e($date($cotizacion['FEC_COTIZA'])) ?></td>
-                                    <?= $celdaMonto($cotizacion['MONTO_CENTS'] ?? null, $cotizacion['MONEDA'] ?? '') ?>
-                                    <td><?= e(EstadoDocumentoService::etiqueta('expediente', $cotizacion['ESTADO'] ?? '')) ?></td>
-                                    <?= $celdaDetalle('cotizacion',$cotizacion['NRO_EXPE']) ?>
-                                </tr><?php foreach ($cotizacion['CERTIFICACIONES'] as $certificacion): ?><tr>
+                                    <td><b><?= e($cotizacion["\x4e\x52\x4f\x5f\x45\x58\x50\x45"]) ?></b></td>
+                                    <td><?= e($date($cotizacion["\x46\x45\x43\x5f\x43\x4f\x54\x49\x5a\x41"])) ?></td>
+                                    <?= $celdaMonto($cotizacion["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $cotizacion["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta("\x65\x78\x70\x65\x64\x69\x65\x6e\x74\x65", $cotizacion["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                    <?= $celdaDetalle("\x63\x6f\x74\x69\x7a\x61\x63\x69\x6f\x6e",$cotizacion["\x4e\x52\x4f\x5f\x45\x58\x50\x45"]) ?>
+                                </tr><?php foreach ($cotizacion["\x43\x45\x52\x54\x49\x46\x49\x43\x41\x43\x49\x4f\x4e\x45\x53"] as $certificacion): ?><tr>
                                     <td>↳ Certificación</td>
-                                    <td><?= e($certificacion['CODCER']) ?></td>
-                                    <td><?= e($date($certificacion['FECHA'])) ?></td>
-                                    <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
-                                    <td><?= e(EstadoDocumentoService::etiqueta('certificacion', $certificacion['ESTADO'] ?? '')) ?></td>
-                                    <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
-                                </tr><?php endforeach; ?><?php foreach ($cotizacion['ORDENES'] as $orden): ?><tr>
-                                    <td>↳ <b><?= e($orden['TIPO']) ?></b></td>
-                                    <td><b><?= e($orden['NUMERO']) ?></b></td>
-                                    <td><?= e($date($orden['FECHA'])) ?></td>
-                                    <?= $celdaMonto($orden['MONTO_SIN_IGV_CENTS'] ?? null, $orden['MONEDA'] ?? '', true) ?>
-                                    <td><?= e(EstadoDocumentoService::etiqueta('orden', $orden['ESTADO'] ?? '')) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta('pago_orden', $orden['ESTFACTU'] ?? '')) ?></small></td>
-                                    <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
-                                </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
-                                </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
+                                    <td><?= e($certificacion["\x43\x4f\x44\x43\x45\x52"]) ?></td>
+                                    <td><?= e($date($certificacion["\x46\x45\x43\x48\x41"])) ?></td>
+                                    <?= $celdaMonto($certificacion["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $certificacion["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta("\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e", $certificacion["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                    <?= $celdaDetalle("\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e",$certificacion["\x43\x4f\x44\x43\x45\x52"]) ?>
+                                </tr><?php endforeach; ?><?php foreach ($cotizacion["\x4f\x52\x44\x45\x4e\x45\x53"] as $orden): ?><tr>
+                                    <td>↳ <b><?= e($orden["\x54\x49\x50\x4f"]) ?></b></td>
+                                    <td><b><?= e($orden["\x4e\x55\x4d\x45\x52\x4f"]) ?></b></td>
+                                    <td><?= e($date($orden["\x46\x45\x43\x48\x41"])) ?></td>
+                                    <?= $celdaMonto($orden["\x4d\x4f\x4e\x54\x4f\x5f\x53\x49\x4e\x5f\x49\x47\x56\x5f\x43\x45\x4e\x54\x53"] ?? null, $orden["\x4d\x4f\x4e\x45\x44\x41"] ?? "", true) ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta("\x6f\x72\x64\x65\x6e", $orden["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta("\x70\x61\x67\x6f\x5f\x6f\x72\x64\x65\x6e", $orden["\x45\x53\x54\x46\x41\x43\x54\x55"] ?? "")) ?></small></td>
+                                    <?= $celdaDetalle($orden["\x54\x49\x50\x4f"]==="\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61"?"\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61":"\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f",$orden["\x4e\x55\x4d\x45\x52\x4f"]) ?>
+                                </tr><?php if (!$orden["\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45\x53"]): ?><tr>
+                                    <td>　↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? "\x3c\x74\x64\x3e\xe2\x80\x94\x3c\x2f\x74\x64\x3e" : "" ?><td>Pendiente</td><?= $puedeVerDetalle ? "\x3c\x74\x64\x3e\xe2\x80\x94\x3c\x2f\x74\x64\x3e" : "" ?>
+                                </tr><?php endif; ?><?php foreach ($orden["\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45\x53"] as $comprobante): ?><tr>
                                     <td>　↳ Factura o boleta</td>
-                                    <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
-                                    <td><?= e($date($comprobante['FECCOMP'])) ?></td>
-                                    <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
-                                    <td><?= e(EstadoDocumentoService::etiqueta('comprobante', $comprobante['ESTADO'] ?? '')) ?></td>
-                                    <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
-                                </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
+                                    <td><?= e($comprobante["\x44\x4f\x43\x53\x45\x52"] . "\x2d" . $comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?></td>
+                                    <td><?= e($date($comprobante["\x46\x45\x43\x43\x4f\x4d\x50"])) ?></td>
+                                    <?= $celdaMonto($comprobante["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $comprobante["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta("\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65", $comprobante["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                    <?= $celdaDetalle("\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65",$comprobante["\x44\x4f\x43\x53\x45\x52"]."\x2d".$comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?>
+                                </tr><?php foreach ($comprobante["\x44\x45\x56\x45\x4e\x47\x41\x44\x4f\x53"] as $devengado): ?><tr>
                                     <td>　　　↳ Devengado</td>
-                                    <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
-                                    <td><?= e($date($devengado['FECT'])) ?></td>
-                                    <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
+                                    <td><?= e($devengado["\x44\x4f\x43\x31"] ?: "\x52\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x20\x65\x6e\x20\x43\x6f\x6e\x74\x61\x62\x69\x6c\x69\x64\x61\x64") ?></td>
+                                    <td><?= e($date($devengado["\x46\x45\x43\x54"])) ?></td>
+                                    <?= $celdaMonto($devengado["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $devengado["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
                                     <td>Registrado</td>
-                                    <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
-                                </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
+                                    <?= $celdaDetalle("\x64\x65\x76\x65\x6e\x67\x61\x64\x6f",$devengado["\x44\x4f\x43\x31"]) ?>
+                                </tr><?php endforeach; ?><?php foreach ($comprobante["\x50\x41\x47\x4f\x53"] as $pago): ?><tr>
                                     <td>　　　↳ Pago</td>
-                                    <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
-                                    <td><?= e($date($pago['FCONTABLE'])) ?></td>
-                                    <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
-                                    <td><?= e(EstadoDocumentoService::etiqueta('pago', $pago['ESTADO'] ?? '')) ?></td>
-                                    <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
-                                </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
+                                    <td><?= e($pago["\x43\x4d\x50\x42\x54\x45"] . "\x20" . $pago["\x44\x4f\x43\x31"] . "\x20\xc2\xb7\x20" . $comprobante["\x44\x4f\x43\x53\x45\x52"] . "\x2d" . $comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?></td>
+                                    <td><?= e($date($pago["\x46\x43\x4f\x4e\x54\x41\x42\x4c\x45"])) ?></td>
+                                    <?= $celdaMonto($pago["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $pago["\x4d\x4f\x4e\x45\x44\x41"] ?? $comprobante["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                    <td><?= e(EstadoDocumentoService::etiqueta("\x70\x61\x67\x6f", $pago["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                    <?= $celdaDetalle("\x70\x61\x67\x6f",trim($pago["\x43\x4d\x50\x42\x54\x45"]."\x20".$pago["\x44\x4f\x43\x31"])) ?>
+                                </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden["\x44\x45\x56\x45\x4e\x47\x41\x44\x4f\x53\x5f\x53\x49\x4e\x5f\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45"] as $devengado): ?><tr>
                                     <td>　↳ Devengado sin comprobante asociado</td>
-                                    <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
-                                    <td><?= e($date($devengado['FECT'])) ?></td>
-                                    <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
-                                    <td>Registrado</td><?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
+                                    <td><?= e($devengado["\x44\x4f\x43\x31"] ?: "\x52\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x20\x65\x6e\x20\x43\x6f\x6e\x74\x61\x62\x69\x6c\x69\x64\x61\x64") ?></td>
+                                    <td><?= e($date($devengado["\x46\x45\x43\x54"])) ?></td>
+                                    <?= $celdaMonto($devengado["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $devengado["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
+                                    <td>Registrado</td><?= $celdaDetalle("\x64\x65\x76\x65\x6e\x67\x61\x64\x6f",$devengado["\x44\x4f\x43\x31"]) ?>
                                 </tr><?php endforeach; ?><?php endforeach; ?><?php endforeach; ?>
                             <?php if (!$cotizaciones): ?><?php foreach ($certificaciones as $certificacion): ?><tr>
                                 <td>Certificación</td>
-                                <td><?= e($certificacion['CODCER']) ?></td>
-                                <td><?= e($date($certificacion['FECHA'])) ?></td>
-                                <?= $celdaMonto($certificacion['MONTO_CENTS'] ?? null, $certificacion['MONEDA'] ?? '01') ?>
-                                <td><?= e(EstadoDocumentoService::etiqueta('certificacion', $certificacion['ESTADO'] ?? '')) ?></td>
-                                <?= $celdaDetalle('certificacion',$certificacion['CODCER']) ?>
+                                <td><?= e($certificacion["\x43\x4f\x44\x43\x45\x52"]) ?></td>
+                                <td><?= e($date($certificacion["\x46\x45\x43\x48\x41"])) ?></td>
+                                <?= $celdaMonto($certificacion["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $certificacion["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
+                                <td><?= e(EstadoDocumentoService::etiqueta("\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e", $certificacion["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                <?= $celdaDetalle("\x63\x65\x72\x74\x69\x66\x69\x63\x61\x63\x69\x6f\x6e",$certificacion["\x43\x4f\x44\x43\x45\x52"]) ?>
                             </tr><?php endforeach; ?><?php foreach ($ordenes as $orden): ?><tr>
-                                <td><b><?= e($orden['TIPO']) ?></b></td>
-                                <td><b><?= e($orden['NUMERO']) ?></b></td>
-                                <td><?= e($date($orden['FECHA'])) ?></td>
-                                <?= $celdaMonto($orden['MONTO_SIN_IGV_CENTS'] ?? null, $orden['MONEDA'] ?? '', true) ?>
-                                <td><?= e(EstadoDocumentoService::etiqueta('orden', $orden['ESTADO'] ?? '')) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta('pago_orden', $orden['ESTFACTU'] ?? '')) ?></small></td>
-                                <?= $celdaDetalle($orden['TIPO']==='Orden de compra'?'orden_compra':'orden_servicio',$orden['NUMERO']) ?>
-                            </tr><?php if (!$orden['COMPROBANTES']): ?><tr>
-                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? '<td>—</td>' : '' ?><td>Pendiente</td><?= $puedeVerDetalle ? '<td>—</td>' : '' ?>
-                            </tr><?php endif; ?><?php foreach ($orden['COMPROBANTES'] as $comprobante): ?><tr>
+                                <td><b><?= e($orden["\x54\x49\x50\x4f"]) ?></b></td>
+                                <td><b><?= e($orden["\x4e\x55\x4d\x45\x52\x4f"]) ?></b></td>
+                                <td><?= e($date($orden["\x46\x45\x43\x48\x41"])) ?></td>
+                                <?= $celdaMonto($orden["\x4d\x4f\x4e\x54\x4f\x5f\x53\x49\x4e\x5f\x49\x47\x56\x5f\x43\x45\x4e\x54\x53"] ?? null, $orden["\x4d\x4f\x4e\x45\x44\x41"] ?? "", true) ?>
+                                <td><?= e(EstadoDocumentoService::etiqueta("\x6f\x72\x64\x65\x6e", $orden["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?><br><small>Pago: <?= e(EstadoDocumentoService::etiqueta("\x70\x61\x67\x6f\x5f\x6f\x72\x64\x65\x6e", $orden["\x45\x53\x54\x46\x41\x43\x54\x55"] ?? "")) ?></small></td>
+                                <?= $celdaDetalle($orden["\x54\x49\x50\x4f"]==="\x4f\x72\x64\x65\x6e\x20\x64\x65\x20\x63\x6f\x6d\x70\x72\x61"?"\x6f\x72\x64\x65\x6e\x5f\x63\x6f\x6d\x70\x72\x61":"\x6f\x72\x64\x65\x6e\x5f\x73\x65\x72\x76\x69\x63\x69\x6f",$orden["\x4e\x55\x4d\x45\x52\x4f"]) ?>
+                            </tr><?php if (!$orden["\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45\x53"]): ?><tr>
+                                <td>↳ Comprobante</td><td>Sin factura o boleta registrada</td><td>—</td><?= $mostrarMontos ? "\x3c\x74\x64\x3e\xe2\x80\x94\x3c\x2f\x74\x64\x3e" : "" ?><td>Pendiente</td><?= $puedeVerDetalle ? "\x3c\x74\x64\x3e\xe2\x80\x94\x3c\x2f\x74\x64\x3e" : "" ?>
+                            </tr><?php endif; ?><?php foreach ($orden["\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45\x53"] as $comprobante): ?><tr>
                                 <td>↳ Factura o boleta</td>
-                                <td><?= e($comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
-                                <td><?= e($date($comprobante['FECCOMP'])) ?></td>
-                                <?= $celdaMonto($comprobante['MONTO_CENTS'] ?? null, $comprobante['MONEDA'] ?? '') ?>
-                                <td><?= e(EstadoDocumentoService::etiqueta('comprobante', $comprobante['ESTADO'] ?? '')) ?></td>
-                                <?= $celdaDetalle('comprobante',$comprobante['DOCSER'].'-'.$comprobante['DOCNRO']) ?>
-                            </tr><?php foreach ($comprobante['DEVENGADOS'] as $devengado): ?><tr>
+                                <td><?= e($comprobante["\x44\x4f\x43\x53\x45\x52"] . "\x2d" . $comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?></td>
+                                <td><?= e($date($comprobante["\x46\x45\x43\x43\x4f\x4d\x50"])) ?></td>
+                                <?= $celdaMonto($comprobante["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $comprobante["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                <td><?= e(EstadoDocumentoService::etiqueta("\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65", $comprobante["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                <?= $celdaDetalle("\x63\x6f\x6d\x70\x72\x6f\x62\x61\x6e\x74\x65",$comprobante["\x44\x4f\x43\x53\x45\x52"]."\x2d".$comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?>
+                            </tr><?php foreach ($comprobante["\x44\x45\x56\x45\x4e\x47\x41\x44\x4f\x53"] as $devengado): ?><tr>
                                 <td>　↳ Devengado</td>
-                                <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
-                                <td><?= e($date($devengado['FECT'])) ?></td>
-                                <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
+                                <td><?= e($devengado["\x44\x4f\x43\x31"] ?: "\x52\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x20\x65\x6e\x20\x43\x6f\x6e\x74\x61\x62\x69\x6c\x69\x64\x61\x64") ?></td>
+                                <td><?= e($date($devengado["\x46\x45\x43\x54"])) ?></td>
+                                <?= $celdaMonto($devengado["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $devengado["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
                                 <td>Registrado</td>
-                                <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
-                            </tr><?php endforeach; ?><?php foreach ($comprobante['PAGOS'] as $pago): ?><tr>
+                                <?= $celdaDetalle("\x64\x65\x76\x65\x6e\x67\x61\x64\x6f",$devengado["\x44\x4f\x43\x31"]) ?>
+                            </tr><?php endforeach; ?><?php foreach ($comprobante["\x50\x41\x47\x4f\x53"] as $pago): ?><tr>
                                 <td>　↳ Pago</td>
-                                <td><?= e($pago['CMPBTE'] . ' ' . $pago['DOC1'] . ' · ' . $comprobante['DOCSER'] . '-' . $comprobante['DOCNRO']) ?></td>
-                                <td><?= e($date($pago['FCONTABLE'])) ?></td>
-                                <?= $celdaMonto($pago['MONTO_CENTS'] ?? null, $pago['MONEDA'] ?? $comprobante['MONEDA'] ?? '') ?>
-                                <td><?= e(EstadoDocumentoService::etiqueta('pago', $pago['ESTADO'] ?? '')) ?></td>
-                                <?= $celdaDetalle('pago',trim($pago['CMPBTE'].' '.$pago['DOC1'])) ?>
-                            </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden['DEVENGADOS_SIN_COMPROBANTE'] as $devengado): ?><tr>
+                                <td><?= e($pago["\x43\x4d\x50\x42\x54\x45"] . "\x20" . $pago["\x44\x4f\x43\x31"] . "\x20\xc2\xb7\x20" . $comprobante["\x44\x4f\x43\x53\x45\x52"] . "\x2d" . $comprobante["\x44\x4f\x43\x4e\x52\x4f"]) ?></td>
+                                <td><?= e($date($pago["\x46\x43\x4f\x4e\x54\x41\x42\x4c\x45"])) ?></td>
+                                <?= $celdaMonto($pago["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $pago["\x4d\x4f\x4e\x45\x44\x41"] ?? $comprobante["\x4d\x4f\x4e\x45\x44\x41"] ?? "") ?>
+                                <td><?= e(EstadoDocumentoService::etiqueta("\x70\x61\x67\x6f", $pago["\x45\x53\x54\x41\x44\x4f"] ?? "")) ?></td>
+                                <?= $celdaDetalle("\x70\x61\x67\x6f",trim($pago["\x43\x4d\x50\x42\x54\x45"]."\x20".$pago["\x44\x4f\x43\x31"])) ?>
+                            </tr><?php endforeach; ?><?php endforeach; ?><?php foreach ($orden["\x44\x45\x56\x45\x4e\x47\x41\x44\x4f\x53\x5f\x53\x49\x4e\x5f\x43\x4f\x4d\x50\x52\x4f\x42\x41\x4e\x54\x45"] as $devengado): ?><tr>
                                 <td>↳ Devengado sin comprobante asociado</td>
-                                <td><?= e($devengado['DOC1'] ?: 'Registrado en Contabilidad') ?></td>
-                                <td><?= e($date($devengado['FECT'])) ?></td>
-                                <?= $celdaMonto($devengado['MONTO_CENTS'] ?? null, $devengado['MONEDA'] ?? '01') ?>
+                                <td><?= e($devengado["\x44\x4f\x43\x31"] ?: "\x52\x65\x67\x69\x73\x74\x72\x61\x64\x6f\x20\x65\x6e\x20\x43\x6f\x6e\x74\x61\x62\x69\x6c\x69\x64\x61\x64") ?></td>
+                                <td><?= e($date($devengado["\x46\x45\x43\x54"])) ?></td>
+                                <?= $celdaMonto($devengado["\x4d\x4f\x4e\x54\x4f\x5f\x43\x45\x4e\x54\x53"] ?? null, $devengado["\x4d\x4f\x4e\x45\x44\x41"] ?? "\x30\x31") ?>
                                 <td>Registrado</td>
-                                <?= $celdaDetalle('devengado',$devengado['DOC1']) ?>
+                                <?= $celdaDetalle("\x64\x65\x76\x65\x6e\x67\x61\x64\x6f",$devengado["\x44\x4f\x43\x31"]) ?>
                             </tr><?php endforeach; ?><?php endforeach; ?><?php endif; ?>
                         </tbody>
                     </table></div>
@@ -252,7 +194,7 @@ require APP_ROOT . '/app/Views/partials/header.php';
             </div>
             <section class="card sustentacion">
                 <h2>Sustentación general</h2>
-                <p><?= trim($result['pedido']['COMENTARIO'] ?? '') !== '' ? nl2br(e($result['pedido']['COMENTARIO'])) : 'No registrada en Avalon para este pedido.' ?></p>
+                <p><?= trim($result["\x70\x65\x64\x69\x64\x6f"]["\x43\x4f\x4d\x45\x4e\x54\x41\x52\x49\x4f"] ?? "") !== "" ? nl2br(e($result["\x70\x65\x64\x69\x64\x6f"]["\x43\x4f\x4d\x45\x4e\x54\x41\x52\x49\x4f"])) : "\x4e\x6f\x20\x72\x65\x67\x69\x73\x74\x72\x61\x64\x61\x20\x65\x6e\x20\x41\x76\x61\x6c\x6f\x6e\x20\x70\x61\x72\x61\x20\x65\x73\x74\x65\x20\x70\x65\x64\x69\x64\x6f\x2e" ?></p>
             </section>
             <?php if ($isWarehouse): ?><section class="card">
                     <h2>Movimientos de retiro de almacén</h2>
@@ -268,14 +210,14 @@ require APP_ROOT . '/app/Views/partials/header.php';
                                 <th>Estado Avalon</th>
                             </tr>
                         </thead>
-                        <tbody><?php foreach ($result['retiros_almacen'] as $movimiento): ?><tr>
-                                    <td><?= e($movimiento['IDMOVIM']) ?></td>
-                                    <td><?= e(($movimiento['SEC_ITEMMO'] ?: '—') . ' · ' . $movimiento['RECURSO']) ?></td>
-                                    <td><?= e($date($movimiento['FECHA'])) ?></td>
-                                    <td><?= e($movimiento['NUMALM'] ?: '—') ?></td>
-                                    <td><?= e($movimiento['CANTIDAD']) ?></td>
-                                    <td><?= e($movimiento['IDTRANSAC'] . ' · tipo ' . $movimiento['TIPO_MOV']) ?></td>
-                                    <td><?= e($movimiento['ESTMOV'] ?: 'Sin código de estado') ?></td>
+                        <tbody><?php foreach ($result["\x72\x65\x74\x69\x72\x6f\x73\x5f\x61\x6c\x6d\x61\x63\x65\x6e"] as $movimiento): ?><tr>
+                                    <td><?= e($movimiento["\x49\x44\x4d\x4f\x56\x49\x4d"]) ?></td>
+                                    <td><?= e(($movimiento["\x53\x45\x43\x5f\x49\x54\x45\x4d\x4d\x4f"] ?: "\xe2\x80\x94") . "\x20\xc2\xb7\x20" . $movimiento["\x52\x45\x43\x55\x52\x53\x4f"]) ?></td>
+                                    <td><?= e($date($movimiento["\x46\x45\x43\x48\x41"])) ?></td>
+                                    <td><?= e($movimiento["\x4e\x55\x4d\x41\x4c\x4d"] ?: "\xe2\x80\x94") ?></td>
+                                    <td><?= e($movimiento["\x43\x41\x4e\x54\x49\x44\x41\x44"]) ?></td>
+                                    <td><?= e($movimiento["\x49\x44\x54\x52\x41\x4e\x53\x41\x43"] . "\x20\xc2\xb7\x20\x74\x69\x70\x6f\x20" . $movimiento["\x54\x49\x50\x4f\x5f\x4d\x4f\x56"]) ?></td>
+                                    <td><?= e($movimiento["\x45\x53\x54\x4d\x4f\x56"] ?: "\x53\x69\x6e\x20\x63\xc3\xb3\x64\x69\x67\x6f\x20\x64\x65\x20\x65\x73\x74\x61\x64\x6f") ?></td>
                                 </tr><?php endforeach; ?></tbody>
                     </table></div>
                 </section><?php endif; ?>
@@ -293,20 +235,20 @@ require APP_ROOT . '/app/Views/partials/header.php';
                             <th>Actividad presupuestal</th>
                         </tr>
                     </thead>
-                    <tbody><?php foreach ($result['detalle'] as $item): ?><tr>
-                                <td><?= e($item['DESC_MAT']) ?></td>
-                                <td><?= e($item['UNIMED']) ?></td>
-                                <td><?= e($item['CAN_ORDENA']) ?></td>
-                                <td><?= e($item['CUENTA_CONTABLE']) ?></td>
-                                <td><?= e($item['CENTRO_COSTO']) ?></td>
-                                <td><?= e($item['COSTO_ABC']) ?></td>
-                                <td><?= e($item['ACTIVIDAD_PRESUPUESTAL']) ?></td>
+                    <tbody><?php foreach ($result["\x64\x65\x74\x61\x6c\x6c\x65"] as $item): ?><tr>
+                                <td><?= e($item["\x44\x45\x53\x43\x5f\x4d\x41\x54"]) ?></td>
+                                <td><?= e($item["\x55\x4e\x49\x4d\x45\x44"]) ?></td>
+                                <td><?= e($item["\x43\x41\x4e\x5f\x4f\x52\x44\x45\x4e\x41"]) ?></td>
+                                <td><?= e($item["\x43\x55\x45\x4e\x54\x41\x5f\x43\x4f\x4e\x54\x41\x42\x4c\x45"]) ?></td>
+                                <td><?= e($item["\x43\x45\x4e\x54\x52\x4f\x5f\x43\x4f\x53\x54\x4f"]) ?></td>
+                                <td><?= e($item["\x43\x4f\x53\x54\x4f\x5f\x41\x42\x43"]) ?></td>
+                                <td><?= e($item["\x41\x43\x54\x49\x56\x49\x44\x41\x44\x5f\x50\x52\x45\x53\x55\x50\x55\x45\x53\x54\x41\x4c"]) ?></td>
                             </tr><?php endforeach; ?></tbody>
                 </table></div>
             </section>
             <?php endif; ?>
         <section class="recent">
-            <h2>Búsquedas recientes</h2><?php if ($recent): ?><ul><?php foreach ($recent as $item): ?><li><b><?= e($item['termino']) ?></b><span><?= e($item['tipo']) ?> · <?= e($item['creado_en']) ?></span></li><?php endforeach; ?></ul><?php else: ?><p>Aún no hay consultas registradas.</p><?php endif; ?>
+            <h2>Búsquedas recientes</h2><?php if ($recent): ?><ul><?php foreach ($recent as $item): ?><li><b><?= e($item["\x74\x65\x72\x6d\x69\x6e\x6f"]) ?></b><span><?= e($item["\x74\x69\x70\x6f"]) ?> · <?= e($item["\x63\x72\x65\x61\x64\x6f\x5f\x65\x6e"]) ?></span></li><?php endforeach; ?></ul><?php else: ?><p>Aún no hay consultas registradas.</p><?php endif; ?>
         </section><script>
 (function () {
     var tipoInput = document.getElementById('tipo-busqueda');
@@ -334,4 +276,4 @@ $(function(){
 });
 </script>
 <?php endif; ?>
-<?php require APP_ROOT . '/app/Views/partials/footer.php'; ?>
+<?php require APP_ROOT . "\x2f\x61\x70\x70\x2f\x56\x69\x65\x77\x73\x2f\x70\x61\x72\x74\x69\x61\x6c\x73\x2f\x66\x6f\x6f\x74\x65\x72\x2e\x70\x68\x70"; ?>

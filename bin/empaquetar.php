@@ -1,27 +1,2 @@
 <?php
-declare(strict_types=1);
-if(PHP_SAPI!=='cli') { http_response_code(404); exit; }
-try {
-    $root=dirname(__DIR__); $dir=$root.'/dist';
-    if(!is_dir($dir)) mkdir($dir,0770,true);
-    $path=$dir.'/sisea-'.date('Ymd-His').'.zip';
-    $zip=new ZipArchive();
-    if($zip->open($path,ZipArchive::CREATE|ZipArchive::EXCL)!==true) throw new RuntimeException('No se pudo crear ZIP.');
-    foreach(['app','public','bin','config','database/migrations','docs'] as $folder) {
-        foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$folder,FilesystemIterator::SKIP_DOTS)) as $file) {
-            if(!$file->isFile() || $file->isLink()) continue;
-            $relative=str_replace('\\','/',substr($file->getPathname(),strlen($root)+1));
-            if(preg_match('~(^|/)\.~',$relative)) continue;
-            if($folder==='public' && $relative!=='public/index.php' && (strpos($relative,'public/assets/')!==0 || !in_array(strtolower(pathinfo($relative,PATHINFO_EXTENSION)),['css','js','woff','woff2','ttf','eot','svg','png','jpg','jpeg','ico','webp','map'],true))) continue;
-            if($folder==='config' && !in_array(basename($relative),['app.php','database.php','settings.php','local.example.php'],true)) continue;
-            if(!$zip->addFile($file->getPathname(),'sisea/'.$relative)) throw new RuntimeException('No se pudo agregar '.$relative);
-        }
-    }
-    foreach(['index.php','.htaccess','README.md','database/schema.sql','database/install.php'] as $file) {
-        if(!$zip->addFile($root.'/'.$file,'sisea/'.$file)) throw new RuntimeException('No se pudo agregar '.$file);
-    }
-    foreach(['storage/cache','storage/sessions','storage/backups'] as $folder) $zip->addEmptyDir('sisea/'.$folder);
-    if(!$zip->close()) throw new RuntimeException('ZIP incompleto.');
-    file_put_contents($path.'.sha256',hash_file('sha256',$path).'  '.basename($path)."\n");
-    echo "Paquete: $path\nSin base de datos, credenciales locales ni sesiones.\n";
-} catch(Throwable $e) { fwrite(STDERR,$e->getMessage()."\n"); exit(1); }
+declare(strict_types=1); if(PHP_SAPI!=="\x63\x6c\x69") { http_response_code(404); exit; } try { $root=dirname(__DIR__); $dir=$root."\x2f\x64\x69\x73\x74"; if(!is_dir($dir)) mkdir($dir,0770,true); $path=$dir."\x2f\x73\x69\x73\x65\x61\x2d".date("\x59\x6d\x64\x2d\x48\x69\x73")."\x2e\x7a\x69\x70"; $zip=new ZipArchive(); if($zip->open($path,ZipArchive::CREATE|ZipArchive::EXCL)!==true) throw new RuntimeException("\x4e\x6f\x20\x73\x65\x20\x70\x75\x64\x6f\x20\x63\x72\x65\x61\x72\x20\x5a\x49\x50\x2e"); foreach(["\x61\x70\x70","\x70\x75\x62\x6c\x69\x63","\x62\x69\x6e","\x63\x6f\x6e\x66\x69\x67","\x64\x61\x74\x61\x62\x61\x73\x65\x2f\x6d\x69\x67\x72\x61\x74\x69\x6f\x6e\x73","\x64\x6f\x63\x73"] as $folder) { foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root."\x2f".$folder,FilesystemIterator::SKIP_DOTS)) as $file) { if(!$file->isFile() || $file->isLink()) continue; $relative=str_replace("\x5c","\x2f",substr($file->getPathname(),strlen($root)+1)); if(preg_match("\x7e\x28\x5e\x7c\x2f\x29\x5c\x2e\x7e",$relative)) continue; if($folder==="\x70\x75\x62\x6c\x69\x63" && $relative!=="\x70\x75\x62\x6c\x69\x63\x2f\x69\x6e\x64\x65\x78\x2e\x70\x68\x70" && (strpos($relative,"\x70\x75\x62\x6c\x69\x63\x2f\x61\x73\x73\x65\x74\x73\x2f")!==0 || !in_array(strtolower(pathinfo($relative,PATHINFO_EXTENSION)),["\x63\x73\x73","\x6a\x73","\x77\x6f\x66\x66","\x77\x6f\x66\x66\x32","\x74\x74\x66","\x65\x6f\x74","\x73\x76\x67","\x70\x6e\x67","\x6a\x70\x67","\x6a\x70\x65\x67","\x69\x63\x6f","\x77\x65\x62\x70","\x6d\x61\x70"],true))) continue; if($folder==="\x63\x6f\x6e\x66\x69\x67" && !in_array(basename($relative),["\x61\x70\x70\x2e\x70\x68\x70","\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x70\x68\x70","\x73\x65\x74\x74\x69\x6e\x67\x73\x2e\x70\x68\x70","\x6c\x6f\x63\x61\x6c\x2e\x65\x78\x61\x6d\x70\x6c\x65\x2e\x70\x68\x70"],true)) continue; if(!$zip->addFile($file->getPathname(),"\x73\x69\x73\x65\x61\x2f".$relative)) throw new RuntimeException("\x4e\x6f\x20\x73\x65\x20\x70\x75\x64\x6f\x20\x61\x67\x72\x65\x67\x61\x72\x20".$relative); } } foreach(["\x69\x6e\x64\x65\x78\x2e\x70\x68\x70","\x2e\x68\x74\x61\x63\x63\x65\x73\x73","\x52\x45\x41\x44\x4d\x45\x2e\x6d\x64","\x64\x61\x74\x61\x62\x61\x73\x65\x2f\x73\x63\x68\x65\x6d\x61\x2e\x73\x71\x6c","\x64\x61\x74\x61\x62\x61\x73\x65\x2f\x69\x6e\x73\x74\x61\x6c\x6c\x2e\x70\x68\x70"] as $file) { if(!$zip->addFile($root."\x2f".$file,"\x73\x69\x73\x65\x61\x2f".$file)) throw new RuntimeException("\x4e\x6f\x20\x73\x65\x20\x70\x75\x64\x6f\x20\x61\x67\x72\x65\x67\x61\x72\x20".$file); } foreach(["\x73\x74\x6f\x72\x61\x67\x65\x2f\x63\x61\x63\x68\x65","\x73\x74\x6f\x72\x61\x67\x65\x2f\x73\x65\x73\x73\x69\x6f\x6e\x73","\x73\x74\x6f\x72\x61\x67\x65\x2f\x62\x61\x63\x6b\x75\x70\x73"] as $folder) $zip->addEmptyDir("\x73\x69\x73\x65\x61\x2f".$folder); if(!$zip->close()) throw new RuntimeException("\x5a\x49\x50\x20\x69\x6e\x63\x6f\x6d\x70\x6c\x65\x74\x6f\x2e"); file_put_contents($path."\x2e\x73\x68\x61\x32\x35\x36",hash_file("\x73\x68\x61\x32\x35\x36",$path)."\x20\x20".basename($path)."\x0a"); echo "Paquete: $path\nSin base de datos, credenciales locales ni sesiones.\n"; } catch(Throwable $e) { fwrite(STDERR,$e->getMessage()."\x0a"); exit(1); } 
