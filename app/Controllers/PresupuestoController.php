@@ -36,6 +36,4 @@ final class PresupuestoController
    echo json_encode((new PresupuestoModel())->ordenesComprometidas($actividad,$cuenta,$inversion,$periodo),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);
   }catch(Throwable $error){error_log('[SISEA presupuesto] '.$error->getMessage());http_response_code(500);echo json_encode(['error'=>'No se pudieron consultar las órdenes comprometidas.']);}
  }
- public function responsabilidades():void{requiereLogin();if(!tienePermiso('responsabilidades')){http_response_code(403);exit('No tiene permiso para configurar responsabilidades presupuestales.');}$unidad=$this->unidad();$esAdmin=alcanceModulo('presupuesto')==='GLOBAL';$fuentes=$unidad!==''?(new PresupuestoModel())->configuracion($unidad):[];require APP_ROOT.'/app/Views/presupuesto_responsabilidades.php';}
- public function guardarResponsabilidades():void{requiereLogin();if(!tienePermiso('responsabilidades')){http_response_code(403);exit('Acceso no autorizado.');}validarCsrf();$unidad=$this->unidad();(new PresupuestoModel())->guardarConfiguracion($unidad,(array)($_POST['clasificacion']??[]));flash('ok','Responsabilidades presupuestales actualizadas.');header('Location: '.url('presupuesto_responsabilidades'));exit;}
 }

@@ -17,7 +17,23 @@ session_save_path($sessionPath);
 session_name('avalon_seguimiento');
 session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
 $route = $_GET['r'] ?? (usuario() ? 'inicio' : 'login');
-$routes = ['nomina'=>['NominaController','index'],'almacen_reportes'=>['AlmacenReportesController','index'],'almacen_exportar'=>['AlmacenReportesController','exportar'],'almacen'=>['ConsultasLogisticaController','index'],'cuentas'=>['ConsultasLogisticaController','index'],'proveedores'=>['ConsultasLogisticaController','index'],'inicio'=>['InicioController','index'],'sin_acceso'=>['InicioController','index'],'roles'=>['RolesController','index'],'guardar_rol'=>['RolesController','guardar'],'estado_rol'=>['RolesController','estado'],'patrimonio' => ['PatrimonioController', 'index'], 'patrimonio_datos' => ['PatrimonioController', 'datos'], 'login' => ['AuthController', 'login'], 'auth' => ['AuthController', 'auth'], 'logout' => ['AuthController', 'logout'], 'seguimiento' => ['SeguimientoController', 'index'], 'detalle_documento' => ['SeguimientoController', 'detalleDocumento'], 'ordenes' => ['OrdenesController', 'index'], 'ordenes_datos' => ['OrdenesController', 'datos'], 'notas' => ['NotasController', 'index'], 'exportar_notas' => ['NotasController', 'exportar'], 'presupuesto' => ['PresupuestoController', 'index'], 'presupuesto_ordenes' => ['PresupuestoController', 'ordenesComprometidas'], 'presupuesto_responsabilidades' => ['PresupuestoController', 'responsabilidades'], 'guardar_responsabilidades' => ['PresupuestoController', 'guardarResponsabilidades'], 'sincronizar_seguimiento' => ['NotasController', 'sincronizar'], 'estado_sincronizacion' => ['EstadoSincronizacionController', 'index'], 'usuarios' => ['UsuariosController', 'index'], 'sincronizar_usuarios' => ['UsuariosController', 'sincronizar'], 'guardar_usuario' => ['UsuariosController', 'guardar']];
+$routes = [
+    'inicio' => ['InicioController','index'],
+    'sin_acceso' => ['InicioController','index'],
+    'login' => ['AuthController', 'login'],
+    'auth' => ['AuthController', 'auth'],
+    'logout' => ['AuthController', 'logout'],
+    'seguimiento' => ['SeguimientoController', 'index'],
+    'detalle_documento' => ['SeguimientoController', 'detalleDocumento'],
+    'ordenes' => ['OrdenesController', 'index'],
+    'ordenes_datos' => ['OrdenesController', 'datos'],
+    'notas' => ['NotasController', 'index'],
+    'exportar_notas' => ['NotasController', 'exportar'],
+    'presupuesto' => ['PresupuestoController', 'index'],
+    'presupuesto_ordenes' => ['PresupuestoController', 'ordenesComprometidas'],
+    'sincronizar_seguimiento' => ['NotasController', 'sincronizar'],
+    'estado_sincronizacion' => ['EstadoSincronizacionController', 'index'],
+];
 if (!isset($routes[$route])) {
     http_response_code(404);
     exit('Ruta no encontrada');
