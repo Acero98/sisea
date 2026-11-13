@@ -7,7 +7,7 @@ function csrf(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2
 function validarCsrf(): void { if (!hash_equals(csrf(), (string)($_POST['csrf'] ?? ''))) throw new DomainException('La sesión del formulario venció. Actualice la página e inténtelo nuevamente.'); }
 function usuario(): ?array { return $_SESSION['usuario'] ?? null; }
 function rutaInicio(?array $cuenta = null): string {
-    foreach(['seguimiento'=>'seguimiento','ordenes'=>'ordenes','presupuesto'=>'presupuesto'] as$ruta=>$permiso)if(tienePermiso($permiso,$cuenta))return $ruta;
+    foreach(['seguimiento'=>'seguimiento','ordenes'=>'ordenes','presupuesto'=>'presupuesto','usuarios'=>'usuarios'] as$ruta=>$permiso)if(tienePermiso($permiso,$cuenta))return $ruta;
     return 'sin_acceso';
 }
 function tienePermiso(string $modulo, ?array $cuenta = null): bool {

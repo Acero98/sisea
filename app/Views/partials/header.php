@@ -30,6 +30,7 @@ $flash = $flash ?? takeFlash();
         $navegacion=[
           ['nombre'=>'Logística','icono'=>'bi-boxes','items'=>[['ruta'=>'seguimiento','nombre'=>'Seguimiento documental','permiso'=>'seguimiento','icono'=>'bi-search'],['ruta'=>'notas','nombre'=>'Mis notas','permiso'=>'seguimiento','icono'=>'bi-journal-text'],['ruta'=>'ordenes','nombre'=>'Órdenes de compra y servicio','permiso'=>'ordenes','icono'=>'bi-receipt-cutoff']]],
           ['nombre'=>'Presupuesto','icono'=>'bi-wallet2','items'=>[['ruta'=>'presupuesto','nombre'=>'Consulta presupuestal','permiso'=>'presupuesto','icono'=>'bi-wallet2']]],
+          ['nombre'=>'Seguridad','icono'=>'bi-shield-lock','items'=>[['ruta'=>'usuarios','nombre'=>'Usuarios','permiso'=>'usuarios','icono'=>'bi-people'],['ruta'=>'roles','nombre'=>'Roles','permiso'=>'usuarios','icono'=>'bi-person-badge']]],
         ];
         foreach($navegacion as$modulo):$opcionesNavegacion=array_values(array_filter($modulo['items'],static fn($item)=>tienePermiso($item['permiso'],$currentUser)));if(!$opcionesNavegacion)continue;
         $seleccionado=in_array($activeNav,array_column($opcionesNavegacion,'ruta'),true);

@@ -18,6 +18,13 @@ session_name('avalon_seguimiento');
 session_start(['cookie_httponly' => true, 'cookie_samesite' => 'Lax']);
 $route = $_GET['r'] ?? (usuario() ? 'inicio' : 'login');
 $routes = [
+    'roles' => ['RolesController','index'],
+    'guardar_rol' => ['RolesController','guardar'],
+    'estado_rol' => ['RolesController','estado'],
+    'usuarios' => ['UsuariosController', 'index'],
+    'sincronizar_usuarios' => ['UsuariosController', 'sincronizar'],
+    'guardar_usuario' => ['UsuariosController', 'guardar'],
+
     'inicio' => ['InicioController','index'],
     'sin_acceso' => ['InicioController','index'],
     'login' => ['AuthController', 'login'],

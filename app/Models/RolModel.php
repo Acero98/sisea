@@ -11,15 +11,9 @@ final class RolModel
             'Logística'=>[
                 ['campo'=>'permiso_seguimiento','nombre'=>'Mis notas y seguimiento','icono'=>'bi-journal-text','alcance'=>'alcance_seguimiento','extras'=>['permiso_ver_montos'=>'Ver montos','permiso_ver_detalle'=>'Abrir detalle']],
                 ['campo'=>'permiso_ordenes','nombre'=>'Órdenes de compra y servicio','icono'=>'bi-receipt-cutoff','alcance'=>'alcance_ordenes','extras'=>['permiso_ordenes_montos'=>'Ver montos','permiso_ordenes_detalle'=>'Abrir detalle']],
-                ['campo'=>'permiso_cuentas','nombre'=>'Consulta por cuenta','icono'=>'bi-journal-text','alcance'=>'alcance_cuentas','extras'=>['permiso_cuentas_montos'=>'Ver montos']],
-                ['campo'=>'permiso_proveedores','nombre'=>'Proveedores','icono'=>'bi-shop','alcance'=>'alcance_proveedores','extras'=>['permiso_proveedores_montos'=>'Ver montos']],
             ],
-            'Almacén'=>[['campo'=>'permiso_almacen_reportes','nombre'=>'Reportes de catálogo y movimientos (todos los artículos) · incluye exportación','icono'=>'bi-box-seam']],
-            'Nómina'=>[['campo'=>'permiso_nomina','nombre'=>'Consultar reportes de personal','icono'=>'bi-people','extras'=>['permiso_nomina_detalle'=>'Consultar importes y control de consistencia']]],
-            'Patrimonio'=>[['campo'=>'permiso_patrimonio','nombre'=>'Consulta de activos','icono'=>'bi-box-seam']],
             'Presupuesto'=>[
                 ['campo'=>'permiso_presupuesto','nombre'=>'Consulta presupuestal','icono'=>'bi-wallet2','alcance'=>'alcance_presupuesto'],
-                ['campo'=>'permiso_responsabilidades','nombre'=>'Configurar responsabilidades','icono'=>'bi-sliders'],
             ],
             'Seguridad'=>[['campo'=>'permiso_usuarios','nombre'=>'Administrar usuarios y roles','icono'=>'bi-shield-lock']],
         ];
